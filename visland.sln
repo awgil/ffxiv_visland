@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "visland", "visland.csproj", "{584057BC-1E24-496D-BCF4-C81268B895FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{584057BC-1E24-496D-BCF4-C81268B895FF}.Debug|x64.ActiveCfg = Debug|x64
+		{584057BC-1E24-496D-BCF4-C81268B895FF}.Debug|x64.Build.0 = Debug|x64
+		{584057BC-1E24-496D-BCF4-C81268B895FF}.Release|x64.ActiveCfg = Release|x64
+		{584057BC-1E24-496D-BCF4-C81268B895FF}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4E2F6A0B-04A8-4DBE-984C-A10F61EAC60B}
+	EndGlobalSection
+EndGlobal

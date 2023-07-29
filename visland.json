@@ -1,0 +1,8 @@
+{
+  "Author": "veyn",
+  "Name": "Island sanctuary automation",
+  "Punchline": "Automate island sanctuary activities",
+  "Description": "Automate gathering, workshop assignments, etc.",
+  "InternalName": "visland",
+  "ApplicableVersion": "any"
+}
