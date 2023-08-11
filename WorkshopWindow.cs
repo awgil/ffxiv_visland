@@ -1,6 +1,5 @@
 ﻿using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
-using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
@@ -25,8 +24,8 @@ unsafe class WorkshopWindow : Window, IDisposable
     public WorkshopWindow(Plugin plugin) : base("Workshop automation")
     {
         ShowCloseButton = false; // opened/closed automatically
-        Size = new Vector2(232, 75);
-        SizeCondition = ImGuiCond.Once;
+        Size = new Vector2(500, 650);
+        SizeCondition = ImGuiCond.FirstUseEver;
         PositionCondition = ImGuiCond.Always; // updated every frame
 
         List<uint> r4 = new(), r6 = new(), r8 = new();
@@ -134,12 +133,13 @@ unsafe class WorkshopWindow : Window, IDisposable
     {
         _pendingActions.Add(() => OpenAddWorkshopSchedule(workshopIndex));
         _pendingActions.Add(() => IsAddonVisible("MJICraftScheduleSetting"));
-        _pendingActions.Add(() => Wait(1, 0.2f));
+        _pendingActions.Add(() => Wait(1, 0));
+        _pendingActions.Add(() => EnsureSortedByTime());
         _pendingActions.Add(() => SelectCraft(row));
-        _pendingActions.Add(() => Wait(3, 0.2f));
+        _pendingActions.Add(() => Wait(3, 0));
         _pendingActions.Add(() => ConfirmCraft());
         _pendingActions.Add(() => !IsAddonVisible("MJICraftScheduleSetting"));
-        _pendingActions.Add(() => Wait(2, 0.2f));
+        _pendingActions.Add(() => Wait(2, 0));
         _recents.Remove(row.RowId);
         _recents.Insert(0, row.RowId);
     }
@@ -174,7 +174,7 @@ unsafe class WorkshopWindow : Window, IDisposable
     private bool IsAddonVisible(string name)
     {
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(name);
-        bool visible = addon != null ? addon->IsVisible : false;
+        bool visible = addon != null ? addon->IsVisible && addon->UldManager.LoadedState == AtkLoadState.Loaded : false;
         PluginLog.Log($"Addon visible check {name} = {visible}");
         return visible;
     }
@@ -188,6 +188,17 @@ unsafe class WorkshopWindow : Window, IDisposable
         var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
         receiveEvent(&addon->AtkEventListener, 25, 6 + (uint)workshopIndex, eventData, inputData);
         return true;
+    }
+
+    private bool EnsureSortedByTime()
+    {
+        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJICraftScheduleSetting");
+        var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // [4] = category
+        var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
+        receiveEvent(&addon->AtkEventListener, 35, 7, eventData, inputData);
+        return true;
+
     }
 
     private bool SelectCraft(MJICraftworksObject row)
