@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Logging;
+using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -33,10 +34,14 @@ public class GatherRouteDB
     {
         foreach (var r in tree.Nodes(Routes, r => new($"{r.Name} ({r.Waypoints.Count} steps)###{r.Name}"), r => RouteContextMenu(r, exec)))
         {
-            foreach (var wn in tree.Nodes(r.Waypoints, wp => new($"[{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}"), wp => WaypointContextMenu(r, wp, exec)))
+            for (int i = 0; i < r.Waypoints.Count; ++i)
             {
-                ImGui.InputFloat3("Position", ref wn.Position);
-                ImGui.InputFloat("Radius", ref wn.Radius);
+                var wp = r.Waypoints[i];
+                foreach (var wn in tree.Node($"[{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
+                {
+                    ImGui.InputFloat3("Position", ref wp.Position);
+                    ImGui.InputFloat("Radius", ref wp.Radius);
+                }
             }
 
             if (ImGui.Button("Interact with target"))
@@ -53,6 +58,11 @@ public class GatherRouteDB
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
                     r.Waypoints.Add(new() { Position = player.Position, Radius = 3 });
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Export to clipboard"))
+            {
+                ImGui.SetClipboardText(SaveToJSONWaypoints(r.Waypoints).ToString());
             }
 
             if (_waypointToModify != null)
@@ -73,13 +83,27 @@ public class GatherRouteDB
             }
         }
 
+        ImGui.SetNextItemWidth(200);
         ImGui.InputText("New route name", ref _newName, 256);
         if (_newName.Length > 0 && !Routes.Any(r => r.Name == _newName))
         {
             ImGui.SameLine();
-            if (ImGui.Button("Create!"))
+            if (ImGui.Button("Create new"))
             {
                 Routes.Add(new() { Name = _newName });
+            }
+            ImGui.SameLine();
+            if (ImGui.Button("Import from clipboard"))
+            {
+                try
+                {
+                    Routes.Add(new() { Name = _newName, Waypoints = LoadFromJSONWaypoints(JArray.Parse(ImGui.GetClipboardText())) });
+                }
+                catch (JsonReaderException ex)
+                {
+                    Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
+                    PluginLog.Error(ex, "Failed to import route");
+                }
             }
         }
 
@@ -98,18 +122,8 @@ public class GatherRouteDB
         {
             var jn = jr["Name"]?.Value<string>();
             var jw = jr["Waypoints"] as JArray;
-            if (jn == null || jw == null)
-                continue;
-
-            var r = new Route() { Name = jn };
-            foreach (var jwe in jw)
-            {
-                var jwea = jwe as JArray;
-                if (jwea == null || jwea.Count != 5)
-                    continue;
-                r.Waypoints.Add(new() { Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()), Radius = jwea[3].Value<float>(), InteractWith = jwea[4].Value<string>() ?? "" });
-            }
-            Routes.Add(r);
+            if (jn != null && jw != null)
+                Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
         }
     }
 
@@ -118,13 +132,10 @@ public class GatherRouteDB
         JArray res = new();
         foreach (var r in Routes)
         {
-            JArray jw = new();
-            foreach (var wp in r.Waypoints)
-                jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWith });
             res.Add(new JObject()
             {
                 { "Name", r.Name },
-                { "Waypoints", jw }
+                { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
             });
         }
         return res;
@@ -182,5 +193,26 @@ public class GatherRouteDB
             _waypointToModify = wp;
             _waypointMoveDir = 0;
         }
+    }
+
+    private JArray SaveToJSONWaypoints(List<Waypoint> waypoints)
+    {
+        JArray jw = new();
+        foreach (var wp in waypoints)
+            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWith });
+        return jw;
+    }
+
+    private List<Waypoint> LoadFromJSONWaypoints(JArray j)
+    {
+        List<Waypoint> res = new();
+        foreach (var jwe in j)
+        {
+            var jwea = jwe as JArray;
+            if (jwea == null || jwea.Count != 5)
+                continue;
+            res.Add(new() { Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()), Radius = jwea[3].Value<float>(), InteractWith = jwea[4].Value<string>() ?? "" });
+        }
+        return res;
     }
 }

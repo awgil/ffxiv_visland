@@ -14,8 +14,8 @@ public class GatherWindow : Window, IDisposable
 
     public GatherWindow(Plugin plugin) : base("Island sanctuary automation")
     {
-        Size = new Vector2(232, 75);
-        SizeCondition = ImGuiCond.Once;
+        Size = new Vector2(800, 800);
+        SizeCondition = ImGuiCond.FirstUseEver;
         _plugin = plugin;
     }
 
@@ -27,6 +27,8 @@ public class GatherWindow : Window, IDisposable
     public override void PreOpenCheck()
     {
         _exec.Update();
+        if (_updateDB)
+            _plugin.Config.GatherNodeDB.UpdateFromObjects();
     }
 
     public override void Draw()
@@ -36,14 +38,14 @@ public class GatherWindow : Window, IDisposable
         if (ImGui.Button("Save config"))
             _plugin.Config.SaveToFile(_plugin.Dalamud.ConfigFile);
 
-        ImGui.Checkbox("Update database", ref _updateDB);
-        ImGui.SameLine();
-        if (ImGui.Button("Clear database"))
-            _plugin.Config.GatherNodeDB.Clear();
-        if (_updateDB)
-            _plugin.Config.GatherNodeDB.UpdateFromObjects();
         foreach (var n in _tree.Node("Gathering node database"))
+        {
+            ImGui.Checkbox("Update database", ref _updateDB);
+            ImGui.SameLine();
+            if (ImGui.Button("Clear database"))
+                _plugin.Config.GatherNodeDB.Clear();
             _plugin.Config.GatherNodeDB.Draw(_tree);
+        }
 
         foreach (var n in _tree.Node("Gathering routes"))
             _plugin.Config.RouteDB.Draw(_tree, _exec);

@@ -19,6 +19,7 @@ public class Service
     [PluginService] public static SigScanner SigScanner { get; private set; } = null!;
     [PluginService] public static Condition Condition { get; private set; } = null!;
     [PluginService] public static GameGui GameGui { get; private set; } = null!;
+    [PluginService] public static ChatGui ChatGui { get; private set; } = null!;
 
     public static Lumina.GameData LuminaGameData => DataManager.GameData;
     public static T? LuminaRow<T>(uint row) where T : Lumina.Excel.ExcelRow => LuminaGameData.GetExcelSheet<T>(Lumina.Data.Language.English)?.GetRow(row);
