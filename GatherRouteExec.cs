@@ -4,6 +4,7 @@ using Dalamud.Logging;
 using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
+using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using ImGuiNET;
 using SharpDX;
@@ -88,7 +89,7 @@ public class GatherRouteExec : IDisposable
 
             var sprintStatus = player?.StatusList.FirstOrDefault(s => s.StatusId == 50);
             var sprintRemaining = sprintStatus?.RemainingTime ?? 0;
-            if (sprintRemaining < 5 && !Service.Condition[ConditionFlag.Mounted])
+            if (sprintRemaining < 5 && !Service.Condition[ConditionFlag.Mounted] && MJIManager.Instance()->IsPlayerInSanctuary == 1)
             {
                 _sprint.Exec(() => ActionManager.Instance()->UseAction(ActionType.Spell, 31314));
             }
