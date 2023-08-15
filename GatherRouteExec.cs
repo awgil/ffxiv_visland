@@ -73,6 +73,9 @@ public class GatherRouteExec : IDisposable
         _gamepadOverridesEnabled = needToGetCloser;
         if (needToGetCloser)
         {
+            var distance = player != null ? (wp.Position - player.Position).Length() : 0;
+            Mount(distance);
+
             var cameraFacing = _cameraAzimuth + MathF.PI;
             var dirToDist = MathF.Atan2(toWaypoint.X, toWaypoint.Z);
             var relDir = cameraFacing - dirToDist;
@@ -223,5 +226,31 @@ public class GatherRouteExec : IDisposable
         while (angle > MathF.PI)
             angle -= 2 * MathF.PI;
         return angle;
+    }
+
+    private unsafe void Mount(float distance)
+    {
+        if (Service.ClientState.LocalPlayer.IsCasting)
+        {
+            return;
+        }
+
+        // distance should be configurable I guess?
+        if (distance > 30)
+        {
+            if (Service.Condition[ConditionFlag.Mounted])
+            {
+                _getGamepadAxisHook.Enable();
+                ContinueToNext = true;
+                return;
+            }
+
+            if (!Service.Condition[ConditionFlag.Mounted])
+            {
+                _getGamepadAxisHook.Disable();
+                ContinueToNext = false;
+                _sprint.Exec(() => ActionManager.Instance()->UseAction(ActionType.General, 24));
+            }
+        }
     }
 }
