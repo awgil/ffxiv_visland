@@ -12,6 +12,8 @@ public class GatherWindow : Window, IDisposable
     private bool _updateDB;
     private GatherRouteExec _exec = new();
 
+    public GatherRouteExec Exec => _exec;
+
     public GatherWindow(Plugin plugin) : base("Island sanctuary automation")
     {
         Size = new Vector2(800, 800);
