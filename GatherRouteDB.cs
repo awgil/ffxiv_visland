@@ -1,4 +1,5 @@
-﻿using Dalamud.Logging;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Logging;
 using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -16,6 +17,7 @@ public class GatherRouteDB
         public Vector3 Position;
         public float Radius;
         public string InteractWith = "";
+        public bool Mount;
     }
 
     public class Route
@@ -37,10 +39,12 @@ public class GatherRouteDB
             for (int i = 0; i < r.Waypoints.Count; ++i)
             {
                 var wp = r.Waypoints[i];
-                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
+                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}{(wp.Mount ? " (mount)" : "")}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
                 {
                     ImGui.InputFloat3("Position", ref wp.Position);
                     ImGui.InputFloat("Radius", ref wp.Radius);
+                    ImGui.Checkbox("Mount up", ref wp.Mount);
+
                     if (ImGui.Button("Set position to current") && Service.ClientState.LocalPlayer is var player && player != null)
                         wp.Position = player.Position;
                 }
@@ -50,7 +54,7 @@ public class GatherRouteDB
             {
                 var target = Service.TargetManager.Target;
                 if (target != null && target.DataId == GatherNodeDB.GatherNodeDataId)
-                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, InteractWith = target.Name.ToString().ToLower() });
+                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, InteractWith = target.Name.ToString().ToLower(), Mount = Service.Condition[ConditionFlag.Mounted] });
                 exec.Start(r, r.Waypoints.Count - 1, false, false);
             }
             ImGui.SameLine();
@@ -59,7 +63,7 @@ public class GatherRouteDB
                 exec.Finish();
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
-                    r.Waypoints.Add(new() { Position = player.Position, Radius = 3 });
+                    r.Waypoints.Add(new() { Position = player.Position, Radius = 3, Mount = Service.Condition[ConditionFlag.Mounted] });
             }
             ImGui.SameLine();
             if (ImGui.Button("Export to clipboard"))
@@ -201,7 +205,7 @@ public class GatherRouteDB
     {
         JArray jw = new();
         foreach (var wp in waypoints)
-            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWith });
+            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWith, wp.Mount });
         return jw;
     }
 
@@ -211,9 +215,15 @@ public class GatherRouteDB
         foreach (var jwe in j)
         {
             var jwea = jwe as JArray;
-            if (jwea == null || jwea.Count != 5)
+            if (jwea == null || jwea.Count < 5)
                 continue;
-            res.Add(new() { Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()), Radius = jwea[3].Value<float>(), InteractWith = jwea[4].Value<string>() ?? "" });
+            res.Add(new()
+            {
+                Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()),
+                Radius = jwea[3].Value<float>(),
+                InteractWith = jwea[4].Value<string>() ?? "",
+                Mount = jwea.Count > 5 ? jwea[5].Value<bool>() : false
+            });
         }
         return res;
     }

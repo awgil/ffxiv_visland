@@ -36,7 +36,7 @@ public class GatherRouteExec : IDisposable
     private float _cameraAzimuth;
     private float _cameraAltitude;
     private Throttle _interact = new();
-    private Throttle _sprint = new();
+    private Throttle _action = new();
 
     public GatherRouteExec()
     {
@@ -61,37 +61,56 @@ public class GatherRouteExec : IDisposable
         var view = viewProj * Matrix.Invert(proj);
         _cameraAzimuth = MathF.Atan2(view.Column3.X, view.Column3.Z);
         _cameraAltitude = MathF.Asin(view.Column3.Y);
+        _gamepadOverridesEnabled = false;
 
         var player = Service.ClientState.LocalPlayer;
         var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent];
-        var wp = gathering || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count ? null : CurrentRoute.Waypoints[CurrentWaypoint];
-        var toWaypoint = wp != null && player != null ? wp.Position - player.Position : new();
-        var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
-        var radius = wp?.Radius ?? 0;
-        bool needToGetCloser = toWaypoint.LengthSquared() > radius * radius;
+        if (player == null || player.IsCasting || gathering || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+            return;
 
-        _gamepadOverridesEnabled = needToGetCloser;
+        var wp = CurrentRoute.Waypoints[CurrentWaypoint];
+        var toWaypoint = wp.Position - player.Position;
+        var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
+        bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+
         if (needToGetCloser)
         {
+            bool mounted = Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
+            if (wp.Mount && !mounted)
+            {
+                ExecuteMount();
+                return;
+            }
+
+            bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
+
             var cameraFacing = _cameraAzimuth + MathF.PI;
             var dirToDist = MathF.Atan2(toWaypoint.X, toWaypoint.Z);
             var relDir = cameraFacing - dirToDist;
+            _gamepadOverridesEnabled = true;
             _gamepadOverrides[3] = (int)(100 * MathF.Sin(relDir));
             _gamepadOverrides[4] = (int)(100 * MathF.Cos(relDir));
             _gamepadOverrides[5] = Math.Clamp((int)(NormalizeAngle(relDir) * 500), -100, 100);
             _gamepadOverrides[6] = 0;
-            if (Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving])
+            if (flying)
             {
+                // TODO: purely vertical movement if we're almost at destination
                 var dy = _gamepadOverrides[4] < 0 ? toWaypoint.Y : -toWaypoint.Y;
                 var angle = _cameraAltitude - MathF.Atan2(dy, toWaypointXZ.Length());
                 _gamepadOverrides[6] = Math.Clamp((int)(NormalizeAngle(angle) * 500), -100, 100);
             }
 
-            var sprintStatus = player?.StatusList.FirstOrDefault(s => s.StatusId == 50);
+            var sprintStatus = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
             var sprintRemaining = sprintStatus?.RemainingTime ?? 0;
-            if (sprintRemaining < 5 && !Service.Condition[ConditionFlag.Mounted] && MJIManager.Instance()->IsPlayerInSanctuary == 1)
+            if (sprintRemaining < 5 && !mounted && MJIManager.Instance()->IsPlayerInSanctuary == 1)
             {
-                _sprint.Exec(() => ActionManager.Instance()->UseAction(ActionType.Spell, 31314));
+                ExecuteIslandSprint();
+            }
+
+            if (mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
+            {
+                // TODO: improve, jump is not the best really...
+                ExecuteJump();
             }
 
             return;
@@ -107,9 +126,6 @@ public class GatherRouteExec : IDisposable
             });
             return;
         }
-
-        if (wp == null)
-            return;
 
         if (!ContinueToNext)
         {
@@ -205,9 +221,9 @@ public class GatherRouteExec : IDisposable
         return mtx;
     }
 
-    private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint? wp)
+    private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
     {
-        if (wp == null || wp.InteractWith.Length == 0)
+        if (wp.InteractWith.Length == 0)
             return null;
 
         foreach (var obj in Service.ObjectTable.Where(o => o.DataId == GatherNodeDB.GatherNodeDataId && (o.Position - wp.Position).LengthSquared() < 1 && o.Name.ToString().ToLower() == wp.InteractWith))
@@ -224,4 +240,9 @@ public class GatherRouteExec : IDisposable
             angle -= 2 * MathF.PI;
         return angle;
     }
+
+    private unsafe void ExecuteActionSafe(ActionType type, uint id) => _action.Exec(() => ActionManager.Instance()->UseAction(type, id));
+    private void ExecuteIslandSprint() => ExecuteActionSafe(ActionType.Spell, 31314);
+    private void ExecuteMount() => ExecuteActionSafe(ActionType.General, 24); // flying mount roulette
+    private void ExecuteJump() => ExecuteActionSafe(ActionType.General, 2);
 }
