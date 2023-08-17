@@ -16,8 +16,9 @@ public class GatherRouteDB
     {
         public Vector3 Position;
         public float Radius;
-        public string InteractWith = "";
         public bool Mount;
+        public uint InteractWithOID = 0;
+        public string InteractWithName = "";
     }
 
     public class Route
@@ -39,7 +40,7 @@ public class GatherRouteDB
             for (int i = 0; i < r.Waypoints.Count; ++i)
             {
                 var wp = r.Waypoints[i];
-                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}{(wp.Mount ? " (mount)" : "")}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
+                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWithName} ({wp.InteractWithOID:X}){(wp.Mount ? " (mount)" : "")}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
                 {
                     ImGui.InputFloat3("Position", ref wp.Position);
                     ImGui.InputFloat("Radius", ref wp.Radius);
@@ -53,9 +54,11 @@ public class GatherRouteDB
             if (ImGui.Button("Interact with target"))
             {
                 var target = Service.TargetManager.Target;
-                if (target != null && target.DataId == GatherNodeDB.GatherNodeDataId)
-                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, InteractWith = target.Name.ToString().ToLower(), Mount = Service.Condition[ConditionFlag.Mounted] });
-                exec.Start(r, r.Waypoints.Count - 1, false, false);
+                if (target != null)
+                {
+                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, Mount = Service.Condition[ConditionFlag.Mounted], InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    exec.Start(r, r.Waypoints.Count - 1, false, false);
+                }
             }
             ImGui.SameLine();
             if (ImGui.Button("Move to current position"))
@@ -205,7 +208,7 @@ public class GatherRouteDB
     {
         JArray jw = new();
         foreach (var wp in waypoints)
-            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWith, wp.Mount });
+            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Mount, wp.InteractWithOID });
         return jw;
     }
 
@@ -221,8 +224,9 @@ public class GatherRouteDB
             {
                 Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()),
                 Radius = jwea[3].Value<float>(),
-                InteractWith = jwea[4].Value<string>() ?? "",
-                Mount = jwea.Count > 5 ? jwea[5].Value<bool>() : false
+                Mount = jwea.Count > 5 ? jwea[5].Value<bool>() : false,
+                InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : GatherNodeDB.GatherNodeDataId,
+                InteractWithName = jwea[4].Value<string>() ?? "",
             });
         }
         return res;

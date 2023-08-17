@@ -64,7 +64,7 @@ public class GatherRouteExec : IDisposable
         _gamepadOverridesEnabled = false;
 
         var player = Service.ClientState.LocalPlayer;
-        var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent];
+        var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent] || Service.Condition[ConditionFlag.OccupiedSummoningBell];
         if (player == null || player.IsCasting || gathering || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
@@ -189,7 +189,7 @@ public class GatherRouteExec : IDisposable
 
         var curPos = Service.ClientState.LocalPlayer?.Position ?? new();
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
-        ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWith}");
+        ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
         ImGui.SameLine();
         if (ImGui.Button(Paused ? "Resume" : "Pause"))
         {
@@ -223,10 +223,10 @@ public class GatherRouteExec : IDisposable
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
     {
-        if (wp.InteractWith.Length == 0)
+        if (wp.InteractWithOID == 0 || wp.InteractWithName.Length == 0)
             return null;
 
-        foreach (var obj in Service.ObjectTable.Where(o => o.DataId == GatherNodeDB.GatherNodeDataId && (o.Position - wp.Position).LengthSquared() < 1 && o.Name.ToString().ToLower() == wp.InteractWith))
+        foreach (var obj in Service.ObjectTable.Where(o => o.DataId == wp.InteractWithOID && (o.Position - wp.Position).LengthSquared() < 1 && o.Name.ToString().ToLower() == wp.InteractWithName))
             return obj.IsTargetable ? (GameObject*)obj.Address : null;
 
         return null;

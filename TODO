@@ -1,6 +1,5 @@
 - dismount before interact (happens automatically, not needed??)
 - hook playermovecontroller/cameramanager instead of gamepad input, to avoid blocking ui interaction
-- store oid(?) for interact command, to allow use outside island
 - moveto console command
 - afk prevention while executing routes
 - workshop multiline import
