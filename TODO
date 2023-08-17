@@ -1,0 +1,10 @@
+- dismount before interact
+- conditionally mount before movement start
+- jump to start flying
+- hook playermovecontroller/cameramanager instead of gamepad input, to avoid blocking ui interaction
+- store oid(?) for interact command, to allow use outside island
+- moveto console command
+- afk prevention while executing routes
+- workshop multiline import
+- drag-n-drop in route editor
+- autosave route on edit?

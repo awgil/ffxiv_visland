@@ -37,10 +37,12 @@ public class GatherRouteDB
             for (int i = 0; i < r.Waypoints.Count; ++i)
             {
                 var wp = r.Waypoints[i];
-                foreach (var wn in tree.Node($"[{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
+                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWith}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
                 {
                     ImGui.InputFloat3("Position", ref wp.Position);
                     ImGui.InputFloat("Radius", ref wp.Radius);
+                    if (ImGui.Button("Set position to current") && Service.ClientState.LocalPlayer is var player && player != null)
+                        wp.Position = player.Position;
                 }
             }
 
