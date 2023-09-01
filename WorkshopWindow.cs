@@ -5,6 +5,7 @@ using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -68,6 +69,8 @@ unsafe class WorkshopWindow : Window, IDisposable
 
     public override void Draw()
     {
+        DrawRow("Set schedule from clipboard (Overseas Casuals format)", ImportFromOC);
+        ImGui.Separator();
         ImGui.InputText("Filter", ref _filter, 256);
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         foreach (var row in sheetCraft)
@@ -75,61 +78,87 @@ unsafe class WorkshopWindow : Window, IDisposable
             var name = row.Item.Value?.Name.ToString() ?? "";
             if (name.Length == 0 || !name.Contains(_filter, StringComparison.InvariantCultureIgnoreCase))
                 continue;
-            DrawRow(row, false);
+            DrawRowCraft(row, false);
         }
 
         ImGui.Separator();
         ImGui.TextUnformatted("Recent items:");
         foreach (var i in _recents.ToArray()) // copy, since we might modify it...
         {
-            DrawRow(sheetCraft.GetRow(i)!, true);
+            DrawRowCraft(sheetCraft.GetRow(i)!, true);
         }
     }
 
-    private void DrawRow(MJICraftworksObject row, bool fromRecent)
+    private void DrawRowCraft(MJICraftworksObject row, bool fromRecent)
     {
         var name = row.Item.Value?.Name.ToString() ?? "???";
         ImGui.PushID((int)row.RowId * 2 + (fromRecent ? 1 : 0));
-        if (ImGui.Button("+1"))
-        {
-            AddToSchedule(row, 0);
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("+2"))
-        {
-            AddToSchedule(row, 1);
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("+3"))
-        {
-            AddToSchedule(row, 2);
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("+4"))
-        {
-            AddToSchedule(row, 3);
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("+123"))
-        {
-            AddToSchedule(row, 0);
-            AddToSchedule(row, 1);
-            AddToSchedule(row, 2);
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("+1234"))
-        {
-            AddToSchedule(row, 0);
-            AddToSchedule(row, 1);
-            AddToSchedule(row, 2);
-            AddToSchedule(row, 3);
-        }
-        ImGui.SameLine();
-        ImGui.TextUnformatted(name);
+        DrawRow(name, idx => AddToSchedule(row, idx));
         ImGui.PopID();
     }
 
-    private void AddToSchedule(MJICraftworksObject row, int workshopIndex)
+    private void DrawRow(string name, Action<int> exec)
+    {
+        if (ImGui.Button("+1"))
+            exec(1);
+        ImGui.SameLine();
+        if (ImGui.Button("+2"))
+            exec(2);
+        ImGui.SameLine();
+        if (ImGui.Button("+3"))
+            exec(4);
+        ImGui.SameLine();
+        if (ImGui.Button("+4"))
+            exec(8);
+        ImGui.SameLine();
+        if (ImGui.Button("+123"))
+            exec(7);
+        ImGui.SameLine();
+        if (ImGui.Button("+1234"))
+            exec(15);
+        ImGui.SameLine();
+        ImGui.TextUnformatted(name);
+    }
+
+    private void ImportFromOC(int workshopIndices)
+    {
+        List<MJICraftworksObject> rows = new();
+        foreach (var item in ImGui.GetClipboardText().Split('\n', '\r'))
+        {
+            // expected format: ':OC_ItemName: Item Name (4h)'; first part is optional
+            // strip off everything before last ':' and everything after first '(', then strip off spaces
+            var actualItem = item.Substring(item.LastIndexOf(':') + 1);
+            if (actualItem.IndexOf('(') is var tail && tail >= 0)
+                actualItem = actualItem.Substring(0, tail);
+            actualItem = actualItem.Trim();
+            if (actualItem.Length == 0)
+                continue;
+
+            var matchingRows = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Where(row => row.Item.Value?.Name.ToString().Contains(actualItem, StringComparison.InvariantCultureIgnoreCase) ?? false).ToList();
+            if (matchingRows.Count != 1)
+            {
+                var error = $"Failed to import schedule: {matchingRows.Count} items matching row '{item}'";
+                Service.ChatGui.PrintError(error);
+                PluginLog.Error(error);
+                return;
+            }
+            rows.Add(matchingRows.First());
+        }
+
+        foreach (var row in rows)
+            AddToSchedule(row, workshopIndices);
+    }
+
+    private void AddToSchedule(MJICraftworksObject row, int workshopIndices)
+    {
+        for (int i = 0; i < 4; ++i)
+            if ((workshopIndices & (1 << i)) != 0)
+                AddToScheduleSingle(row, i);
+        _recents.Remove(row.RowId);
+        _recents.Insert(0, row.RowId);
+    }
+
+    private void AddToScheduleSingle(MJICraftworksObject row, int workshopIndex)
     {
         _pendingActions.Add(() => OpenAddWorkshopSchedule(workshopIndex));
         _pendingActions.Add(() => IsAddonVisible("MJICraftScheduleSetting"));
@@ -139,9 +168,7 @@ unsafe class WorkshopWindow : Window, IDisposable
         _pendingActions.Add(() => Wait(3, 0));
         _pendingActions.Add(() => ConfirmCraft());
         _pendingActions.Add(() => !IsAddonVisible("MJICraftScheduleSetting"));
-        _pendingActions.Add(() => Wait(2, 0));
-        _recents.Remove(row.RowId);
-        _recents.Insert(0, row.RowId);
+        _pendingActions.Add(() => Wait(2, 0.1f));
     }
 
     private AtkComponentButton* FindAddButton(int workshopIndex)
