@@ -143,8 +143,6 @@ public class GatherRouteExec : IDisposable
 
         var curPos = Service.ClientState.LocalPlayer?.Position ?? new();
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
-        ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
-        ImGui.SameLine();
         if (ImGui.Button(Paused ? "Resume" : "Pause"))
         {
             Paused = !Paused;
@@ -154,6 +152,8 @@ public class GatherRouteExec : IDisposable
         {
             Finish();
         }
+        ImGui.SameLine();
+        ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
