@@ -1,7 +1,5 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Hooking;
 using Dalamud.Logging;
-using Dalamud.Utility.Signatures;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -10,7 +8,6 @@ using ImGuiNET;
 using SharpDX;
 using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace visland;
 
@@ -22,48 +19,28 @@ public class GatherRouteExec : IDisposable
     public bool LoopAtEnd;
     public bool Paused;
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    private delegate IntPtr GetMatrixSingletonDelegate();
-    private GetMatrixSingletonDelegate _getMatrixSingleton { get; init; }
+    private OverrideCamera _camera = new();
+    private OverrideMovement _movement = new();
 
-    private delegate int GetGamepadAxisDelegate(ulong self, int axisID);
-    [Signature("E8 ?? ?? ?? ?? 0F BE 0D ?? ?? ?? ?? BA 04 00 00 00 66 0F 6E F8 66 0F 6E C1 48 8B CE 0F 5B C0 0F 5B FF F3 0F 5E F8", DetourName = nameof(GetGamepadAxisDetour))]
-    private Hook<GetGamepadAxisDelegate> _getGamepadAxisHook = null!;
-
-    private int[] _gamepadOverrides = new int[7];
-    private bool _gamepadOverridesEnabled;
-
-    private float _cameraAzimuth;
-    private float _cameraAltitude;
     private Throttle _interact = new();
     private Throttle _action = new();
 
     public GatherRouteExec()
     {
-        SignatureHelper.Initialise(this);
-        PluginLog.Information($"GetGamepadAxis address: 0x{_getGamepadAxisHook.Address:X}");
-
-        var getMatrixSingletonAddress = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
-        _getMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(getMatrixSingletonAddress);
-        PluginLog.Information($"GetMatrixSingleton address: 0x{getMatrixSingletonAddress:X}");
     }
 
     public void Dispose()
     {
-        _getGamepadAxisHook.Dispose();
+        _camera.Dispose();
+        _movement.Dispose();
     }
 
     public unsafe void Update()
     {
-        var matrixSingleton = _getMatrixSingleton();
-        var viewProj = ReadMatrix(matrixSingleton + 0x1B4);
-        var proj = ReadMatrix(matrixSingleton + 0x174);
-        var view = viewProj * Matrix.Invert(proj);
-        _cameraAzimuth = MathF.Atan2(view.Column3.X, view.Column3.Z);
-        _cameraAltitude = MathF.Asin(view.Column3.Y);
-        _gamepadOverridesEnabled = false;
-
         var player = Service.ClientState.LocalPlayer;
+        _camera.SpeedH = _camera.SpeedV = default;
+        _movement.DesiredPosition = player?.Position ?? new();
+
         var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent] || Service.Condition[ConditionFlag.OccupiedSummoningBell];
         if (player == null || player.IsCasting || gathering || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
@@ -75,30 +52,17 @@ public class GatherRouteExec : IDisposable
 
         if (needToGetCloser)
         {
-            bool mounted = Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-            if (wp.Mount && !mounted)
+            bool mounted = Service.Condition[ConditionFlag.Mounted];
+            bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
+            if (wp.Mount && !mounted && !aboutToBeMounted)
             {
                 ExecuteMount();
                 return;
             }
 
-            bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
-
-            var cameraFacing = _cameraAzimuth + MathF.PI;
-            var dirToDist = MathF.Atan2(toWaypoint.X, toWaypoint.Z);
-            var relDir = cameraFacing - dirToDist;
-            _gamepadOverridesEnabled = true;
-            _gamepadOverrides[3] = (int)(100 * MathF.Sin(relDir));
-            _gamepadOverrides[4] = (int)(100 * MathF.Cos(relDir));
-            _gamepadOverrides[5] = Math.Clamp((int)(NormalizeAngle(relDir) * 500), -100, 100);
-            _gamepadOverrides[6] = 0;
-            if (flying)
-            {
-                // TODO: purely vertical movement if we're almost at destination
-                var dy = _gamepadOverrides[4] < 0 ? toWaypoint.Y : -toWaypoint.Y;
-                var angle = _cameraAltitude - MathF.Atan2(dy, toWaypointXZ.Length());
-                _gamepadOverrides[6] = Math.Clamp((int)(NormalizeAngle(angle) * 500), -100, 100);
-            }
+            _movement.DesiredPosition = wp.Position;
+            _camera.SpeedH = _camera.SpeedV = 360.Degrees();
+            _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
 
             var sprintStatus = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
             var sprintRemaining = sprintStatus?.RemainingTime ?? 0;
@@ -107,6 +71,7 @@ public class GatherRouteExec : IDisposable
                 ExecuteIslandSprint();
             }
 
+            bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
             if (mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
             {
                 // TODO: improve, jump is not the best really...
@@ -152,7 +117,8 @@ public class GatherRouteExec : IDisposable
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
         LoopAtEnd = loopAtEnd;
-        _getGamepadAxisHook.Enable();
+        _camera.Enabled = true;
+        _movement.Enabled = true;
     }
 
     public void Finish()
@@ -163,24 +129,12 @@ public class GatherRouteExec : IDisposable
         CurrentWaypoint = 0;
         ContinueToNext = false;
         LoopAtEnd = false;
-        _getGamepadAxisHook.Disable();
+        _camera.Enabled = false;
+        _movement.Enabled = false;
     }
 
     public void Draw(UITree tree)
     {
-        //ImGui.TextUnformatted($"Camera: {_cameraAzimuth * 180 / MathF.PI:f2} {_cameraAltitude * 180 / MathF.PI:f2}");
-        //ImGui.TextUnformatted($"Gamepad: {_gamepadOverrides[3]} {_gamepadOverrides[4]} {_gamepadOverrides[5]} {_gamepadOverrides[6]}");
-        //var player = Service.ClientState.LocalPlayer;
-        //var target = Service.TargetManager.Target;
-        //var cameraFacing = _cameraAzimuth + MathF.PI;
-        //if (target != null)
-        //{
-        //    var toTarget = target.Position - player!.Position;
-        //    var dirToTarget = MathF.Atan2(toTarget.X, toTarget.Z);
-        //    var relDirTarget = cameraFacing - dirToTarget;
-        //    ImGui.TextUnformatted($"Target reldir: {relDirTarget * 180 / MathF.PI:f2}");
-        //}
-
         if (CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
         {
             ImGui.TextUnformatted("Route not running");
@@ -200,25 +154,6 @@ public class GatherRouteExec : IDisposable
         {
             Finish();
         }
-
-        //var toWaypoint = wp.Position - player!.Position;
-        //var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
-        //var dirToDist = MathF.Atan2(toWaypoint.X, toWaypoint.Z);
-        //var relDir = cameraFacing - dirToDist;
-        //var dy = _gamepadOverrides[4] < 0 ? toWaypoint.Y : -toWaypoint.Y;
-        //var angle = _cameraAltitude - MathF.Atan2(dy, toWaypointXZ.Length());
-        //ImGui.TextUnformatted($"RelDir={relDir * 180 / MathF.PI:f2}, dy={dy:f3}, angle={angle * 180 / MathF.PI:f2}");
-    }
-
-    private int GetGamepadAxisDetour(ulong self, int axisID) => _gamepadOverridesEnabled && axisID < _gamepadOverrides.Length ? _gamepadOverrides[axisID] : _getGamepadAxisHook.Original(self, axisID);
-
-    private unsafe Matrix ReadMatrix(nint address)
-    {
-        var p = (float*)address;
-        Matrix mtx = new();
-        for (var i = 0; i < 16; i++)
-            mtx[i] = *p++;
-        return mtx;
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
@@ -230,15 +165,6 @@ public class GatherRouteExec : IDisposable
             return obj.IsTargetable ? (GameObject*)obj.Address : null;
 
         return null;
-    }
-
-    private static float NormalizeAngle(float angle)
-    {
-        while (angle < -MathF.PI)
-            angle += 2 * MathF.PI;
-        while (angle > MathF.PI)
-            angle -= 2 * MathF.PI;
-        return angle;
     }
 
     private unsafe void ExecuteActionSafe(ActionType type, uint id) => _action.Exec(() => ActionManager.Instance()->UseAction(type, id));
