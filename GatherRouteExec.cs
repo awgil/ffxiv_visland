@@ -54,7 +54,7 @@ public class GatherRouteExec : IDisposable
         {
             bool mounted = Service.Condition[ConditionFlag.Mounted];
             bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-            if (wp.Mount && !mounted && !aboutToBeMounted)
+            if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted && !aboutToBeMounted)
             {
                 ExecuteMount();
                 return;
@@ -72,7 +72,7 @@ public class GatherRouteExec : IDisposable
             }
 
             bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
-            if (mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
+            if (wp.Movement == GatherRouteDB.Movement.MountFly && mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
             {
                 // TODO: improve, jump is not the best really...
                 ExecuteJump();

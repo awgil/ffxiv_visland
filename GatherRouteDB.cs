@@ -3,6 +3,7 @@ using Dalamud.Logging;
 using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,11 +13,18 @@ namespace visland;
 
 public class GatherRouteDB
 {
+    public enum Movement
+    {
+        Normal = 0,
+        MountFly = 1,
+        MountNoFly = 2,
+    }
+
     public class Waypoint
     {
         public Vector3 Position;
         public float Radius;
-        public bool Mount;
+        public Movement Movement;
         public uint InteractWithOID = 0;
         public string InteractWithName = "";
     }
@@ -40,11 +48,11 @@ public class GatherRouteDB
             for (int i = 0; i < r.Waypoints.Count; ++i)
             {
                 var wp = r.Waypoints[i];
-                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} @ {wp.InteractWithName} ({wp.InteractWithOID:X}){(wp.Mount ? " (mount)" : "")}###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
+                foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
                 {
                     ImGui.InputFloat3("Position", ref wp.Position);
                     ImGui.InputFloat("Radius", ref wp.Radius);
-                    ImGui.Checkbox("Mount up", ref wp.Mount);
+                    UICombo.Enum("Movement mode", ref wp.Movement);
 
                     if (ImGui.Button("Set position to current") && Service.ClientState.LocalPlayer is var player && player != null)
                         wp.Position = player.Position;
@@ -56,7 +64,7 @@ public class GatherRouteDB
                 var target = Service.TargetManager.Target;
                 if (target != null)
                 {
-                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, Mount = Service.Condition[ConditionFlag.Mounted], InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    r.Waypoints.Add(new() { Position = target.Position, Radius = 2, Movement = Service.Condition[ConditionFlag.Mounted] ? Movement.MountFly : Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
                     exec.Start(r, r.Waypoints.Count - 1, false, false);
                 }
             }
@@ -66,7 +74,7 @@ public class GatherRouteDB
                 exec.Finish();
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
-                    r.Waypoints.Add(new() { Position = player.Position, Radius = 3, Mount = Service.Condition[ConditionFlag.Mounted] });
+                    r.Waypoints.Add(new() { Position = player.Position, Radius = 3, Movement = Service.Condition[ConditionFlag.Mounted] ? Movement.MountFly : Movement.Normal });
             }
             ImGui.SameLine();
             if (ImGui.Button("Export to clipboard"))
@@ -208,7 +216,7 @@ public class GatherRouteDB
     {
         JArray jw = new();
         foreach (var wp in waypoints)
-            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Mount, wp.InteractWithOID });
+            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Movement, wp.InteractWithOID });
         return jw;
     }
 
@@ -220,11 +228,14 @@ public class GatherRouteDB
             var jwea = jwe as JArray;
             if (jwea == null || jwea.Count < 5)
                 continue;
+            var movement = jwea.Count <= 5 ? Movement.Normal
+                : jwea[5].Type == JTokenType.Boolean ? (jwea[5].Value<bool>() ? Movement.MountFly : Movement.Normal)
+                : (Movement)jwea[5].Value<int>();
             res.Add(new()
             {
                 Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()),
                 Radius = jwea[3].Value<float>(),
-                Mount = jwea.Count > 5 ? jwea[5].Value<bool>() : false,
+                Movement = movement,
                 InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : GatherNodeDB.GatherNodeDataId,
                 InteractWithName = jwea[4].Value<string>() ?? "",
             });

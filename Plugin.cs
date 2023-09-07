@@ -83,7 +83,7 @@ public sealed class Plugin : IDalamudPlugin
         var origin = originActor?.Position ?? new();
         var offset = new Vector3(float.Parse(args[1]), float.Parse(args[2]), float.Parse(args[3]));
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = new() };
-        route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, Mount = false, InteractWithName = "", InteractWithOID = 0 });
+        route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
         _wndGather.Exec.Start(route, 0, false, false);
     }
 }
