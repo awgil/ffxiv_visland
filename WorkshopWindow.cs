@@ -24,6 +24,7 @@ unsafe class WorkshopWindow : Window, IDisposable
 
     public WorkshopWindow(Plugin plugin) : base("Workshop automation")
     {
+        RespectCloseHotkey = false; // don't steal esc focus
         ShowCloseButton = false; // opened/closed automatically
         Size = new Vector2(500, 650);
         SizeCondition = ImGuiCond.FirstUseEver;
