@@ -158,10 +158,10 @@ public class GatherRouteExec : IDisposable
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
     {
-        if (wp.InteractWithOID == 0 || wp.InteractWithName.Length == 0)
+        if (wp.InteractWithOID == 0)
             return null;
 
-        foreach (var obj in Service.ObjectTable.Where(o => o.DataId == wp.InteractWithOID && (o.Position - wp.Position).LengthSquared() < 1 && o.Name.ToString().ToLower() == wp.InteractWithName))
+        foreach (var obj in Service.ObjectTable.Where(o => o.DataId == wp.InteractWithOID && (o.Position - wp.Position).LengthSquared() < 1))
             return obj.IsTargetable ? (GameObject*)obj.Address : null;
 
         return null;
