@@ -2,6 +2,7 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.Logging;
 using Dalamud.Plugin;
+using System.Linq;
 using System.Numerics;
 
 namespace visland;
@@ -73,6 +74,12 @@ public sealed class Plugin : IDalamudPlugin
                 case "resume":
                     _wndGather.Exec.Paused = false;
                     break;
+                case "exec":
+                    ExecuteCommand(string.Join(" ", args.Skip(1)), false);
+                    break;
+                case "execonce":
+                    ExecuteCommand(string.Join(" ", args.Skip(1)), false);
+                    break;
             }
         }
     }
@@ -85,5 +92,12 @@ public sealed class Plugin : IDalamudPlugin
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = new() };
         route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
         _wndGather.Exec.Start(route, 0, false, false);
+    }
+
+    private void ExecuteCommand(string name, bool once)
+    {
+        var route = Config.RouteDB.Routes.Find(r => r.Name == name);
+        if (route != null)
+            _wndGather.Exec.Start(route, 0, true, !once);
     }
 }
