@@ -79,7 +79,7 @@ public class GatherRouteDB
             ImGui.SameLine();
             if (ImGui.Button("Export to clipboard"))
             {
-                ImGui.SetClipboardText(SaveToJSONWaypoints(r.Waypoints).ToString());
+                ImGui.SetClipboardText(SaveToJSONWaypoints(r.Waypoints).ToString(formatting: 0));
             }
 
             if (_waypointToModify != null)
