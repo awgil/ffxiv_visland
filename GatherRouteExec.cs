@@ -42,7 +42,8 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
 
         var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent] || Service.Condition[ConditionFlag.OccupiedSummoningBell];
-        if (player == null || player.IsCasting || gathering || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
+        if (player == null || player.IsCasting || gathering || aboutToBeMounted || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
@@ -53,8 +54,7 @@ public class GatherRouteExec : IDisposable
         if (needToGetCloser)
         {
             bool mounted = Service.Condition[ConditionFlag.Mounted];
-            bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-            if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted && !aboutToBeMounted)
+            if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted)
             {
                 ExecuteMount();
                 return;
