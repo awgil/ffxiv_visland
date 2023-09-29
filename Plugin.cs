@@ -47,7 +47,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void OnCommand(string command, string arguments)
     {
-        PluginLog.Debug($"cmd: '{command}', args: '{arguments}'");
+        Service.Log.Debug($"cmd: '{command}', args: '{arguments}'");
         if (arguments.Length == 0)
         {
             _wndGather.IsOpen = true;

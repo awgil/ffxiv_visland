@@ -119,7 +119,7 @@ public class GatherRouteDB
                 catch (JsonReaderException ex)
                 {
                     Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
-                    PluginLog.Error(ex, "Failed to import route");
+                    Service.Log.Error(ex, "Failed to import route");
                 }
             }
         }

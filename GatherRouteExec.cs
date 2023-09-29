@@ -86,7 +86,7 @@ public class GatherRouteExec : IDisposable
         {
             _interact.Exec(() =>
             {
-                PluginLog.Debug("Interacting...");
+                Service.Log.Debug("Interacting...");
                 TargetSystem.Instance()->InteractWithObject(interactObj);
             });
             return;

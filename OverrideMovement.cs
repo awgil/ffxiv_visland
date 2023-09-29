@@ -54,9 +54,9 @@ public unsafe class OverrideMovement : IDisposable
 
     public OverrideMovement()
     {
-        SignatureHelper.Initialise(this);
-        PluginLog.Information($"RMIWalk address: 0x{_rmiWalkHook.Address:X}");
-        PluginLog.Information($"RMIFly address: 0x{_rmiFlyHook.Address:X}");
+        Service.Hook.InitializeFromAttributes(this);
+        Service.Log.Information($"RMIWalk address: 0x{_rmiWalkHook.Address:X}");
+        Service.Log.Information($"RMIFly address: 0x{_rmiFlyHook.Address:X}");
     }
 
     public void Dispose()
@@ -103,7 +103,7 @@ public unsafe class OverrideMovement : IDisposable
         var dirH = Angle.FromDirection(dist.X, dist.Z);
         var dirV = allowVertical ? Angle.FromDirection(dist.Y, new Vector2(dist.X, dist.Z).Length()) : default;
 
-        var camera = (CameraEx*)CameraManager.Instance->GetActiveCamera();
+        var camera = (CameraEx*)CameraManager.Instance()->GetActiveCamera();
         var cameraDir = camera->DirH.Radians() + 180.Degrees();
         return (dirH - cameraDir, dirV);
     }

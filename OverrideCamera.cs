@@ -46,8 +46,8 @@ public unsafe class OverrideCamera : IDisposable
 
     public OverrideCamera()
     {
-        SignatureHelper.Initialise(this);
-        PluginLog.Information($"RMICamera address: 0x{_rmiCameraHook.Address:X}");
+        Service.Hook.InitializeFromAttributes(this);
+        Service.Log.Information($"RMICamera address: 0x{_rmiCameraHook.Address:X}");
     }
 
     public void Dispose()

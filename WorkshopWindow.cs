@@ -140,7 +140,7 @@ unsafe class WorkshopWindow : Window, IDisposable
             {
                 var error = $"Failed to import schedule: {matchingRows.Count} items matching row '{item}'";
                 Service.ChatGui.PrintError(error);
-                PluginLog.Error(error);
+                Service.Log.Error(error);
                 return;
             }
             rows.Add(matchingRows.First());
@@ -195,7 +195,7 @@ unsafe class WorkshopWindow : Window, IDisposable
             _activeWaitStart = now;
         }
         var passed = (now - _activeWaitStart).TotalSeconds;
-        PluginLog.Log($"Wait #{id}: {passed:f3}/{delay:f3}");
+        Service.Log.Info($"Wait #{id}: {passed:f3}/{delay:f3}");
         return passed > delay;
     }
 
@@ -203,13 +203,13 @@ unsafe class WorkshopWindow : Window, IDisposable
     {
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(name);
         bool visible = addon != null ? addon->IsVisible && addon->UldManager.LoadedState == AtkLoadState.Loaded : false;
-        PluginLog.Log($"Addon visible check {name} = {visible}");
+        Service.Log.Info($"Addon visible check {name} = {visible}");
         return visible;
     }
 
     private bool OpenAddWorkshopSchedule(int workshopIndex)
     {
-        PluginLog.Log($"Open workshop {workshopIndex} schedule");
+        Service.Log.Info($"Open workshop {workshopIndex} schedule");
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJICraftSchedule");
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -231,7 +231,7 @@ unsafe class WorkshopWindow : Window, IDisposable
 
     private bool SelectCraft(MJICraftworksObject row)
     {
-        PluginLog.Log($"Select craft #{row.RowId} '{row.Item.Value?.Name}'");
+        Service.Log.Info($"Select craft #{row.RowId} '{row.Item.Value?.Name}'");
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJICraftScheduleSetting");
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, _rowListIndices.IndexOf(row.RowId), 0, 0, 0, 0, 0 };
@@ -242,7 +242,7 @@ unsafe class WorkshopWindow : Window, IDisposable
 
     private bool ConfirmCraft()
     {
-        PluginLog.Log($"Confirm craft");
+        Service.Log.Info($"Confirm craft");
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJICraftScheduleSetting");
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };

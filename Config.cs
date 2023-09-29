@@ -34,7 +34,7 @@ public class Config
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Failed to load config from {file.FullName}: {e}");
+            Service.Log.Error($"Failed to load config from {file.FullName}: {e}");
         }
     }
 
@@ -57,7 +57,7 @@ public class Config
         }
         catch (Exception e)
         {
-            PluginLog.Error($"Failed to save config to {file.FullName}: {e}");
+            Service.Log.Error($"Failed to save config to {file.FullName}: {e}");
         }
     }
 
