@@ -1,6 +1,7 @@
 ﻿using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.Interop;
+using FFXIVClientStructs.STD;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using System;
@@ -11,12 +12,50 @@ using System.Runtime.InteropServices;
 
 namespace visland;
 
+public enum ScheduleListEntryType : int
+{
+    NormalEntry = 0,
+    LastEntry = 1,
+    Category = 2,
+}
+
+[StructLayout(LayoutKind.Explicit, Size = 0x8)]
+public unsafe struct ScheduleListEntry
+{
+    [FieldOffset(0x0)] public ScheduleListEntryType Type;
+    [FieldOffset(0x4)] public uint Value; // for Category - category id (time/etc), otherwise - MJICraftworksObject row index - 1
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public unsafe struct MJICraftScheduleSettingData
+{
+    [FieldOffset(0x1A8)] public StdVector<Pointer<Pointer<ScheduleListEntry>>> Entries;
+    [FieldOffset(0x1E4)] public int NumEntries;
+
+    public int FindEntryIndex(uint rowId)
+    {
+        for (int i = 0; i < NumEntries; ++i)
+        {
+            var p = Entries.Span[i].Value->Value;
+            if (p->Type != ScheduleListEntryType.Category && p->Value == rowId - 1)
+                return i;
+        }
+        return -1;
+    }
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public unsafe struct AddonMJICraftScheduleSetting
+{
+    [FieldOffset(0x000)] public AtkUnitBase AtkUnitBase;
+    [FieldOffset(0x220)] public MJICraftScheduleSettingData* Data;
+}
+
 unsafe class WorkshopWindow : Window, IDisposable
 {
-    delegate nint ReceiveEventDelegate(AtkEventListener* eventListener, ushort evt, uint which, void* eventData, void* inputData);
+    delegate nint ReceiveEventDelegate(AtkEventListener* eventListener, AtkEventType eventType, uint eventParam, void* eventData, void* inputData);
 
     private List<Func<bool>> _pendingActions = new();
-    private List<uint> _rowListIndices = new();
     private List<uint> _recents = new();
     private string _filter = "";
     private int _activeWait = -1;
@@ -29,25 +68,6 @@ unsafe class WorkshopWindow : Window, IDisposable
         Size = new Vector2(500, 650);
         SizeCondition = ImGuiCond.FirstUseEver;
         PositionCondition = ImGuiCond.Always; // updated every frame
-
-        List<uint> r4 = new(), r6 = new(), r8 = new();
-        foreach (var row in Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!)
-        {
-            List<uint>? rows = row.CraftingTime switch
-            {
-                4 => r4,
-                6 => r6,
-                8 => r8,
-                _ => null
-            };
-            rows?.Add(row.RowId);
-        }
-        _rowListIndices.Add(0);
-        _rowListIndices.AddRange(r4);
-        _rowListIndices.Add(0);
-        _rowListIndices.AddRange(r6);
-        _rowListIndices.Add(0);
-        _rowListIndices.AddRange(r8);
     }
 
     public void Dispose()
@@ -164,7 +184,7 @@ unsafe class WorkshopWindow : Window, IDisposable
         _pendingActions.Add(() => OpenAddWorkshopSchedule(workshopIndex));
         _pendingActions.Add(() => IsAddonVisible("MJICraftScheduleSetting"));
         _pendingActions.Add(() => Wait(1, 0));
-        _pendingActions.Add(() => EnsureSortedByTime());
+        //_pendingActions.Add(() => EnsureSortedByTime());
         _pendingActions.Add(() => SelectCraft(row));
         _pendingActions.Add(() => Wait(3, 0));
         _pendingActions.Add(() => ConfirmCraft());
@@ -214,7 +234,7 @@ unsafe class WorkshopWindow : Window, IDisposable
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
-        receiveEvent(&addon->AtkEventListener, 25, 6 + (uint)workshopIndex, eventData, inputData);
+        receiveEvent(&addon->AtkEventListener, AtkEventType.ButtonClick, 7 + (uint)workshopIndex, eventData, inputData);
         return true;
     }
 
@@ -224,19 +244,22 @@ unsafe class WorkshopWindow : Window, IDisposable
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; // [4] = category
         var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
-        receiveEvent(&addon->AtkEventListener, 35, 7, eventData, inputData);
+        receiveEvent(&addon->AtkEventListener, AtkEventType.ListItemToggle, 7, eventData, inputData);
         return true;
 
     }
 
     private bool SelectCraft(MJICraftworksObject row)
     {
-        Service.Log.Info($"Select craft #{row.RowId} '{row.Item.Value?.Name}'");
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJICraftScheduleSetting");
+        var addon = (AddonMJICraftScheduleSetting*)Service.GameGui.GetAddonByName("MJICraftScheduleSetting");
+        var index = addon->Data->FindEntryIndex(row.RowId);
+        Service.Log.Info($"Select craft #{row.RowId} '{row.Item.Value?.Name}' == {index}");
+        if (index < 0)
+            return true;
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        var inputData = stackalloc int[] { 0, 0, 0, 0, _rowListIndices.IndexOf(row.RowId), 0, 0, 0, 0, 0 };
-        var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
-        receiveEvent(&addon->AtkEventListener, 35, 1, eventData, inputData);
+        var inputData = stackalloc int[] { 0, 0, 0, 0, index, 0, 0, 0, 0, 0 };
+        var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkUnitBase.AtkEventListener.vfunc[2])!;
+        receiveEvent(&addon->AtkUnitBase.AtkEventListener, AtkEventType.ListItemToggle, 1, eventData, inputData);
         return true;
     }
 
@@ -247,7 +270,7 @@ unsafe class WorkshopWindow : Window, IDisposable
         var eventData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var inputData = stackalloc int[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         var receiveEvent = Marshal.GetDelegateForFunctionPointer<ReceiveEventDelegate>((nint)addon->AtkEventListener.vfunc[2])!;
-        receiveEvent(&addon->AtkEventListener, 25, 6, eventData, inputData);
+        receiveEvent(&addon->AtkEventListener, AtkEventType.ButtonClick, 6, eventData, inputData);
         return true;
     }
 }
