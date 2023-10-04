@@ -21,6 +21,7 @@ public class GatherRouteExec : IDisposable
 
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
+    private OverrideAFK _afk = new();
 
     private Throttle _interact = new();
     private Throttle _action = new();
@@ -45,6 +46,9 @@ public class GatherRouteExec : IDisposable
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
         if (player == null || player.IsCasting || gathering || aboutToBeMounted || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
+
+        // ensure we don't get afk-kicked while running the route
+        _afk.ResetTimers();
 
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
         var toWaypoint = wp.Position - player.Position;
@@ -152,8 +156,11 @@ public class GatherRouteExec : IDisposable
         {
             Finish();
         }
-        ImGui.SameLine();
-        ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
+        if (CurrentRoute != null) // Finish() call could've reset it
+        {
+            ImGui.SameLine();
+            ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
+        }
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)

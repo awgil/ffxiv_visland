@@ -1,9 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Logging;
+using Dalamud.Interface.Utility.Raii;
 using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,7 +101,7 @@ public class GatherRouteDB
 
         ImGui.SetNextItemWidth(200);
         ImGui.InputText("New route name", ref _newName, 256);
-        if (_newName.Length > 0 && !Routes.Any(r => r.Name == _newName))
+        using (ImRaii.Disabled(_newName.Length == 0 || Routes.Any(r => r.Name == _newName)))
         {
             ImGui.SameLine();
             if (ImGui.Button("Create new"))
