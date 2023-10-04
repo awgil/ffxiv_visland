@@ -175,7 +175,7 @@ public class GatherRouteExec : IDisposable
     }
 
     private unsafe void ExecuteActionSafe(ActionType type, uint id) => _action.Exec(() => ActionManager.Instance()->UseAction(type, id));
-    private void ExecuteIslandSprint() => ExecuteActionSafe(ActionType.Spell, 31314);
-    private void ExecuteMount() => ExecuteActionSafe(ActionType.General, 24); // flying mount roulette
-    private void ExecuteJump() => ExecuteActionSafe(ActionType.General, 2);
+    private void ExecuteIslandSprint() => ExecuteActionSafe(ActionType.Action, 31314);
+    private void ExecuteMount() => ExecuteActionSafe(ActionType.GeneralAction, 24); // flying mount roulette
+    private void ExecuteJump() => ExecuteActionSafe(ActionType.GeneralAction, 2);
 }
