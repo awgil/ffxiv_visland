@@ -78,7 +78,7 @@ public sealed class Plugin : IDalamudPlugin
                     ExecuteCommand(string.Join(" ", args.Skip(1)), false);
                     break;
                 case "execonce":
-                    ExecuteCommand(string.Join(" ", args.Skip(1)), false);
+                    ExecuteCommand(string.Join(" ", args.Skip(1)), true);
                     break;
             }
         }
