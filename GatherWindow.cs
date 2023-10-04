@@ -9,8 +9,8 @@ public class GatherWindow : Window, IDisposable
 {
     private Plugin _plugin;
     private UITree _tree = new();
-    private bool _updateDB;
     private GatherRouteExec _exec = new();
+    private bool _configModified;
 
     public GatherRouteExec Exec => _exec;
 
@@ -29,27 +29,37 @@ public class GatherWindow : Window, IDisposable
     public override void PreOpenCheck()
     {
         _exec.Update();
-        if (_updateDB)
-            _plugin.Config.GatherNodeDB.UpdateFromObjects();
     }
 
     public override void Draw()
     {
         _exec.Draw(_tree);
 
-        if (ImGui.Button("Save config"))
-            _plugin.Config.SaveToFile(_plugin.Dalamud.ConfigFile);
+        if (ImGui.Checkbox("Autosave config", ref _plugin.Config.Autosave))
+            _configModified = true;
 
-        foreach (var n in _tree.Node("Gathering node database"))
+        if (!_plugin.Config.Autosave)
         {
-            ImGui.Checkbox("Update database", ref _updateDB);
+            if (ImGui.Button(_configModified ? "Save modified config" : "Force resave config"))
+            {
+                _plugin.Config.SaveToFile(_plugin.Dalamud.ConfigFile);
+                _configModified = false;
+            }
             ImGui.SameLine();
-            if (ImGui.Button("Clear database"))
-                _plugin.Config.GatherNodeDB.Clear();
-            _plugin.Config.GatherNodeDB.Draw(_tree);
+            if (ImGui.Button("Reload config"))
+            {
+                _plugin.Config.LoadFromFile(_plugin.Dalamud.ConfigFile);
+                _configModified = false;
+            }
         }
 
         foreach (var n in _tree.Node("Gathering routes"))
-            _plugin.Config.RouteDB.Draw(_tree, _exec);
+            _plugin.Config.RouteDB.Draw(_tree, _exec, ref _configModified);
+
+        if (_plugin.Config.Autosave && _configModified)
+        {
+            _plugin.Config.SaveToFile(_plugin.Dalamud.ConfigFile);
+            _configModified = false;
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Dalamud.Logging;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,11 +10,14 @@ public class Config
 {
     private const int _version = 1;
 
-    public GatherNodeDB GatherNodeDB = new();
+    public bool Autosave = true;
     public GatherRouteDB RouteDB = new();
 
     public void LoadFromFile(FileInfo file)
     {
+        Autosave = true;
+        RouteDB = new();
+
         try
         {
             var contents = File.ReadAllText(file.FullName);
@@ -26,10 +28,10 @@ public class Config
             {
                 payload = ConvertConfig(payload, version);
                 var ser = BuildSerializer();
-                if (payload["GatherNodeDB"] as JObject is var jg && jg != null)
-                    GatherNodeDB.LoadFromJSON(jg, ser);
                 if (payload["RouteDB"] as JArray is var jr && jr != null)
                     RouteDB.LoadFromJSON(jr, ser);
+                if (payload["Autosave"] is var ja && ja != null)
+                    Autosave = ja.Value<bool>();
             }
         }
         catch (Exception e)
@@ -45,7 +47,7 @@ public class Config
             var ser = BuildSerializer();
             JObject payload = new()
             {
-                { "GatherNodeDB", GatherNodeDB.SaveToJSON(ser) },
+                { "Autosave", Autosave },
                 { "RouteDB", RouteDB.SaveToJSON(ser) },
             };
             JObject jContents = new()

@@ -40,7 +40,7 @@ public class GatherRouteDB
     private int _waypointMoveDir; // 0 = del, -1 = move up, +1 = move down
     public List<Route> Routes = new();
 
-    public void Draw(UITree tree, GatherRouteExec exec)
+    public void Draw(UITree tree, GatherRouteExec exec, ref bool modified)
     {
         foreach (var r in tree.Nodes(Routes, r => new($"{r.Name} ({r.Waypoints.Count} steps)###{r.Name}"), r => RouteContextMenu(r, exec)))
         {
@@ -49,12 +49,18 @@ public class GatherRouteDB
                 var wp = r.Waypoints[i];
                 foreach (var wn in tree.Node($"#{i+1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => WaypointContextMenu(r, wp, exec)))
                 {
-                    ImGui.InputFloat3("Position", ref wp.Position);
-                    ImGui.InputFloat("Radius", ref wp.Radius);
-                    UICombo.Enum("Movement mode", ref wp.Movement);
+                    if (ImGui.InputFloat3("Position", ref wp.Position))
+                        modified = true;
+                    if (ImGui.InputFloat("Radius", ref wp.Radius))
+                        modified = true;
+                    if (UICombo.Enum("Movement mode", ref wp.Movement))
+                        modified = true;
 
                     if (ImGui.Button("Set position to current") && Service.ClientState.LocalPlayer is var player && player != null)
+                    {
                         wp.Position = player.Position;
+                        modified = true;
+                    }
                 }
             }
 
@@ -64,6 +70,7 @@ public class GatherRouteDB
                 if (target != null)
                 {
                     r.Waypoints.Add(new() { Position = target.Position, Radius = 2, Movement = Service.Condition[ConditionFlag.Mounted] ? Movement.MountFly : Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    modified = true;
                     exec.Start(r, r.Waypoints.Count - 1, false, false);
                 }
             }
@@ -73,7 +80,10 @@ public class GatherRouteDB
                 exec.Finish();
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
+                {
                     r.Waypoints.Add(new() { Position = player.Position, Radius = 3, Movement = Service.Condition[ConditionFlag.Mounted] ? Movement.MountFly : Movement.Normal });
+                    modified = true;
+                }
             }
             ImGui.SameLine();
             if (ImGui.Button("Export to clipboard"))
@@ -95,6 +105,7 @@ public class GatherRouteDB
                     else if (_waypointMoveDir == +1)
                         r.Waypoints.Insert(Math.Min(r.Waypoints.Count, index + 1), _waypointToModify);
                 }
+                modified = true;
                 _waypointToModify = null;
             }
         }
@@ -107,6 +118,7 @@ public class GatherRouteDB
             if (ImGui.Button("Create new"))
             {
                 Routes.Add(new() { Name = _newName });
+                modified = true;
             }
             ImGui.SameLine();
             if (ImGui.Button("Import from clipboard"))
@@ -114,6 +126,7 @@ public class GatherRouteDB
                 try
                 {
                     Routes.Add(new() { Name = _newName, Waypoints = LoadFromJSONWaypoints(JArray.Parse(ImGui.GetClipboardText())) });
+                    modified = true;
                 }
                 catch (JsonReaderException ex)
                 {
@@ -128,6 +141,7 @@ public class GatherRouteDB
             if (exec.CurrentRoute == _routeToDelete)
                 exec.Finish();
             Routes.Remove(_routeToDelete);
+            modified = true;
             _routeToDelete = null;
         }
     }
@@ -235,7 +249,7 @@ public class GatherRouteDB
                 Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()),
                 Radius = jwea[3].Value<float>(),
                 Movement = movement,
-                InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : GatherNodeDB.GatherNodeDataId,
+                InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : 2012985,
                 InteractWithName = jwea[4].Value<string>() ?? "",
             });
         }
