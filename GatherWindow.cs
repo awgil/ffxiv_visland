@@ -53,8 +53,7 @@ public class GatherWindow : Window, IDisposable
             }
         }
 
-        foreach (var n in _tree.Node("Gathering routes"))
-            _plugin.Config.RouteDB.Draw(_tree, _exec, ref _configModified);
+        _plugin.Config.RouteDB.Draw(_tree, _exec, ref _configModified);
 
         if (_plugin.Config.Autosave && _configModified)
         {
