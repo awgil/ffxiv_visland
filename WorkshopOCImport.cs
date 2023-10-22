@@ -1,14 +1,11 @@
 ﻿using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using static visland.WorkshopOCImport;
 
 namespace visland;
 
@@ -42,7 +39,8 @@ public class WorkshopOCImport
             else if (!Empty)
                 throw new Exception("Multi-day / single-day rec mismatch");
 
-            Cycles.Add(day);
+            if (day.MainRecs.Count + day.SideRecs.Count > 0)
+                Cycles.Add(day);
         }
     }
 
@@ -53,19 +51,28 @@ public class WorkshopOCImport
 
     public unsafe void Draw()
     {
-        if (ImGui.Button("Create bot command for requesting favors and copy into clipboard"))
-            ImGui.SetClipboardText(CreateFavorRequestCommand());
+        ImGui.TextUnformatted("This tab allows copy-pasting recommendations from Overseas Casuals discord");
 
-        if (ImGui.Button("Import recs from clipboard"))
+        if (ImGui.Button("Start by copying any type of recs (single day or multi day) to clipboard and click here to import"))
             ImportRecs(ImGui.GetClipboardText());
-
-        if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
-            OverrideSideRecs(ImGui.GetClipboardText());
 
         if (Recommendations.Empty)
             return;
 
-        ImGui.TextUnformatted("Set imported day schedule:");
+        ImGui.TextUnformatted("Favour support: first click one of the buttons to generate bot command, paste it into bot-spam channel, then copy output");
+
+        if (ImGui.Button("This week favors"))
+            ImGui.SetClipboardText(CreateFavorRequestCommand(false));
+        ImGui.SameLine();
+        if (ImGui.Button("Next week favors"))
+            ImGui.SetClipboardText(CreateFavorRequestCommand(true));
+
+        if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
+            OverrideSideRecs(ImGui.GetClipboardText());
+
+        ImGui.Separator();
+
+        ImGui.TextUnformatted("Set single day schedule:");
         if (_sched.CurrentCycle <= _sched.CycleInProgress)
         {
             ImGui.SameLine();
@@ -86,7 +93,7 @@ public class WorkshopOCImport
             }
         }
 
-        ImGui.TextUnformatted("Set imported week schedule:");
+        ImGui.TextUnformatted("Set full week schedule:");
         using (ImRaii.Disabled(!Recommendations.MultiDay))
         {
             ImGui.SameLine();
@@ -109,7 +116,7 @@ public class WorkshopOCImport
         }
     }
 
-    private string CreateFavorRequestCommand()
+    private string CreateFavorRequestCommand(bool nextWeek)
     {
         if (_favors.DataAvailability != 2)
         {
@@ -119,9 +126,10 @@ public class WorkshopOCImport
 
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         var res = "/favors";
+        var offset = nextWeek ? 6 : 3;
         for (int i = 0; i < 3; ++i)
         {
-            var id = _favors.CraftObjectID(3 + i);
+            var id = _favors.CraftObjectID(offset + i);
             var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
             if (name != null)
                 res += $" favor{i + 1}:{OfficialNameToBotName(name)}";
