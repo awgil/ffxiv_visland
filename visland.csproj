@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors></Authors>
     <Company></Company>
-    <Version>0.0.0.14</Version>
+    <Version>0.0.0.0</Version>
     <Description>Island sanctuary automation</Description>
     <Copyright></Copyright>
     <PackageProjectUrl>https://github.com/awgil/ffxiv_visland</PackageProjectUrl>

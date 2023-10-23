@@ -1,6 +1,9 @@
 name: Build & Publish to Dynamis
 
-on: workflow_dispatch
+on:
+  push:
+    tags:
+      - "v*.*.*.*"
 
 jobs:
   Build:
@@ -12,6 +15,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Get Tag Name
+        run: echo "tag=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//')" >> $GITHUB_ENV
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
@@ -26,13 +32,8 @@ jobs:
       - name: Restore Project
         run: dotnet restore
 
-      - name: Build
-        run: dotnet build --configuration Release visland.csproj
-
-      - name: Extract AssemblyVersion
-        run: |
-          AssemblyVersion=$(jq -r '.AssemblyVersion' bin/Release/visland/visland.json)
-          echo "AssemblyVersion=$AssemblyVersion" >> $GITHUB_ENV
+      - name: Build Project
+        run: dotnet build --configuration Release visland.csproj -p:AssemblyVersion=${{ env.tag }}
 
       - name: Publish Version
         uses: PunishXIV/dynamis-action@v1
@@ -40,10 +41,9 @@ jobs:
         with:
           plugin_id: 28
           internal_name: "visland"
-          version_number: ${{ env.AssemblyVersion }}
+          version_number: ${{ env.tag }}
           path: "bin/Release/visland/latest.zip"
           type: "latest"
           dalamud_version: "9"
         env:
           PUBLISHER_KEY: ${{ secrets.PUBLISHER_KEY }}
-
