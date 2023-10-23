@@ -4,11 +4,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using FFXIVClientStructs.STD;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace visland;
