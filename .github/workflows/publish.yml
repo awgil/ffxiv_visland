@@ -41,7 +41,7 @@ jobs:
           plugin_id: 28
           internal_name: "visland"
           version_number: ${{ env.AssemblyVersion }}
-          path: "bin/x64/Release/visland/latest.zip"
+          path: "bin/Release/visland/latest.zip"
           type: "latest"
           dalamud_version: "9"
         env:
