@@ -31,7 +31,7 @@ jobs:
 
       - name: Extract AssemblyVersion
         run: |
-          ls .
+          ls bin/x64/Release
           AssemblyVersion=$(jq -r '.AssemblyVersion' bin/x64/Release/visland/visland.json)
           echo "AssemblyVersion=$AssemblyVersion" >> $GITHUB_ENV
 
