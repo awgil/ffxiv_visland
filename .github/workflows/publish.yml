@@ -1,0 +1,49 @@
+name: Build & Publish to Dynamis
+
+on: workflow_dispatch
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    env:
+        DALAMUD_HOME: /tmp/dalamud
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+          
+      - name: Download Dalamud Latest
+        run: |
+          wget https://goatcorp.github.io/dalamud-distrib/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
+          unzip ${{ env.DALAMUD_HOME }}.zip -d ${{ env.DALAMUD_HOME }}
+
+      - name: Restore Project
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release visland.csproj
+
+      - name: Extract AssemblyVersion
+        run: |
+          AssemblyVersion=$(jq -r '.AssemblyVersion' bin/x64/Release/visland.json)
+          echo "AssemblyVersion=$AssemblyVersion" >> $GITHUB_ENV
+
+      - name: Publish Version
+        uses: PunishXIV/dynamis-action@v1
+        id: dynamis
+        with:
+          plugin_id: 28
+          internal_name: "visland"
+          version_number: ${{ env.AssemblyVersion }}
+          path: "bin/x64/Release/visland/latest.zip"
+          type: "latest"
+          dalamud_version: "9"
+        env:
+          PUBLISHER_KEY: ${{ secrets.PUBLISHER_KEY }}
+
