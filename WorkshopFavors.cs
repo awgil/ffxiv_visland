@@ -23,12 +23,6 @@ public unsafe partial struct MJIManagerEx
 
 public class WorkshopFavors
 {
-    public unsafe WorkshopFavors()
-    {
-        if (FavorsData == null)
-            Service.Log.Error($"Favors struct is null!");
-    }
-
     public static unsafe MJIManagerFavors* FavorsData => ((MJIManagerEx*)MJIManager.Instance())->Favors;
     public unsafe int DataAvailability => FavorsData != null ? FavorsData->DataAvailability : -1;
     public unsafe uint CraftObjectID(int index) => FavorsData != null ? FavorsData->ObjectsIDs[index] : 0u;

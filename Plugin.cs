@@ -1,11 +1,36 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
-using Dalamud.Logging;
 using Dalamud.Plugin;
+using ImGuiNET;
 using System.Linq;
 using System.Numerics;
 
 namespace visland;
+
+class RepoMigrateWindow : Window
+{
+    public static string OldURL = "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json";
+    public static string NewURL = "https://puni.sh/api/repository/veyn";
+
+    public RepoMigrateWindow() : base("Warning! Plugin home repository was changed")
+    {
+        IsOpen = true;
+    }
+
+    public override void Draw()
+    {
+        ImGui.TextUnformatted("The home repository of Island Sanctuary Automation (visland) plugin was recently changed.");
+        ImGui.TextUnformatted("Please update your dalamud settings to point to the new repository:");
+        if (ImGui.Button("Click here to copy new url into clipboard"))
+            ImGui.SetClipboardText(NewURL);
+        ImGui.TextUnformatted("1. Go to repo settings (esc -> dalamud settings -> experimental).");
+        ImGui.TextUnformatted($"2. Replace '{OldURL}' with '{NewURL}' (use button above and just ctrl-V).");
+        ImGui.TextUnformatted("3. Press save-and-close button.");
+        ImGui.TextUnformatted("4. Go to dalamud plugins (esc -> dalamud plugins -> installed plugins).");
+        ImGui.TextUnformatted("5. Uninstall and reinstall this plugin (you might need to restart the game before dalamud allows you to reinstall).");
+        ImGui.TextUnformatted("Don't worry, you won't lose any settings. Sorry for bother and enjoy the plugin!");
+    }
+}
 
 public sealed class Plugin : IDalamudPlugin
 {
@@ -21,20 +46,26 @@ public sealed class Plugin : IDalamudPlugin
     public Plugin(DalamudPluginInterface dalamud)
     {
         dalamud.Create<Service>();
+        dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
         Dalamud = dalamud;
         Config = new();
         Config.LoadFromFile(dalamud.ConfigFile);
 
         _wndGather = new GatherWindow(this);
-        WindowSystem.AddWindow(_wndGather);
-        Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
-
         _wndWorkshop = new WorkshopWindow(this);
-        WindowSystem.AddWindow(_wndWorkshop);
 
-        Dalamud.UiBuilder.Draw += WindowSystem.Draw;
-        Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
+        if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
+        {
+            WindowSystem.AddWindow(new RepoMigrateWindow());
+        }
+        else
+        {
+            WindowSystem.AddWindow(_wndGather);
+            WindowSystem.AddWindow(_wndWorkshop);
+            Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
+            Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
+        }
     }
 
     public void Dispose()
