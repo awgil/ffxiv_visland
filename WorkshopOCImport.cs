@@ -1,4 +1,7 @@
-﻿using Dalamud.Interface.Utility.Raii;
+﻿using Dalamud;
+using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Utility;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
@@ -6,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace visland;
 
@@ -27,6 +31,7 @@ public class WorkshopOCImport
     {
         public List<Rec> MainRecs; // workshops 1-3
         public List<Rec> SideRecs; // workshop 4, by default same as 1-3
+        public int CycleNumber;
 
         public DayRec()
         {
@@ -50,6 +55,7 @@ public class WorkshopOCImport
 
         public void Add(int cycle, DayRec schedule)
         {
+            Service.Log.Info($"trying to add schedule on {cycle} with {schedule.MainRecs.Count} items");
             if (schedule.Empty)
                 return; // don't care, rest day or something
 
@@ -93,6 +99,8 @@ public class WorkshopOCImport
                 yield return (0, Schedules[0]);
             }
         }
+
+        public void Clear() => _schedules.Clear();
     }
 
     public Recs Recommendations = new();
@@ -100,23 +108,32 @@ public class WorkshopOCImport
     private WorkshopFavors _favors = new();
     private WorkshopSchedule _sched = new();
 
+    private static readonly List<string> prefixes = new() { "Isleworks", "Islefish", "Isleberry", "Island", "of the Cycle " };
+
     public unsafe void Draw()
     {
-        ImGui.TextUnformatted("This tab allows copy-pasting recommendations from Overseas Casuals discord");
+        ImGui.TextWrapped("This tab allows copy-pasting recommendations from Overseas Casuals discord");
 
-        if (ImGui.Button("Start by copying any type of recs (single day or multi day) to clipboard and click here to import"))
-            ImportRecs(ImGui.GetClipboardText());
+        if (ImGui.Button("Import Single/Multi Day Recommendations From Clipboard"))
+            ParseRecs(ImGui.GetClipboardText());
 
-        if (Recommendations.Empty)
-            return;
+        //if (Recommendations.Empty)
+        //    return;
 
-        ImGui.TextUnformatted("Favour support: first click one of the buttons to generate bot command, paste it into bot-spam channel, then copy output");
+        ImGui.TextWrapped("Favour support: first click one of the buttons to generate bot command, paste it into bot-spam channel, then copy output");
 
-        if (ImGui.Button("This week favors"))
+
+        if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "This Week's Favors"))
             ImGui.SetClipboardText(CreateFavorRequestCommand(false));
         ImGui.SameLine();
-        if (ImGui.Button("Next week favors"))
+        if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Next Week's Favors"))
             ImGui.SetClipboardText(CreateFavorRequestCommand(true));
+
+        if (ImGui.Button("Overseas Casuals > #bot-spam"))
+            Util.OpenLink("discord://discord.com/channels/1034534280757522442/1034985297391407126");
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+            Util.OpenLink("https://discord.com/channels/1034534280757522442/1034985297391407126");
+        ImGuiComponents.HelpMarker("Left Click: Discord app\nRight Click: Discord in browser");
 
         if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
             OverrideSideRecs(ImGui.GetClipboardText());
@@ -162,6 +179,8 @@ public class WorkshopOCImport
         }
 
         ImGui.TextUnformatted("Current recs:");
+        ImGui.SameLine();
+        if (ImGui.Button("Clear")) Recommendations.Clear();
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         foreach (var (c, r) in Recommendations.Enumerate())
         {
@@ -194,17 +213,97 @@ public class WorkshopOCImport
         return res;
     }
 
-    private void ImportRecs(string str)
+    private static void ParseRecs(string str)
     {
-        try
+        var recs = new Recs();
+        var rawItemStrings = str.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+        var rawCycles = SplitCycles(rawItemStrings);
+        foreach (var cycle in rawCycles)
         {
-            Recommendations = ParseRecs(str);
-        }
-        catch (Exception ex)
-        {
-            ReportError($"Error: {ex.Message}");
+            var curRec = ParseItems(cycle);
+            if (curRec.MainRecs == null || curRec.MainRecs.Count == 0)
+                continue;
+            recs.Add(curRec.CycleNumber, new DayRec { MainRecs = curRec.MainRecs, SideRecs = curRec.SideRecs });
         }
     }
+
+    public static List<List<string>> SplitCycles(List<string> rawLines)
+    {
+        var cycles = new List<List<string>>();
+        var currentCycle = new List<string>();
+
+        foreach (var line in rawLines)
+        {
+            if (line.StartsWith("Cycle"))
+            {
+                if (currentCycle.Count > 0)
+                {
+                    cycles.Add(currentCycle);
+                    currentCycle = new List<string>();
+                }
+                if (currentCycle.Count == 0)
+                    currentCycle = new List<string>();
+            }
+            currentCycle.Add(line);
+        }
+        if (currentCycle.Count > 0)
+            cycles.Add(currentCycle);
+
+        return cycles;
+    }
+
+    public static DayRec ParseItems(List<string> itemStrings)
+    {
+        var sheetCraftables = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!
+            .Where(x => x.Item.Row > 0)
+            .Select(x =>
+            {
+                var itemName = x.Item.GetDifferentLanguage(ClientLanguage.English).Value!.Name.RawString;
+                itemName = prefixes.Aggregate(itemName, (current, prefix) => current.Replace(prefix, "")).Trim();
+
+                return (x.RowId, itemName, x.CraftingTime, x.LevelReq);
+            })
+            .ToArray();
+
+        var hours = 0;
+        var isRest = false;
+        var curRec = new DayRec();
+        foreach (var itemString in itemStrings)
+        {
+            var cycleMatch = Regex.Match(itemString.ToLower(), @"cycle (\d+)");
+            if (cycleMatch.Success && int.TryParse(cycleMatch.Groups[1].Value, out int cycleNumber))
+                curRec.CycleNumber = cycleNumber;
+
+            if (itemString.ToLower().Contains("rest"))
+                isRest = true;
+
+            var matchFound = false;
+            foreach (var (RowId, itemName, CraftingTime, LevelReq) in sheetCraftables)
+            {
+                if (IsMatch(itemString.ToLower(), itemName.ToLower()))
+                {
+                    var recs = (hours < 24) ? curRec.MainRecs : curRec.SideRecs;
+                    var lastRec = recs.LastOrDefault();
+                    int craftingTime = Service.DataManager.GetExcelSheet<MJICraftworksObject>()?.GetRow(lastRec.CraftObjectId)?.CraftingTime ?? 0;
+                    if (hours < 24)
+                        curRec.MainRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
+                    else
+                        curRec.SideRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
+
+                    hours += CraftingTime;
+                    matchFound = true;
+                }
+            }
+            if (!matchFound)
+            {
+                Service.Log.Debug($"Failed to match string to craftable: {itemString}");
+            }
+        }
+
+        return curRec;
+    }
+
+    private static bool IsMatch(string x, string y) => Regex.IsMatch(x, $@"\b{Regex.Escape(y)}\b");
 
     private void OverrideSideRecs(string str)
     {
@@ -221,51 +320,6 @@ public class WorkshopOCImport
         {
             ReportError($"Error: {ex.Message}");
         }
-    }
-
-    private static Recs ParseRecs(string str)
-    {
-        var result = new Recs();
-
-        var curRec = new DayRec();
-        var curWS = curRec.MainRecs; // start filling both recommendations (people might not copy first line)
-        int nextSlot = 0;
-        int curCycle = 0;
-        foreach (var l in str.Split('\n', '\r'))
-        {
-            if (TryParseCycleStart(l, out var cycle))
-            {
-                result.Add(curCycle, curRec);
-                curRec = new();
-                curWS = curRec.MainRecs;
-                nextSlot = 0;
-                curCycle = cycle;
-            }
-            else if (l == "First 3 Workshops")
-            {
-                if (curWS.Count > 0 || nextSlot != 0)
-                    throw new Exception("Unexpected start of 1-3 workshop recs");
-                curRec.SideRecs = new(); // separate list for side recs, do that here in case user didn't copy 4th workshop at all
-            }
-            else if (l == "4th Workshop")
-            {
-                curWS = curRec.SideRecs = new(); // separate list for side recs
-                nextSlot = 0;
-            }
-            else if (l == "All Workshops")
-            {
-                if (curWS.Count > 0 || nextSlot != 0)
-                    throw new Exception("Unexpected start of all workshop recs");
-            }
-            else if (TryParseBotName(l) is var item && item != null)
-            {
-                curWS.Add(new(nextSlot, item.RowId));
-                nextSlot += item.CraftingTime;
-            }
-        }
-        result.Add(curCycle, curRec);
-
-        return result;
     }
 
     private static List<DayRec> ParseRecOverrides(string str)
@@ -295,26 +349,6 @@ public class WorkshopOCImport
         return result;
     }
 
-    private static bool TryParseCycleStart(string str, out int cycle)
-    {
-        // OC has two formats:
-        // - single day recs are 'Season N (mmm dd-dd), Cycle C Recommendations'
-        // - multi day recs are 'Season N (mmm dd-dd) Cycle K-L Recommendations' followed by 'Cycle C'
-        if (str.StartsWith("Cycle "))
-        {
-            return int.TryParse(str.Substring(6, 1), out cycle);
-        }
-        else if (str.StartsWith("Season ") && str.IndexOf(", Cycle ") is var cycleStart && cycleStart > 0)
-        {
-            return int.TryParse(str.Substring(cycleStart + 8, 1), out cycle);
-        }
-        else
-        {
-            cycle = 0;
-            return false;
-        }
-    }
-
     private static MJICraftworksObject? TryParseBotName(string l)
     {
         // expected format: ':OC_ItemName: Item Name (4h)'
@@ -336,7 +370,7 @@ public class WorkshopOCImport
         return matchingRows.First();
     }
 
-    private static string OfficialNameToBotName(string name)
+    public static string OfficialNameToBotName(string name)
     {
         if (name.StartsWith("Isleworks "))
             return name.Remove(0, 10);

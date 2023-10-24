@@ -1,17 +1,31 @@
 ﻿using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
+using System.Linq;
 
 namespace visland;
 
 public unsafe class WorkshopDebug
 {
     private WorkshopSchedule _sched = new();
+    private WorkshopOCImport _oc = new();
 
     public void Draw()
     {
         if (ImGui.Button("Clear"))
             _sched.ClearCurrentCycleSchedule();
+
+        ImGui.TextUnformatted("Current recs:");
+        ImGui.SameLine();
+        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
+        foreach (var (c, r) in _oc.Recommendations.Enumerate())
+        {
+            ImGui.TextUnformatted($"Cycle {c}:");
+            ImGui.Indent();
+            ImGui.TextUnformatted($"Main: {string.Join(", ", r.MainRecs.Select(r => $"{r.Slot}={WorkshopOCImport.OfficialNameToBotName(sheetCraft.GetRow(r.CraftObjectId)?.Item.Value?.Name ?? "")}"))}");
+            ImGui.TextUnformatted($"Side: {string.Join(", ", r.SideRecs.Select(r => $"{r.Slot}={WorkshopOCImport.OfficialNameToBotName(sheetCraft.GetRow(r.CraftObjectId)?.Item.Value?.Name ?? "")}"))}");
+            ImGui.Unindent();
+        }
 
         var ad = _sched.AgentData;
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
