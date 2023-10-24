@@ -304,7 +304,7 @@ public class WorkshopOCImport
         {
             return int.TryParse(str.Substring(6, 1), out cycle);
         }
-        else if (str.StartsWith("Cycle ") && str.IndexOf(", Cycle ") is var cycleStart && cycleStart > 0)
+        else if (str.StartsWith("Season ") && str.IndexOf(", Cycle ") is var cycleStart && cycleStart > 0)
         {
             return int.TryParse(str.Substring(cycleStart + 8, 1), out cycle);
         }
