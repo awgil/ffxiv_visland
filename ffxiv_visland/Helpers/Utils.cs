@@ -7,6 +7,9 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace visland.Helpers;
 
@@ -37,6 +40,20 @@ public unsafe class Utils
             ImGui.EndTooltip();
         }
     }
+
+    // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
+    public static bool DangerousItem(Func<bool> item)
+    {
+        bool disabled = !ImGui.IsKeyDown(ImGuiKey.ModShift);
+        ImGui.BeginDisabled(disabled);
+        bool res = item();
+        ImGui.EndDisabled();
+        if (disabled && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
+            ImGui.SetTooltip("Hold shift");
+        return res;
+    }
+    public static bool DangerousButton(string label) => DangerousItem(() => ImGui.Button(label));
+    public static bool DangerousMenuItem(string label) => DangerousItem(() => ImGui.MenuItem(label));
 
     public static unsafe int GetMaxWorkshops()
     {
@@ -75,6 +92,26 @@ public unsafe class Utils
         var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno");
         if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
             Callback.Fire(addon, true, 0);
+    }
+
+    // get all types defined in specified assembly
+    public static IEnumerable<Type?> GetAllTypes(Assembly asm)
+    {
+        try
+        {
+            return asm.DefinedTypes;
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types;
+        }
+    }
+
+    // get all types derived from specified type in specified assembly
+    public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm)
+    {
+        var b = typeof(Base);
+        return GetAllTypes(asm).Where(t => t?.IsSubclassOf(b) ?? false).Select(t => t!);
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI;
 
-namespace visland;
+namespace visland.Gathering;
 
 public unsafe class OverrideAFK
 {

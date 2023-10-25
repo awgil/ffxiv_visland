@@ -2,6 +2,7 @@
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin.Services;
+using visland.Helpers;
 
 namespace visland;
 
@@ -23,4 +24,6 @@ public class Service
 
     public static Lumina.GameData LuminaGameData => DataManager.GameData;
     public static T? LuminaRow<T>(uint row) where T : Lumina.Excel.ExcelRow => LuminaGameData.GetExcelSheet<T>(Lumina.Data.Language.English)?.GetRow(row);
+
+    public static Configuration Config = new();
 }
