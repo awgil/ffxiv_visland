@@ -25,6 +25,8 @@ public class Config
     public bool AutoCollectFarm = false;
     public bool AutoCollectPasture = false;
 
+    public bool DisableOnErrors = false;
+
     public void LoadFromFile(FileInfo file)
     {
         Autosave = true;
@@ -41,6 +43,8 @@ public class Config
 
         AutoCollectFarm = false;
         AutoCollectPasture = false;
+
+        DisableOnErrors = false;
 
         try
         {
@@ -72,6 +76,8 @@ public class Config
                     AutoCollectFarm = jh.Value<bool>();
                 if (payload["AutoCollectPasture"] is var ji && ji != null)
                     AutoCollectPasture = ji.Value<bool>();
+                if (payload["DisableOnErrors"] is var jj && jj != null)
+                    DisableOnErrors = jj.Value<bool>();
             }
         }
         catch (Exception e)
@@ -97,6 +103,7 @@ public class Config
                 { "AutoSellAmount", AutoSellAmount },
                 { "AutoCollectFarm", AutoCollectFarm },
                 { "AutoCollectPasture", AutoCollectPasture },
+                { "DisableOnErrors", DisableOnErrors },
             };
             JObject jContents = new()
             {

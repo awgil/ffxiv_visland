@@ -1,4 +1,6 @@
-﻿using Dalamud.Interface.Windowing;
+﻿using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility;
+using Dalamud.Interface.Windowing;
 using ImGuiNET;
 using System;
 using System.Numerics;
@@ -53,6 +55,11 @@ public class GatherWindow : Window, IDisposable
                 _configModified = false;
             }
         }
+
+        if (ImGui.Checkbox("Stop Route on Error", ref _plugin.Config.DisableOnErrors))
+            _configModified = true;
+
+        ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
 
         _plugin.Config.RouteDB.Draw(_tree, _exec, ref _configModified);
 

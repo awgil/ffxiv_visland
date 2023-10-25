@@ -1,4 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text.SeStringHandling;
+using Dalamud.Interface.Utility.Table;
+using ECommons.CircularBuffers;
+using ECommons.DalamudServices;
+using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -25,15 +30,30 @@ public class GatherRouteExec : IDisposable
 
     private Throttle _interact = new();
     private Throttle _action = new();
+    private CircularBuffer<long> Errors = new(5);
 
     public GatherRouteExec()
     {
+        Svc.Toasts.ErrorToast += CheckToDisable;
+    }
+
+    private void CheckToDisable(ref SeString message, ref bool isHandled)
+    {
+        if (Plugin.P.Config.DisableOnErrors)
+        {
+            Errors.PushBack(Environment.TickCount64);
+            if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) //5 errors within 30 seconds stops the route, can adjust this as necessary
+            {
+                this.Finish();
+            }
+        }
     }
 
     public void Dispose()
     {
         _camera.Dispose();
         _movement.Dispose();
+        Svc.Toasts.ErrorToast -= CheckToDisable;
     }
 
     public unsafe void Update()
@@ -101,6 +121,8 @@ public class GatherRouteExec : IDisposable
             Finish();
             return;
         }
+
+        Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
         if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
         {
