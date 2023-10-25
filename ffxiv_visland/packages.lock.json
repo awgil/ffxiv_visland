@@ -923,6 +923,9 @@
           "System.Threading": "4.3.0",
           "System.Xml.ReaderWriter": "4.3.0"
         }
+      },
+      "ecommons": {
+        "type": "Project"
       }
     }
   }

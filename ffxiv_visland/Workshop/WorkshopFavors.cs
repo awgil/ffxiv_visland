@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using System.Runtime.InteropServices;
 
-namespace visland;
+namespace visland.Workshop;
 
 // indices: 0-2 are 'prev', 3-5 are 'curr', 6-8 are 'next', order is 4/6/8h
 [StructLayout(LayoutKind.Explicit, Size = 0x50)]

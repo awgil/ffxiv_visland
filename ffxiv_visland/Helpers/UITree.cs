@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace visland;
+namespace visland.Helpers;
 
 public class UITree
 {

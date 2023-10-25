@@ -3,7 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-namespace visland;
+namespace visland.Helpers;
 
 public static class UICombo
 {

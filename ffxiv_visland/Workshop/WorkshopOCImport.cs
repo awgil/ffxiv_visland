@@ -10,8 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using visland.Helpers;
 
-namespace visland;
+namespace visland.Workshop;
 
 public class WorkshopOCImport
 {
@@ -65,7 +66,7 @@ public class WorkshopOCImport
                 // multi-day rec can only be added to the empty rec list or a multi-day rec list that doesn't have this or future days set
                 if (SingleDay)
                     throw new Exception("Invalid multi-day rec; make sure that first 'cycle X' line is included");
-                var mask = 1u << (cycle - 1);
+                var mask = 1u << cycle - 1;
                 if ((CyclesMask & mask) != 0)
                     throw new Exception($"Duplicate cycle {cycle} in the recs");
                 if ((CyclesMask & ~(mask - 1)) != 0)
@@ -189,7 +190,7 @@ public class WorkshopOCImport
         //        ApplyRecommendation(Recommendations.Schedules.First().CycleNumber, Recommendations.Schedules.First());
         //}
 
-        Helpers.TextV("Set Schedule:");
+        Utils.TextV("Set Schedule:");
         using (ImRaii.Disabled(!Recommendations.MultiDay))
         {
             ImGui.SameLine();
@@ -366,7 +367,7 @@ public class WorkshopOCImport
             {
                 if (IsMatch(itemString.ToLower(), itemName.ToLower()))
                 {
-                    var recs = (hours < 24) ? curRec.MainRecs : curRec.SideRecs;
+                    var recs = hours < 24 ? curRec.MainRecs : curRec.SideRecs;
                     var lastRec = recs.LastOrDefault();
                     int craftingTime = Service.DataManager.GetExcelSheet<MJICraftworksObject>()?.GetRow(lastRec.CraftObjectId)?.CraftingTime ?? 0;
                     if (hours < 24)
@@ -479,7 +480,7 @@ public class WorkshopOCImport
 
     private unsafe void ApplyRecommendation(int cycle, DayRec rec)
     {
-        var maxWorkshops = Helpers.GetMaxWorkshops();
+        var maxWorkshops = Utils.GetMaxWorkshops();
         for (var i = 0; i < maxWorkshops; i++)
             if (rec.SideRecs.Count == 0)
             {
@@ -527,18 +528,18 @@ public class WorkshopOCImport
             if ((Recommendations.CyclesMask & forbiddenCycles) != 0)
                 throw new Exception("Some of the cycles in schedule are already in progress or are done");
 
-            var currentRestCycles = nextWeek ? (_sched.RestCycles >> 7) : (_sched.RestCycles & 0x7F);
+            var currentRestCycles = nextWeek ? _sched.RestCycles >> 7 : _sched.RestCycles & 0x7F;
             if ((currentRestCycles & Recommendations.CyclesMask) != 0)
             {
                 // we need to change rest cycles - set to C1 and last unused
                 var freeCycles = ~Recommendations.CyclesMask & 0x7F;
                 if ((freeCycles & 1) == 0)
                     throw new Exception($"Sorry, we assume C1 is always rest - set rest days manually to match your schedule");
-                var rest = (1u << (31 - BitOperations.LeadingZeroCount(freeCycles))) | 1;
+                var rest = 1u << 31 - BitOperations.LeadingZeroCount(freeCycles) | 1;
                 if (BitOperations.PopCount(rest) != 2)
                     throw new Exception($"Something went wrong, failed to determine rest days");
 
-                var newRest = nextWeek ? ((freeCycles << 7) | (_sched.RestCycles & 0x7F)) : ((_sched.RestCycles & 0x3F80) | freeCycles);
+                var newRest = nextWeek ? freeCycles << 7 | _sched.RestCycles & 0x7F : _sched.RestCycles & 0x3F80 | freeCycles;
                 _sched.SetRestCycles(newRest);
             }
 

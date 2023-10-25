@@ -1,9 +1,12 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
+using ECommons;
+using ECommons.Automation;
 using ImGuiNET;
 using System.Linq;
 using System.Numerics;
+using visland.Windows;
 
 namespace visland;
 
@@ -35,25 +38,33 @@ class RepoMigrateWindow : Window
 public sealed class Plugin : IDalamudPlugin
 {
     public string Name => "Island sanctuary automation";
+    internal static Plugin P;
 
+    public TaskManager TaskManager;
     public DalamudPluginInterface Dalamud { get; init; }
     public Config Config { get; init; }
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
     private WorkshopWindow _wndWorkshop;
+    private GranaryWindow _wndGranary;
 
     public Plugin(DalamudPluginInterface dalamud)
     {
+        ECommonsMain.Init(dalamud, this);
+
         dalamud.Create<Service>();
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
+        P = this;
         Dalamud = dalamud;
+        TaskManager = new();
         Config = new();
         Config.LoadFromFile(dalamud.ConfigFile);
 
         _wndGather = new GatherWindow(this);
         _wndWorkshop = new WorkshopWindow(this);
+        _wndGranary = new GranaryWindow(this);
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -63,6 +74,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
+            WindowSystem.AddWindow(_wndGranary);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
@@ -74,6 +86,8 @@ public sealed class Plugin : IDalamudPlugin
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
         _wndWorkshop.Dispose();
+        _wndGranary.Dispose();
+        P = null;
     }
 
     private void OnCommand(string command, string arguments)

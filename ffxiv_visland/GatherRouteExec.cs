@@ -1,5 +1,4 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -8,6 +7,7 @@ using ImGuiNET;
 using SharpDX;
 using System;
 using System.Linq;
+using visland.Helpers;
 
 namespace visland;
 

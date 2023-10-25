@@ -1,13 +1,16 @@
 ﻿using Dalamud;
 using Dalamud.Interface;
+using ECommons.Automation;
+using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Lumina.Excel;
 using System;
 
-namespace visland;
+namespace visland.Helpers;
 
-public unsafe class Helpers
+public unsafe class Utils
 {
     public static bool IconButton(FontAwesomeIcon icon, string text, string tooltip, int width = -1)
     {
@@ -65,6 +68,13 @@ public unsafe class Helpers
         ImGui.SameLine();
         ImGui.SetCursorPos(cur);
         ImGui.TextUnformatted(s);
+    }
+
+    public static void AutoYesNo()
+    {
+        var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno");
+        if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
+            Callback.Fire(addon, true, 0);
     }
 }
 

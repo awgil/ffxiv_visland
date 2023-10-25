@@ -2,11 +2,8 @@
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace visland;
+namespace visland.Workshop;
 
 public class WorkshopManual
 {
@@ -64,7 +61,7 @@ public class WorkshopManual
     private void AddToSchedule(MJICraftworksObject row, int workshopIndices)
     {
         for (int i = 0; i < 4; ++i)
-            if ((workshopIndices & (1 << i)) != 0)
+            if ((workshopIndices & 1 << i) != 0)
                 AddToScheduleSingle(row, i);
         _sched.SetCurrentCycle(_sched.CurrentCycle); // needed to refresh the ui
         _recents.Remove(row.RowId);
@@ -77,7 +74,7 @@ public class WorkshopManual
         int startingCycle = 0;
         int maxCycle = 24 - row.CraftingTime;
         var usedMask = _sched.AgentData->Workshops[workshopIndex].UsedTimeSlots;
-        while ((usedMask & (slotMask << startingCycle)) != 0 && startingCycle <= maxCycle)
+        while ((usedMask & slotMask << startingCycle) != 0 && startingCycle <= maxCycle)
             ++startingCycle;
         if (startingCycle > maxCycle)
         {

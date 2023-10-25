@@ -2,8 +2,9 @@
 using ImGuiNET;
 using System;
 using System.Numerics;
+using visland.Helpers;
 
-namespace visland;
+namespace visland.Windows;
 
 public class GatherWindow : Window, IDisposable
 {

@@ -1,9 +1,8 @@
 ﻿using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets;
-using System.Linq;
 
-namespace visland;
+namespace visland.Workshop;
 
 public unsafe class WorkshopDebug
 {

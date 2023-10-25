@@ -4,8 +4,9 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using System;
 using System.Numerics;
+using visland.Workshop;
 
-namespace visland;
+namespace visland.Windows;
 
 unsafe class WorkshopWindow : Window, IDisposable
 {

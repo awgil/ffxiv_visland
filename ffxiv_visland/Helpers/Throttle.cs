@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace visland;
+namespace visland.Helpers;
 
 class Throttle
 {
