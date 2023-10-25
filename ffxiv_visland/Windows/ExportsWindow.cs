@@ -1,9 +1,8 @@
 ﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Addon.Lifecycle;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ECommons.Automation;
 using ImGuiNET;
-//using ECommons.Automation;
-//using ECommons.DalamudServices;
 using visland.Helpers;
 
 namespace visland.Windows;
@@ -44,9 +43,9 @@ unsafe class ExportsWindow : UIAttachedWindow
         if (addonInfo.AddonName != "MJIDisposeShop" || addon is null) return;
         if (!_config.AutoSell) return;
 
-        //Callback.Fire(addon, false, 13, _config.AutoSellAmount);
-        //var subAddon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("MJIDisposeShopShippingBulk");
-        //if (subAddon != null)
-        //    Callback.Fire(subAddon, true, 0);
+        Callback.Fire(addon, false, 13, _config.AutoSellAmount);
+        var subAddon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJIDisposeShopShippingBulk");
+        if (subAddon != null)
+            Callback.Fire(subAddon, true, 0);
     }
 }
