@@ -29,14 +29,9 @@ public class WorkshopOCImport
 
     public class DayRec
     {
-        public List<Rec> MainRecs; // workshops 1-3
-        public List<Rec> SideRecs; // workshop 4, by default same as 1-3
+        public List<Rec> MainRecs = new(); // workshops 1-3
+        public List<Rec> SideRecs = new(); // workshop 4, by default same as 1-3
         public int CycleNumber;
-
-        public DayRec()
-        {
-            MainRecs = SideRecs = new();
-        }
 
         public bool Empty => MainRecs.Count + SideRecs.Count == 0;
     }
@@ -55,7 +50,6 @@ public class WorkshopOCImport
 
         public void Add(int cycle, DayRec schedule)
         {
-            Service.Log.Info($"trying to add schedule on {cycle} with {schedule.MainRecs.Count} items");
             if (schedule.Empty)
                 return; // don't care, rest day or something
 
@@ -100,7 +94,29 @@ public class WorkshopOCImport
             }
         }
 
-        public void Clear() => _schedules.Clear();
+        public void Clear()
+        {
+            _schedules.Clear();
+            CyclesMask = 0;
+        }
+
+        public void CorrectCycleNumbers()
+        {
+            var cycleNumbers = Schedules.Where(schedule => !schedule.Empty).Select(schedule => schedule.CycleNumber).ToList();
+            if (cycleNumbers.Count < 2)
+                return;
+
+            cycleNumbers.Sort();
+
+            for (int i = 1; i < cycleNumbers.Count; i++)
+            {
+                if (cycleNumbers[i] - cycleNumbers[i - 1] == 1)
+                    continue;
+
+                cycleNumbers[i - 1] = cycleNumbers[i] - 1;
+            }
+            Service.Log.Info($"{string.Join(", ", cycleNumbers)}");
+        }
     }
 
     public Recs Recommendations = new();
@@ -112,15 +128,21 @@ public class WorkshopOCImport
 
     public unsafe void Draw()
     {
-        ImGui.TextWrapped("This tab allows copy-pasting recommendations from Overseas Casuals discord");
-
-        if (ImGui.Button("Import Single/Multi Day Recommendations From Clipboard"))
+        if (ImGui.Button("Import Recommendations From Clipboard"))
+        {
+            Recommendations.Clear();
             ParseRecs(ImGui.GetClipboardText());
+        }
 
-        //if (Recommendations.Empty)
-        //    return;
+        if (Recommendations.Empty)
+            return;
 
-        ImGui.TextWrapped("Favour support: first click one of the buttons to generate bot command, paste it into bot-spam channel, then copy output");
+        ImGui.Separator();
+
+        ImGui.Text("Favours");
+        ImGuiComponents.HelpMarker("Click the \"This Week's Favors\" or \"Next Week's Favors\" button to generate a bot command for the OC discord for your favors.\n" +
+                "Then click the #bot-spam button to open discord to the channel, paste in the command and copy its output.\n" +
+                "Finally, click the \"Override 4th workshop\" button to replace the regular recommendations with favor recommendations.");
 
 
         if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "This Week's Favors"))
@@ -140,56 +162,116 @@ public class WorkshopOCImport
 
         ImGui.Separator();
 
-        ImGui.TextUnformatted("Set single day schedule:");
-        if (_sched.CurrentCycle <= _sched.CycleInProgress)
-        {
-            ImGui.SameLine();
-            ImGui.TextUnformatted("Current cycle is already in progress");
-        }
-        else if (!_sched.CurrentCycleIsEmpty())
-        {
-            ImGui.SameLine();
-            ImGui.TextUnformatted("Clear schedule first");
-        }
-        else if (Recommendations.MultiDay)
-        {
-            foreach (var (c, r) in Recommendations.Enumerate())
-            {
-                ImGui.SameLine();
-                if (ImGui.Button($"C{c}"))
-                    ApplyRecommendationToCurrentCycle(r);
-            }
-        }
-        else
-        {
-            ImGui.SameLine();
-            if (ImGui.Button("C0"))
-                ApplyRecommendation(0, Recommendations.Schedules.First());
-        }
+        //ImGui.TextUnformatted("Set single day schedule:");
+        //if (_sched.CurrentCycle <= _sched.CycleInProgress)
+        //{
+        //    ImGui.SameLine();
+        //    ImGui.TextUnformatted("Current cycle is already in progress");
+        //}
+        //else if (!_sched.CurrentCycleIsEmpty())
+        //{
+        //    ImGui.SameLine();
+        //    ImGui.TextUnformatted("Clear schedule first");
+        //}
+        //else if (Recommendations.MultiDay)
+        //{
+        //    foreach (var (c, r) in Recommendations.Enumerate())
+        //    {
+        //        ImGui.SameLine();
+        //        if (ImGui.Button($"C{c}"))
+        //            ApplyRecommendationToCurrentCycle(r);
+        //    }
+        //}
+        //else
+        //{
+        //    ImGui.SameLine();
+        //    if (ImGui.Button($"C0"))
+        //        ApplyRecommendation(Recommendations.Schedules.First().CycleNumber, Recommendations.Schedules.First());
+        //}
 
-        ImGui.TextUnformatted("Set full week schedule:");
+        Helpers.TextV("Set Schedule:");
         using (ImRaii.Disabled(!Recommendations.MultiDay))
         {
             ImGui.SameLine();
-            if (ImGui.Button("This week"))
+            if (ImGui.Button("This Week"))
                 ApplyRecommendations(false);
             ImGui.SameLine();
-            if (ImGui.Button("Next week"))
+            if (ImGui.Button("Next Week"))
                 ApplyRecommendations(true);
         }
 
-        ImGui.TextUnformatted("Current recs:");
-        ImGui.SameLine();
-        if (ImGui.Button("Clear")) Recommendations.Clear();
+        DrawCycleRecommendations();
+    }
+
+    private void DrawCycleRecommendations()
+    {
+        var tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoKeepColumnsVisible;
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
+
+        ImGui.BeginChild("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
         {
             ImGui.TextUnformatted($"Cycle {c}:");
-            ImGui.Indent();
-            ImGui.TextUnformatted($"Main: {string.Join(", ", r.MainRecs.Select(r => $"{r.Slot}={OfficialNameToBotName(sheetCraft.GetRow(r.CraftObjectId)?.Item.Value?.Name ?? "")}"))}");
-            ImGui.TextUnformatted($"Side: {string.Join(", ", r.SideRecs.Select(r => $"{r.Slot}={OfficialNameToBotName(sheetCraft.GetRow(r.CraftObjectId)?.Item.Value?.Name ?? "")}"))}");
-            ImGui.Unindent();
+            if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_{nameof(Recommendations)}Table", 2, tableFlags))
+            {
+                if (r.SideRecs.Count > 0)
+                {
+                    ImGui.TableSetupColumn("Workshops 1-3");
+                    ImGui.TableSetupColumn("Workshop 4");
+                }
+                else
+                {
+                    ImGui.TableSetupColumn("All Workshops");
+                }
+                ImGui.TableHeadersRow();
+                ImGui.TableNextRow();
+
+                ImGui.TableSetColumnIndex(0);
+                if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_Main{nameof(Recommendations)}", 2, tableFlags))
+                {
+                    foreach (var rec in r.MainRecs)
+                    {
+                        ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                        ImGui.TableNextRow();
+
+                        ImGui.TableSetColumnIndex(0);
+                        var iconSize = ImGui.GetTextLineHeight() * 1.5f;
+                        var iconSizeVec = new Vector2(iconSize, iconSize);
+                        var craftworkItemIcon = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
+                        ImGui.Image(Service.TextureProvider.GetIcon(craftworkItemIcon)!.ImGuiHandle, iconSizeVec, Vector2.Zero, Vector2.One);
+
+                        ImGui.TableSetColumnIndex(1);
+                        ImGui.Text($"{OfficialNameToBotName(sheetCraft.GetRow(rec.CraftObjectId)?.Item.Value?.Name ?? "")}");
+                    }
+                }
+                ImGui.EndTable();
+
+                ImGui.TableSetColumnIndex(1);
+                if (r.SideRecs.Count > 0)
+                {
+                    if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_Side{nameof(Recommendations)}", 2, tableFlags))
+                    {
+                        foreach (var rec in r.SideRecs)
+                        {
+                            ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
+                            ImGui.TableNextRow();
+
+                            ImGui.TableSetColumnIndex(0);
+                            var iconSize = ImGui.GetTextLineHeight() * 1.5f;
+                            var iconSizeVec = new Vector2(iconSize, iconSize);
+                            var craftworkItemIcon = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
+                            ImGui.Image(Service.TextureProvider.GetIcon(craftworkItemIcon)!.ImGuiHandle, iconSizeVec, Vector2.Zero, Vector2.One);
+
+                            ImGui.TableSetColumnIndex(1);
+                            ImGui.Text($"{OfficialNameToBotName(sheetCraft.GetRow(rec.CraftObjectId)?.Item.Value?.Name ?? "")}");
+                        }
+                    }
+                    ImGui.EndTable();
+                }
+            }
+            ImGui.EndTable();
         }
+        ImGui.EndChild();
     }
 
     private string CreateFavorRequestCommand(bool nextWeek)
@@ -213,9 +295,8 @@ public class WorkshopOCImport
         return res;
     }
 
-    private static void ParseRecs(string str)
+    private unsafe void ParseRecs(string str)
     {
-        var recs = new Recs();
         var rawItemStrings = str.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
         var rawCycles = SplitCycles(rawItemStrings);
         foreach (var cycle in rawCycles)
@@ -223,8 +304,11 @@ public class WorkshopOCImport
             var curRec = ParseItems(cycle);
             if (curRec.MainRecs == null || curRec.MainRecs.Count == 0)
                 continue;
-            recs.Add(curRec.CycleNumber, new DayRec { MainRecs = curRec.MainRecs, SideRecs = curRec.SideRecs });
+            if (curRec.CycleNumber == 0)
+                curRec.CycleNumber = new WorkshopSchedule().AgentData->CycleInProgress + 2;
+            Recommendations.Add(curRec.CycleNumber, curRec);
         }
+        Recommendations.CorrectCycleNumbers();
     }
 
     public static List<List<string>> SplitCycles(List<string> rawLines)
@@ -286,10 +370,17 @@ public class WorkshopOCImport
                     var lastRec = recs.LastOrDefault();
                     int craftingTime = Service.DataManager.GetExcelSheet<MJICraftworksObject>()?.GetRow(lastRec.CraftObjectId)?.CraftingTime ?? 0;
                     if (hours < 24)
+                    {
+                        Service.Log.Info($"adding {itemName} to mainrec");
                         curRec.MainRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
+                        Service.Log.Info($"mainrec count: {curRec.MainRecs.Count}");
+                    }
                     else
+                    {
+                        Service.Log.Info($"adding {itemName} to siderec");
                         curRec.SideRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
-
+                        Service.Log.Info($"siderec count: {curRec.SideRecs.Count}");
+                    }
                     hours += CraftingTime;
                     matchFound = true;
                 }
@@ -300,6 +391,7 @@ public class WorkshopOCImport
             }
         }
 
+        Service.Log.Info($"main: {curRec.MainRecs.Count} side: {curRec.SideRecs.Count}");
         return curRec;
     }
 
@@ -385,18 +477,34 @@ public class WorkshopOCImport
         return name;
     }
 
-    private void ApplyRecommendation(int cycle, DayRec rec)
+    private unsafe void ApplyRecommendation(int cycle, DayRec rec)
     {
-        foreach (var r in rec.MainRecs)
-        {
-            _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 0);
-            _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 1);
-            _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 2);
-        }
-        foreach (var r in rec.SideRecs)
-        {
-            _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 3);
-        }
+        var maxWorkshops = Helpers.GetMaxWorkshops();
+        for (var i = 0; i < maxWorkshops; i++)
+            if (rec.SideRecs.Count == 0)
+            {
+                foreach (var r in rec.MainRecs)
+                    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
+            }
+            else
+            {
+                if (i != maxWorkshops - 1)
+                    foreach (var r in rec.MainRecs)
+                        _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
+                else
+                    foreach (var r in rec.SideRecs)
+                        _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
+            }
+        //foreach (var r in rec.MainRecs)
+        //{
+        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 0);
+        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 1);
+        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 2);
+        //}
+        //foreach (var r in rec.SideRecs)
+        //{
+        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 3);
+        //}
     }
 
     private void ApplyRecommendationToCurrentCycle(DayRec rec)
