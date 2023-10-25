@@ -1,10 +1,10 @@
 ﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Addon.Lifecycle;
-using ECommons.Automation;
-using ECommons.DalamudServices;
+//using ECommons.Automation;
+//using ECommons.DalamudServices;
+//using static ECommons.GenericHelpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
-using static ECommons.GenericHelpers;
 using visland.Helpers;
 
 namespace visland.Windows;
@@ -17,7 +17,7 @@ unsafe class GranaryWindow : UIAttachedWindow
         public bool AutoMax = false;
     }
 
-    private TaskManager _taskManager = new();
+    //private TaskManager _taskManager = new();
     private Config _config;
 
     public GranaryWindow() : base("Granary Automation", "MJIGatheringHouse", new(250, 50))
@@ -43,22 +43,15 @@ unsafe class GranaryWindow : UIAttachedWindow
 
         if (addon->AtkValues[73].Byte != 0)
         {
-            _taskManager.Enqueue(() => { TryGetAddonByName<AtkUnitBase>("MJIGatheringHouse", out var granary1); Callback.Fire(granary1, false, 13, 0); }, "CollectGranary1");
-            _taskManager.DelayNext(200);
-            _taskManager.Enqueue(() => AutoYesNo());
+            //_taskManager.Enqueue(() => { TryGetAddonByName<AtkUnitBase>("MJIGatheringHouse", out var granary1); Callback.Fire(granary1, false, 13, 0); }, "CollectGranary1");
+            //_taskManager.DelayNext(200);
+            //_taskManager.Enqueue(() => AutoYesNo());
         }
         if (addon->AtkValues[147].Byte != 0)
         {
-            _taskManager.Enqueue(() => { TryGetAddonByName<AtkUnitBase>("MJIGatheringHouse", out var granary2); Callback.Fire(granary2, false, 13, 1); }, "CollectGranary2");
-            _taskManager.DelayNext(200);
-            _taskManager.Enqueue(() => AutoYesNo());
+            //_taskManager.Enqueue(() => { TryGetAddonByName<AtkUnitBase>("MJIGatheringHouse", out var granary2); Callback.Fire(granary2, false, 13, 1); }, "CollectGranary2");
+            //_taskManager.DelayNext(200);
+            //_taskManager.Enqueue(() => AutoYesNo());
         }
-    }
-
-    private void AutoYesNo()
-    {
-        var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno");
-        if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
-            Callback.Fire(addon, true, 0);
     }
 }

@@ -1,8 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
-using ECommons;
-using ECommons.Automation;
+//using ECommons;
 using ImGuiNET;
 using System.Linq;
 using System.Numerics;
@@ -50,7 +49,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public Plugin(DalamudPluginInterface dalamud)
     {
-        ECommonsMain.Init(dalamud, this);
+        //ECommonsMain.Init(dalamud, this);
 
         dalamud.Create<Service>();
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
@@ -73,7 +72,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
-            //WindowSystem.AddWindow(_wndGranary);
+            WindowSystem.AddWindow(_wndGranary);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }

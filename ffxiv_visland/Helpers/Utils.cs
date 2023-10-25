@@ -1,7 +1,7 @@
 ﻿using Dalamud;
 using Dalamud.Interface;
-using ECommons.Automation;
-using ECommons.DalamudServices;
+//using ECommons.Automation;
+//using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -87,12 +87,12 @@ public unsafe class Utils
         ImGui.TextUnformatted(s);
     }
 
-    public static void AutoYesNo()
-    {
-        var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno");
-        if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
-            Callback.Fire(addon, true, 0);
-    }
+    //public static void AutoYesNo()
+    //{
+    //    var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno");
+    //    if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
+    //        Callback.Fire(addon, true, 0);
+    //}
 
     // get all types defined in specified assembly
     public static IEnumerable<Type?> GetAllTypes(Assembly asm)

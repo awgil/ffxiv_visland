@@ -1,6 +1,6 @@
 ﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Addon.Lifecycle;
-using ECommons.Automation;
+//using ECommons.Automation;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using visland.Helpers;
@@ -36,7 +36,7 @@ unsafe class AnimalWindow : UIAttachedWindow
         if (!_config.AutoCollect) return;
         if (addon->AtkValues[219].Byte != 0) return;
 
-        Callback.Fire(addon, false, 5);
-        Utils.AutoYesNo();
+        //Callback.Fire(addon, false, 5);
+        //Utils.AutoYesNo();
     }
 }
