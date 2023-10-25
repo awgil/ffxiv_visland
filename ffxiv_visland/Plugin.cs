@@ -73,7 +73,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
-            WindowSystem.AddWindow(_wndGranary);
+            //WindowSystem.AddWindow(_wndGranary);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }

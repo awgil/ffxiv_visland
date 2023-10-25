@@ -165,7 +165,7 @@ public class GatherWindow : Window, IDisposable
             });
         }
 
-        if (ImGui.Button("Export to clipboard"))
+        if (ImGui.MenuItem("Export to clipboard"))
         {
             ImGui.SetClipboardText(GatherRouteDB.SaveToJSONWaypoints(r.Waypoints).ToString(Formatting.None));
         }
