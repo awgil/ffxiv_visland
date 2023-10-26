@@ -2,14 +2,13 @@
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
-using Dalamud.Plugin.Services;
 using ECommons;
 using ImGuiNET;
-using System;
 using System.Linq;
 using System.Numerics;
 using visland.Gathering;
 using visland.Granary;
+using visland.Windows;
 using visland.Workshop;
 
 namespace visland;
@@ -81,7 +80,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
-            //WindowSystem.AddWindow(_wndGranary);
+            WindowSystem.AddWindow(_wndGranary);
             //WindowSystem.AddWindow(_wndAmimal);
             //WindowSystem.AddWindow(_wndFarm);
             //WindowSystem.AddWindow(_wndExports);
@@ -90,7 +89,6 @@ public sealed class Plugin : IDalamudPlugin
         }
 
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIAnimalManagement", _wndAmimal.AutoCollectPasture);
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIGatheringHouse", _wndGranary.AutoCollectGranary);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", _wndExports.AutoExport);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJICraftSchedule", _wndWorkshop.OnWorkshopSetup);
     }
@@ -98,7 +96,6 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         Service.AddonLifecycle.UnregisterListener(_wndAmimal.AutoCollectPasture);
-        Service.AddonLifecycle.UnregisterListener(_wndGranary.AutoCollectGranary);
         Service.AddonLifecycle.UnregisterListener(_wndExports.AutoExport);
         Service.AddonLifecycle.UnregisterListener(_wndWorkshop.OnWorkshopSetup);
 

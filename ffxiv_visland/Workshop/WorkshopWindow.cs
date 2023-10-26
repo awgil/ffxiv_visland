@@ -4,7 +4,7 @@ using Dalamud.Interface.Utility.Raii;
 using visland.Helpers;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ECommons.Automation;
-using System;
+using ImGuiNET;
 
 namespace visland.Workshop;
 
@@ -14,11 +14,12 @@ unsafe class WorkshopWindow : UIAttachedWindow
     private WorkshopOCImport _oc = new();
     private WorkshopDebug _debug = new();
     private WorkshopSchedule _sched = new();
-    private WorkshopSettings _settings = new();
+    private WorkshopConfig _config;
     private readonly TaskManager _taskManager = new();
 
     public WorkshopWindow() : base("Workshop automation", "MJICraftSchedule", new(500, 650))
     {
+        _config = Service.Config.Get<WorkshopConfig>();
     }
 
     public override void Draw()
@@ -37,7 +38,7 @@ unsafe class WorkshopWindow : UIAttachedWindow
                     _debug.Draw();
             //using (var tab = ImRaii.TabItem("Settings"))
             //    if (tab)
-            //        _settings.Draw();
+            //        DrawSettings();
         }
     }
 
@@ -60,4 +61,12 @@ unsafe class WorkshopWindow : UIAttachedWindow
     }
 
     private static bool IsWindowReady(AtkUnitBase* addon) => addon->AtkValues[0].Type != 0;
+
+    private void DrawSettings()
+    {
+        if (ImGui.Checkbox("Auto Collect", ref _config.AutoOpenNextDay))
+            _config.NotifyModified();
+        if (ImGui.Checkbox("Auto Max", ref _config.AutoImport))
+            _config.NotifyModified();
+    }
 }
