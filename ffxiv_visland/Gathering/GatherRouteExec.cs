@@ -12,6 +12,7 @@ using SharpDX;
 using System;
 using System.Linq;
 using visland.Helpers;
+using Configuration = visland.Helpers.Configuration;
 
 namespace visland.Gathering;
 
@@ -38,7 +39,7 @@ public class GatherRouteExec : IDisposable
 
     private void CheckToDisable(ref SeString message, ref bool isHandled)
     {
-        if (Service.Config.DisableOnErrors)
+        if (Service.Config.Get<GatherWindow.Config>().DisableOnErrors)
         {
             Errors.PushBack(Environment.TickCount64);
             if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) //5 errors within 30 seconds stops the route, can adjust this as necessary

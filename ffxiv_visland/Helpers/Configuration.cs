@@ -53,7 +53,6 @@ public class Configuration
 
     public event EventHandler? Modified;
     private Dictionary<Type, Node> _nodes = new();
-    public bool DisableOnErrors;
 
     public IEnumerable<Node> Nodes => _nodes.Values;
 
@@ -98,9 +97,6 @@ public class Configuration
                     }
                 }
             }
-            var disableOnErrors = json["DisableOnErrors"]?.Value<bool>();
-            if (disableOnErrors != null)
-                DisableOnErrors = disableOnErrors.Value;
         }
         catch (Exception e)
         {
@@ -125,8 +121,7 @@ public class Configuration
             JObject jContents = new()
             {
                 { "Version", _version },
-                { "Payload", payload },
-                { "DisableOnErrors", DisableOnErrors }
+                { "Payload", payload }
             };
             File.WriteAllText(file.FullName, jContents.ToString());
         }
