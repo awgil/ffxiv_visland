@@ -354,7 +354,7 @@ public class WorkshopOCImport
             }
         }
         // complete current cycle; if the number was not known, assume it is tomorrow
-        result.Add(curCycle > 0 ? curCycle : _sched.CurrentCycle + 2, curRec);
+        result.Add(curCycle > 0 ? curCycle : _sched.CycleInProgress + 2, curRec);
 
         return result;
     }
