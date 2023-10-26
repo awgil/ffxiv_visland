@@ -8,13 +8,12 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using ImGuiNET;
 using SharpDX;
 using System;
 using System.Linq;
 using visland.Helpers;
 
-namespace visland;
+namespace visland.Gathering;
 
 public class GatherRouteExec : IDisposable
 {
@@ -39,7 +38,7 @@ public class GatherRouteExec : IDisposable
 
     private void CheckToDisable(ref SeString message, ref bool isHandled)
     {
-        if (Plugin.P.Config.DisableOnErrors)
+        if (Service.Config.DisableOnErrors)
         {
             Errors.PushBack(Environment.TickCount64);
             if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) //5 errors within 30 seconds stops the route, can adjust this as necessary
@@ -157,32 +156,6 @@ public class GatherRouteExec : IDisposable
         LoopAtEnd = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
-    }
-
-    public void Draw(UITree tree)
-    {
-        if (CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
-        {
-            ImGui.TextUnformatted("Route not running");
-            return;
-        }
-
-        var curPos = Service.ClientState.LocalPlayer?.Position ?? new();
-        var wp = CurrentRoute.Waypoints[CurrentWaypoint];
-        if (ImGui.Button(Paused ? "Resume" : "Pause"))
-        {
-            Paused = !Paused;
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Stop"))
-        {
-            Finish();
-        }
-        if (CurrentRoute != null) // Finish() call could've reset it
-        {
-            ImGui.SameLine();
-            ImGui.TextUnformatted($"Executing: {CurrentRoute.Name} #{CurrentWaypoint + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
-        }
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)

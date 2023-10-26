@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using visland.Helpers;
 
-namespace visland;
+namespace visland.Gathering;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x18)]
 public unsafe struct PlayerMoveControllerFlyInput

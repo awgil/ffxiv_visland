@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using visland.Helpers;
 
-namespace visland;
+namespace visland.Gathering;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x2B0)]
 public unsafe struct CameraEx

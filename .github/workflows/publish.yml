@@ -33,7 +33,7 @@ jobs:
         run: dotnet restore
 
       - name: Build Project
-        run: dotnet build --configuration Release visland.csproj -p:AssemblyVersion=${{ env.tag }}
+        run: dotnet build --configuration Release ffxiv_visland/visland.csproj -p:AssemblyVersion=${{ env.tag }}
 
       - name: Publish Version
         uses: PunishXIV/dynamis-action@v1
@@ -42,7 +42,7 @@ jobs:
           plugin_id: 28
           internal_name: "visland"
           version_number: ${{ env.tag }}
-          path: "bin/Release/visland/latest.zip"
+          path: "ffxiv_visland/bin/Release/visland/latest.zip"
           type: "latest"
           dalamud_version: "9"
         env:

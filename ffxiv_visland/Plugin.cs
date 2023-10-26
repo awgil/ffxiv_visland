@@ -2,11 +2,12 @@
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
-using ECommons.Automation;
 using ImGuiNET;
 using System.Linq;
 using System.Numerics;
+using visland.Gathering;
 using visland.Windows;
+using visland.Workshop;
 
 namespace visland;
 
@@ -38,11 +39,8 @@ class RepoMigrateWindow : Window
 public sealed class Plugin : IDalamudPlugin
 {
     public string Name => "Island sanctuary automation";
-    internal static Plugin P;
 
-    public TaskManager TaskManager;
     public DalamudPluginInterface Dalamud { get; init; }
-    public Config Config { get; init; }
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
@@ -56,15 +54,15 @@ public sealed class Plugin : IDalamudPlugin
         dalamud.Create<Service>();
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
-        P = this;
-        Dalamud = dalamud;
-        TaskManager = new();
-        Config = new();
-        Config.LoadFromFile(dalamud.ConfigFile);
+        Service.Config.Initialize();
+        Service.Config.LoadFromFile(dalamud.ConfigFile);
+        Service.Config.Modified += (_, _) => Service.Config.SaveToFile(dalamud.ConfigFile);
 
-        _wndGather = new GatherWindow(this);
-        _wndWorkshop = new WorkshopWindow(this);
-        _wndGranary = new GranaryWindow(this);
+        Dalamud = dalamud;
+
+        _wndGather = new GatherWindow();
+        _wndWorkshop = new WorkshopWindow();
+        _wndGranary = new GranaryWindow();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -74,7 +72,7 @@ public sealed class Plugin : IDalamudPlugin
         {
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
-            WindowSystem.AddWindow(_wndGranary);
+            //WindowSystem.AddWindow(_wndGranary);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
@@ -87,7 +85,6 @@ public sealed class Plugin : IDalamudPlugin
         _wndGather.Dispose();
         _wndWorkshop.Dispose();
         _wndGranary.Dispose();
-        P = null;
     }
 
     private void OnCommand(string command, string arguments)
@@ -141,7 +138,7 @@ public sealed class Plugin : IDalamudPlugin
 
     private void ExecuteCommand(string name, bool once)
     {
-        var route = Config.RouteDB.Routes.Find(r => r.Name == name);
+        var route = _wndGather.RouteDB.Routes.Find(r => r.Name == name);
         if (route != null)
             _wndGather.Exec.Start(route, 0, true, !once);
     }

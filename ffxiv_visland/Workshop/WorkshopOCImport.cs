@@ -1,9 +1,9 @@
 ﻿using Dalamud;
 using Dalamud.Interface.Components;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ImGuiNET;
 using Lumina.Data;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
@@ -30,68 +30,44 @@ public class WorkshopOCImport
 
     public class DayRec
     {
-        public List<Rec> MainRecs = new(); // workshops 1-3
-        public List<Rec> SideRecs = new(); // workshop 4, by default same as 1-3
-        public int CycleNumber;
+        public List<List<Rec>> Workshops = new();
 
-        public bool Empty => MainRecs.Count + SideRecs.Count == 0;
+        public bool Empty => Workshops.Count == 0;
     }
 
     public class Recs
     {
-        // if cycles mask == 0, main/side recs contain 0 (empty) or 1 (single-day) entries
-        // otherwise main/side recs size is equal to mask's popcount
         private List<DayRec> _schedules = new();
-        public uint CyclesMask { get; private set; }
+        public uint CyclesMask { get; private set; } // num bits set equal to num schedules
         public IReadOnlyList<DayRec> Schedules => _schedules;
 
         public bool Empty => Schedules.Count == 0;
-        public bool SingleDay => Schedules.Count > 0 && CyclesMask == 0;
-        public bool MultiDay => CyclesMask != 0;
 
         public void Add(int cycle, DayRec schedule)
         {
             if (schedule.Empty)
                 return; // don't care, rest day or something
 
-            if (cycle == 0)
-            {
-                // single-day rec can only be added to the empty rec list
-                if (!Empty)
-                    throw new Exception(MultiDay ? "Trying to add a single-day rec to a multi-day schedule" : "Trying to add several single-day recs");
-                _schedules.Add(schedule);
-            }
-            else
-            {
-                // multi-day rec can only be added to the empty rec list or a multi-day rec list that doesn't have this or future days set
-                if (SingleDay)
-                    throw new Exception("Invalid multi-day rec; make sure that first 'cycle X' line is included");
-                var mask = 1u << cycle - 1;
-                if ((CyclesMask & mask) != 0)
-                    throw new Exception($"Duplicate cycle {cycle} in the recs");
-                if ((CyclesMask & ~(mask - 1)) != 0)
-                    throw new Exception($"Bad cycle order: {cycle} found after future days");
+            if (cycle is < 1 or > 7)
+                throw new Exception($"Cycle index out of bounds: {cycle}");
+            var mask = 1u << cycle - 1;
+            if ((CyclesMask & mask) != 0)
+                throw new Exception($"Duplicate cycle {cycle} in the recs");
+            if ((CyclesMask & ~(mask - 1)) != 0)
+                throw new Exception($"Bad cycle order: {cycle} found after future days");
 
-                _schedules.Add(schedule);
-                CyclesMask |= mask;
-            }
+            _schedules.Add(schedule);
+            CyclesMask |= mask;
         }
 
         public IEnumerable<(int cycle, DayRec rec)> Enumerate()
         {
-            if (MultiDay)
+            var m = CyclesMask;
+            foreach (var r in Schedules)
             {
-                var m = CyclesMask;
-                foreach (var r in Schedules)
-                {
-                    var c = BitOperations.TrailingZeroCount(m);
-                    yield return (c + 1, r);
-                    m &= ~(1u << c);
-                }
-            }
-            else if (Schedules.Count > 0)
-            {
-                yield return (0, Schedules[0]);
+                var c = BitOperations.TrailingZeroCount(m);
+                yield return (c + 1, r);
+                m &= ~(1u << c);
             }
         }
 
@@ -100,47 +76,35 @@ public class WorkshopOCImport
             _schedules.Clear();
             CyclesMask = 0;
         }
-
-        public void CorrectCycleNumbers()
-        {
-            var cycleNumbers = Schedules.Where(schedule => !schedule.Empty).Select(schedule => schedule.CycleNumber).ToList();
-            if (cycleNumbers.Count < 2)
-                return;
-
-            cycleNumbers.Sort();
-
-            for (int i = 1; i < cycleNumbers.Count; i++)
-            {
-                if (cycleNumbers[i] - cycleNumbers[i - 1] == 1)
-                    continue;
-
-                cycleNumbers[i - 1] = cycleNumbers[i] - 1;
-            }
-            Service.Log.Info($"{string.Join(", ", cycleNumbers)}");
-        }
     }
 
     public Recs Recommendations = new();
 
     private WorkshopFavors _favors = new();
     private WorkshopSchedule _sched = new();
+    private ExcelSheet<MJICraftworksObject> _craftSheet;
+    private List<string> _botNames;
 
-    private static readonly List<string> prefixes = new() { "Isleworks", "Islefish", "Isleberry", "Island", "of the Cycle " };
+    public WorkshopOCImport()
+    {
+        _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
+        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
+    }
 
-    public unsafe void Draw()
+    public void Draw()
     {
         if (ImGui.Button("Import Recommendations From Clipboard"))
-        {
-            Recommendations.Clear();
-            ParseRecs(ImGui.GetClipboardText());
-        }
+            ImportRecs(ImGui.GetClipboardText());
+        ImGuiComponents.HelpMarker("This is for importing schedules from the Overseas Casuals' Discord from your clipboard.\n" +
+                        "This importer detects the presence of an item's name (not including \"Isleworks\" et al) on each line.\n" +
+                        "You can copy an entire workshop's schedule from the discord, junk included.");
 
         if (Recommendations.Empty)
             return;
 
         ImGui.Separator();
 
-        ImGui.Text("Favours");
+        ImGui.TextUnformatted("Favours");
         ImGuiComponents.HelpMarker("Click the \"This Week's Favors\" or \"Next Week's Favors\" button to generate a bot command for the OC discord for your favors.\n" +
                 "Then click the #bot-spam button to open discord to the channel, paste in the command and copy its output.\n" +
                 "Finally, click the \"Override 4th workshop\" button to replace the regular recommendations with favor recommendations.");
@@ -159,7 +123,9 @@ public class WorkshopOCImport
         ImGuiComponents.HelpMarker("Left Click: Discord app\nRight Click: Discord in browser");
 
         if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
-            OverrideSideRecs(ImGui.GetClipboardText());
+            OverrideSideRecsLastWorkshop(ImGui.GetClipboardText());
+        if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
+            OverrideSideRecsAsap(ImGui.GetClipboardText());
 
         ImGui.Separator();
 
@@ -191,15 +157,12 @@ public class WorkshopOCImport
         //}
 
         Utils.TextV("Set Schedule:");
-        using (ImRaii.Disabled(!Recommendations.MultiDay))
-        {
-            ImGui.SameLine();
-            if (ImGui.Button("This Week"))
-                ApplyRecommendations(false);
-            ImGui.SameLine();
-            if (ImGui.Button("Next Week"))
-                ApplyRecommendations(true);
-        }
+        ImGui.SameLine();
+        if (ImGui.Button("This Week"))
+            ApplyRecommendations(false);
+        ImGui.SameLine();
+        if (ImGui.Button("Next Week"))
+            ApplyRecommendations(true);
 
         DrawCycleRecommendations();
     }
@@ -207,64 +170,51 @@ public class WorkshopOCImport
     private void DrawCycleRecommendations()
     {
         var tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoKeepColumnsVisible;
-        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
+        var maxWorkshops = Utils.GetMaxWorkshops();
 
         ImGui.BeginChild("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
         {
             ImGui.TextUnformatted($"Cycle {c}:");
-            if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_{nameof(Recommendations)}Table", 2, tableFlags))
+            if (ImGui.BeginTable($"table_{c}", r.Workshops.Count, tableFlags))
             {
-                if (r.SideRecs.Count > 0)
-                {
-                    ImGui.TableSetupColumn("Workshops 1-3");
-                    ImGui.TableSetupColumn("Workshop 4");
-                }
-                else
+                if (r.Workshops.Count <= 1)
                 {
                     ImGui.TableSetupColumn("All Workshops");
                 }
-                ImGui.TableHeadersRow();
-                ImGui.TableNextRow();
-
-                ImGui.TableSetColumnIndex(0);
-                if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_Main{nameof(Recommendations)}", 2, tableFlags))
+                else if (r.Workshops.Count < maxWorkshops)
                 {
-                    foreach (var rec in r.MainRecs)
+                    var numDuplicates = 1 + maxWorkshops - r.Workshops.Count;
+                    ImGui.TableSetupColumn($"Workshops 1-{numDuplicates}");
+                    for (int i = 1; i < r.Workshops.Count; ++i)
+                        ImGui.TableSetupColumn($"Workshop {i + numDuplicates}");
+                }
+                else
+                {
+                    for (int i = 0; i < r.Workshops.Count; ++i)
+                        ImGui.TableSetupColumn($"Workshop {i + 1}");
+                }
+                ImGui.TableHeadersRow();
+
+                ImGui.TableNextRow();
+                for (int i = 0; i < r.Workshops.Count; ++i)
+                {
+                    ImGui.TableNextColumn();
+                    if (ImGui.BeginTable($"table_{c}_{i}", 2, tableFlags))
                     {
                         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-                        ImGui.TableNextRow();
-
-                        ImGui.TableSetColumnIndex(0);
-                        var iconSize = ImGui.GetTextLineHeight() * 1.5f;
-                        var iconSizeVec = new Vector2(iconSize, iconSize);
-                        var craftworkItemIcon = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
-                        ImGui.Image(Service.TextureProvider.GetIcon(craftworkItemIcon)!.ImGuiHandle, iconSizeVec, Vector2.Zero, Vector2.One);
-
-                        ImGui.TableSetColumnIndex(1);
-                        ImGui.Text($"{OfficialNameToBotName(sheetCraft.GetRow(rec.CraftObjectId)?.Item.Value?.Name ?? "")}");
-                    }
-                }
-                ImGui.EndTable();
-
-                ImGui.TableSetColumnIndex(1);
-                if (r.SideRecs.Count > 0)
-                {
-                    if (ImGui.BeginTable($"{nameof(WorkshopOCImport)}_Side{nameof(Recommendations)}", 2, tableFlags))
-                    {
-                        foreach (var rec in r.SideRecs)
+                        foreach (var rec in r.Workshops[i])
                         {
-                            ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
                             ImGui.TableNextRow();
 
-                            ImGui.TableSetColumnIndex(0);
+                            ImGui.TableNextColumn();
                             var iconSize = ImGui.GetTextLineHeight() * 1.5f;
                             var iconSizeVec = new Vector2(iconSize, iconSize);
-                            var craftworkItemIcon = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
+                            var craftworkItemIcon = _craftSheet.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
                             ImGui.Image(Service.TextureProvider.GetIcon(craftworkItemIcon)!.ImGuiHandle, iconSizeVec, Vector2.Zero, Vector2.One);
 
-                            ImGui.TableSetColumnIndex(1);
-                            ImGui.Text($"{OfficialNameToBotName(sheetCraft.GetRow(rec.CraftObjectId)?.Item.Value?.Name ?? "")}");
+                            ImGui.TableNextColumn();
+                            ImGui.TextUnformatted(_botNames[(int)rec.CraftObjectId]);
                         }
                     }
                     ImGui.EndTable();
@@ -291,114 +241,24 @@ public class WorkshopOCImport
             var id = _favors.CraftObjectID(offset + i);
             var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
             if (name != null)
-                res += $" favor{i + 1}:{OfficialNameToBotName(name)}";
+                res += $" favor{i + 1}:{_botNames[(int)id]}";
         }
         return res;
     }
 
-    private unsafe void ParseRecs(string str)
+    private void ImportRecs(string str)
     {
-        var rawItemStrings = str.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-        var rawCycles = SplitCycles(rawItemStrings);
-        foreach (var cycle in rawCycles)
+        try
         {
-            var curRec = ParseItems(cycle);
-            if (curRec.MainRecs == null || curRec.MainRecs.Count == 0)
-                continue;
-            if (curRec.CycleNumber == 0)
-                curRec.CycleNumber = new WorkshopSchedule().AgentData->CycleInProgress + 2;
-            Recommendations.Add(curRec.CycleNumber, curRec);
+            Recommendations = ParseRecs(str);
         }
-        Recommendations.CorrectCycleNumbers();
+        catch (Exception ex)
+        {
+            ReportError($"Error: {ex.Message}");
+        }
     }
 
-    public static List<List<string>> SplitCycles(List<string> rawLines)
-    {
-        var cycles = new List<List<string>>();
-        var currentCycle = new List<string>();
-
-        foreach (var line in rawLines)
-        {
-            if (line.StartsWith("Cycle"))
-            {
-                if (currentCycle.Count > 0)
-                {
-                    cycles.Add(currentCycle);
-                    currentCycle = new List<string>();
-                }
-                if (currentCycle.Count == 0)
-                    currentCycle = new List<string>();
-            }
-            currentCycle.Add(line);
-        }
-        if (currentCycle.Count > 0)
-            cycles.Add(currentCycle);
-
-        return cycles;
-    }
-
-    public static DayRec ParseItems(List<string> itemStrings)
-    {
-        var sheetCraftables = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!
-            .Where(x => x.Item.Row > 0)
-            .Select(x =>
-            {
-                var itemName = x.Item.GetDifferentLanguage(ClientLanguage.English).Value!.Name.RawString;
-                itemName = prefixes.Aggregate(itemName, (current, prefix) => current.Replace(prefix, "")).Trim();
-
-                return (x.RowId, itemName, x.CraftingTime, x.LevelReq);
-            })
-            .ToArray();
-
-        var hours = 0;
-        var isRest = false;
-        var curRec = new DayRec();
-        foreach (var itemString in itemStrings)
-        {
-            var cycleMatch = Regex.Match(itemString.ToLower(), @"cycle (\d+)");
-            if (cycleMatch.Success && int.TryParse(cycleMatch.Groups[1].Value, out int cycleNumber))
-                curRec.CycleNumber = cycleNumber;
-
-            if (itemString.ToLower().Contains("rest"))
-                isRest = true;
-
-            var matchFound = false;
-            foreach (var (RowId, itemName, CraftingTime, LevelReq) in sheetCraftables)
-            {
-                if (IsMatch(itemString.ToLower(), itemName.ToLower()))
-                {
-                    var recs = hours < 24 ? curRec.MainRecs : curRec.SideRecs;
-                    var lastRec = recs.LastOrDefault();
-                    int craftingTime = Service.DataManager.GetExcelSheet<MJICraftworksObject>()?.GetRow(lastRec.CraftObjectId)?.CraftingTime ?? 0;
-                    if (hours < 24)
-                    {
-                        Service.Log.Info($"adding {itemName} to mainrec");
-                        curRec.MainRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
-                        Service.Log.Info($"mainrec count: {curRec.MainRecs.Count}");
-                    }
-                    else
-                    {
-                        Service.Log.Info($"adding {itemName} to siderec");
-                        curRec.SideRecs.Add(new Rec(lastRec.Slot + craftingTime, RowId));
-                        Service.Log.Info($"siderec count: {curRec.SideRecs.Count}");
-                    }
-                    hours += CraftingTime;
-                    matchFound = true;
-                }
-            }
-            if (!matchFound)
-            {
-                Service.Log.Debug($"Failed to match string to craftable: {itemString}");
-            }
-        }
-
-        Service.Log.Info($"main: {curRec.MainRecs.Count} side: {curRec.SideRecs.Count}");
-        return curRec;
-    }
-
-    private static bool IsMatch(string x, string y) => Regex.IsMatch(x, $@"\b{Regex.Escape(y)}\b");
-
-    private void OverrideSideRecs(string str)
+    private void OverrideSideRecsLastWorkshop(string str)
     {
         try
         {
@@ -407,7 +267,13 @@ public class WorkshopOCImport
                 throw new Exception($"Override list is longer than base schedule: {overrideRecs.Count} > {Recommendations.Schedules.Count}");
 
             foreach (var (r, o) in Recommendations.Schedules.Zip(overrideRecs))
-                r.SideRecs = o.SideRecs;
+            {
+                // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
+                if (r.Workshops.Count > 1)
+                    r.Workshops.RemoveAt(r.Workshops.Count - 1);
+                // and add current override as a schedule for last workshop
+                r.Workshops.Add(o);
+            }
         }
         catch (Exception ex)
         {
@@ -415,52 +281,154 @@ public class WorkshopOCImport
         }
     }
 
-    private static List<DayRec> ParseRecOverrides(string str)
+    private void OverrideSideRecsAsap(string str)
     {
-        var result = new List<DayRec>();
+        try
+        {
+            var overrideRecs = ParseRecOverrides(str);
+            if (overrideRecs.Count > Recommendations.Schedules.Count * 4)
+                throw new Exception($"Override list is longer than base schedule: {overrideRecs.Count} > 4 * {Recommendations.Schedules.Count}");
+
+            int nextOverride = 0;
+            foreach (var r in Recommendations.Schedules)
+            {
+                var batchSize = Math.Min(4, overrideRecs.Count - nextOverride);
+                if (batchSize == 0)
+                    break; // nothing left to override
+
+                // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
+                if (r.Workshops.Count > 1)
+                    r.Workshops.RemoveAt(r.Workshops.Count - 1);
+                var maxLeft = 4 - batchSize;
+                if (r.Workshops.Count > maxLeft)
+                    r.Workshops.RemoveRange(maxLeft, r.Workshops.Count - maxLeft);
+                r.Workshops.AddRange(overrideRecs.Skip(nextOverride).Take(batchSize));
+                nextOverride += batchSize;
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportError($"Error: {ex.Message}");
+        }
+    }
+
+    private Recs ParseRecs(string str)
+    {
+        var result = new Recs();
+
         var curRec = new DayRec();
-        int nextSlot = 0;
+        int nextSlot = 24;
+        int curCycle = 0;
+        foreach (var l in str.Split('\n', '\r'))
+        {
+            if (TryParseCycleStart(l, out var cycle))
+            {
+                // complete previous cycle; if the number was not known, assume it is next cycle - 1
+                result.Add(curCycle > 0 ? curCycle : cycle - 1, curRec);
+                curRec = new();
+                nextSlot = 24;
+                curCycle = cycle;
+            }
+            else if (l == "First 3 Workshops" || l == "All Workshops")
+            {
+                // just a sanity check...
+                if (!curRec.Empty)
+                    throw new Exception("Unexpected start of 1st workshop recs");
+            }
+            else if (l == "4th Workshop")
+            {
+                // ensure next item goes into new rec list
+                // TODO: do we want to add an extra empty list if this is the first line?..
+                nextSlot = 24;
+            }
+            else if (TryParseItem(l) is var item && item != null)
+            {
+                if (nextSlot + item.CraftingTime > 24)
+                {
+                    // start next workshop schedule
+                    curRec.Workshops.Add(new());
+                    nextSlot = 0;
+                }
+                curRec.Workshops.Last().Add(new(nextSlot, item.RowId));
+                nextSlot += item.CraftingTime;
+            }
+        }
+        // complete current cycle; if the number was not known, assume it is tomorrow
+        result.Add(curCycle > 0 ? curCycle : _sched.CurrentCycle + 2, curRec);
+
+        return result;
+    }
+
+    private static bool TryParseCycleStart(string str, out int cycle)
+    {
+        // OC has two formats:
+        // - single day recs are 'Season N (mmm dd-dd), Cycle C Recommendations'
+        // - multi day recs are 'Season N (mmm dd-dd) Cycle K-L Recommendations' followed by 'Cycle C'
+        if (str.StartsWith("Cycle "))
+        {
+            return int.TryParse(str.Substring(6, 1), out cycle);
+        }
+        else if (str.StartsWith("Season ") && str.IndexOf(", Cycle ") is var cycleStart && cycleStart > 0)
+        {
+            return int.TryParse(str.Substring(cycleStart + 8, 1), out cycle);
+        }
+        else
+        {
+            cycle = 0;
+            return false;
+        }
+    }
+
+    private MJICraftworksObject? TryParseItem(string line)
+    {
+        var matchingRows = _botNames.Select((n, i) => (n, i)).Where(t => IsMatch(line, t.n)).ToList();
+        if (matchingRows.Count > 1)
+            throw new Exception($"Failed to import schedule: row '{line}' matches {matchingRows.Count} items: {string.Join(", ", matchingRows.Select(r => r.n))}");
+        return matchingRows.Count > 0 ? _craftSheet.GetRow((uint)matchingRows.First().i) : null;
+    }
+
+    private static bool IsMatch(string line, string item)
+    {
+        if (item.Length == 0)
+            return false;
+        var pos = line.IndexOf(item);
+        if (pos < 0)
+            return false; // no match
+        var prefix = line.Substring(0, pos).TrimEnd();
+        if (prefix.Length > 0 && char.IsLetter(prefix.Last()))
+            return false;
+        var suffix = line.Substring(pos + item.Length).TrimStart();
+        if (suffix.Length > 0 && char.IsLetter(suffix.First()))
+            return false;
+        return true;
+    }
+
+    private List<List<Rec>> ParseRecOverrides(string str)
+    {
+        var result = new List<List<Rec>>();
+        int nextSlot = 24;
 
         foreach (var l in str.Split('\n', '\r'))
         {
             if (l.StartsWith("Schedule #"))
             {
-                if (!curRec.Empty)
-                    result.Add(curRec);
-                curRec = new();
-                nextSlot = 0;
+                // ensure next item goes into new rec list
+                nextSlot = 24;
             }
-            else if (TryParseBotName(l) is var item && item != null)
+            else if (TryParseItem(l) is var item && item != null)
             {
-                curRec.SideRecs.Add(new(nextSlot, item.RowId));
+                if (nextSlot + item.CraftingTime > 24)
+                {
+                    // start next workshop schedule
+                    result.Add(new());
+                    nextSlot = 0;
+                }
+                result.Last().Add(new(nextSlot, item.RowId));
                 nextSlot += item.CraftingTime;
             }
         }
-        if (!curRec.Empty)
-            result.Add(curRec);
 
         return result;
-    }
-
-    private static MJICraftworksObject? TryParseBotName(string l)
-    {
-        // expected format: ':OC_ItemName: Item Name (4h)'
-        if (!l.StartsWith(":OC_"))
-            return null;
-
-        // strip off everything before last ':' and everything after first '(', then strip off spaces
-        var actualItem = l.Substring(l.LastIndexOf(':') + 1);
-        if (actualItem.IndexOf('(') is var tail && tail >= 0)
-            actualItem = actualItem.Substring(0, tail);
-        actualItem = actualItem.Trim();
-        if (actualItem.Length == 0)
-            return null;
-
-        var matchingRows = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!.Where(row => OfficialNameToBotName(row.Item.Value?.Name ?? "") == actualItem).ToList();
-        if (matchingRows.Count != 1)
-            throw new Exception($"Failed to import schedule: {matchingRows.Count} items matching row '{l}': {string.Join(", ", matchingRows.Select(r => r.RowId))}");
-
-        return matchingRows.First();
     }
 
     public static string OfficialNameToBotName(string name)
@@ -481,31 +449,15 @@ public class WorkshopOCImport
     private unsafe void ApplyRecommendation(int cycle, DayRec rec)
     {
         var maxWorkshops = Utils.GetMaxWorkshops();
+        var numDuplicates = 1 + Math.Max(0, maxWorkshops - rec.Workshops.Count);
         for (var i = 0; i < maxWorkshops; i++)
-            if (rec.SideRecs.Count == 0)
+        {
+            var recs = rec.Workshops[i < numDuplicates ? 0 : 1 + (i - numDuplicates)];
+            foreach (var r in recs)
             {
-                foreach (var r in rec.MainRecs)
-                    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
+                _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
             }
-            else
-            {
-                if (i != maxWorkshops - 1)
-                    foreach (var r in rec.MainRecs)
-                        _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
-                else
-                    foreach (var r in rec.SideRecs)
-                        _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
-            }
-        //foreach (var r in rec.MainRecs)
-        //{
-        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 0);
-        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 1);
-        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 2);
-        //}
-        //foreach (var r in rec.SideRecs)
-        //{
-        //    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, 3);
-        //}
+        }
     }
 
     private void ApplyRecommendationToCurrentCycle(DayRec rec)
@@ -524,7 +476,7 @@ public class WorkshopOCImport
             if (Recommendations.Schedules.Count > 5)
                 throw new Exception($"Too many days in recs: {Recommendations.Schedules.Count}");
 
-            uint forbiddenCycles = nextWeek ? 0 : (1u << _sched.CycleInProgress) - 1;
+            uint forbiddenCycles = nextWeek ? 0 : (1u << (_sched.CycleInProgress + 1)) - 1;
             if ((Recommendations.CyclesMask & forbiddenCycles) != 0)
                 throw new Exception("Some of the cycles in schedule are already in progress or are done");
 
@@ -535,11 +487,15 @@ public class WorkshopOCImport
                 var freeCycles = ~Recommendations.CyclesMask & 0x7F;
                 if ((freeCycles & 1) == 0)
                     throw new Exception($"Sorry, we assume C1 is always rest - set rest days manually to match your schedule");
-                var rest = 1u << 31 - BitOperations.LeadingZeroCount(freeCycles) | 1;
+                var rest = (1u << (31 - BitOperations.LeadingZeroCount(freeCycles))) | 1;
                 if (BitOperations.PopCount(rest) != 2)
                     throw new Exception($"Something went wrong, failed to determine rest days");
 
-                var newRest = nextWeek ? freeCycles << 7 | _sched.RestCycles & 0x7F : _sched.RestCycles & 0x3F80 | freeCycles;
+                var changedRest = rest ^ currentRestCycles;
+                if ((changedRest & forbiddenCycles) != 0)
+                    throw new Exception("Can't apply this schedule: it would require changing rest days for cycles that are in progress or already done");
+
+                var newRest = nextWeek ? (rest << 7) | (_sched.RestCycles & 0x7F) : (_sched.RestCycles & 0x3F80) | rest;
                 _sched.SetRestCycles(newRest);
             }
 

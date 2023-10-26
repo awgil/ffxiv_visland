@@ -1,61 +1,50 @@
 ﻿using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Addon.Lifecycle;
-using Dalamud.Interface.Windowing;
-using ECommons.Automation;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using ECommons.Automation;
 using ImGuiNET;
-using System;
-using System.Numerics;
-using ECommons.DalamudServices;
+using visland.Helpers;
 
 namespace visland.Windows;
 
-unsafe class ExportsWindow : Window, IDisposable
+unsafe class ExportsWindow : UIAttachedWindow
 {
-    public ExportsWindow(Plugin plugin) : base("Exports Automation")
+    public class Config : Configuration.Node
     {
-        RespectCloseHotkey = false; // don't steal esc focus
-        ShowCloseButton = false; // opened/closed automatically
-        Size = new Vector2(150, 100);
-        SizeCondition = ImGuiCond.FirstUseEver;
-        PositionCondition = ImGuiCond.Always; // updated every frame
+        public bool AutoSell = false;
+        public int AutoSellAmount = 900;
+    }
+
+    private Config _config;
+
+    public ExportsWindow() : base("Exports Automation", "MJIDisposeShop", new(150, 100))
+    {
+        _config = Service.Config.Get<Config>();
     }
     //AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", AutoExport);
     //AddonLifecycle.UnregisterListener(AutoCollectFarm);
 
-    public void Dispose()
-    {
-    }
-
-    public override void PreOpenCheck()
-    {
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJIDisposeShop");
-        IsOpen = addon != null && addon->IsVisible;
-        if (IsOpen)
-        {
-            Position = new Vector2(addon->X + addon->GetScaledWidth(true), addon->Y);
-        }
-    }
-
     public override void Draw()
     {
-        ImGui.Checkbox("Auto Export", ref Plugin.P.Config.AutoSell);
-        if (Plugin.P.Config.AutoSell)
+        if (ImGui.Checkbox("Auto Export", ref _config.AutoSell))
+            _config.NotifyModified();
+        if (_config.AutoSell)
         {
             ImGui.PushItemWidth(150);
-            ImGui.SliderInt("Auto Sell Amount", ref Plugin.P.Config.AutoSellAmount, 0, 999);
+            if (ImGui.SliderInt("Auto Sell Amount", ref _config.AutoSellAmount, 0, 999))
+                _config.NotifyModified();
             ImGui.PopItemWidth();
         }
     }
 
-    private static void AutoExport(AddonEvent eventType, AddonArgs addonInfo)
+    private void AutoExport(AddonEvent eventType, AddonArgs addonInfo)
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
         if (addonInfo.AddonName != "MJIDisposeShop" || addon is null) return;
-        if (!Plugin.P.Config.AutoSell) return;
+        if (!_config.AutoSell) return;
 
-        Callback.Fire(addon, false, 13, Plugin.P.Config.AutoSellAmount);
-        var subAddon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("MJIDisposeShopShippingBulk");
+        Callback.Fire(addon, false, 13, _config.AutoSellAmount);
+        var subAddon = (AtkUnitBase*)Service.GameGui.GetAddonByName("MJIDisposeShopShippingBulk");
         if (subAddon != null)
             Callback.Fire(subAddon, true, 0);
     }
