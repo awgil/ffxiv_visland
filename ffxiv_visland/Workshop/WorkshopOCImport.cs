@@ -85,6 +85,7 @@ public class WorkshopOCImport
     private WorkshopSchedule _sched = new();
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
+    private bool IgnoreFourthWorkshop;
     private int selectedCycle = 0;
     private List<int> Cycles { get; set; } = new() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
 
@@ -161,7 +162,8 @@ public class WorkshopOCImport
         ImGui.SameLine();
         if (ImGui.Button("Next Week"))
             ApplyRecommendations(true);
-
+        ImGui.SameLine();
+        ImGui.Checkbox("Ignore 4th Workshop", ref IgnoreFourthWorkshop);
         ImGui.Separator();
 
         DrawCycleRecommendations();
@@ -180,24 +182,25 @@ public class WorkshopOCImport
             {
                 if (r.Workshops.Count <= 1)
                 {
-                    ImGui.TableSetupColumn("All Workshops");
+                    ImGui.TableSetupColumn($"{(IgnoreFourthWorkshop ? $"Workshops 1-{maxWorkshops - 1}" : "All Workshops")}");
                 }
                 else if (r.Workshops.Count < maxWorkshops)
                 {
                     var numDuplicates = 1 + maxWorkshops - r.Workshops.Count;
                     ImGui.TableSetupColumn($"Workshops 1-{numDuplicates}");
-                    for (int i = 1; i < r.Workshops.Count; ++i)
+                    for (int i = 1; IgnoreFourthWorkshop ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + numDuplicates}");
                 }
                 else
                 {
-                    for (int i = 0; i < r.Workshops.Count; ++i)
+                    // favors
+                    for (int i = 0; IgnoreFourthWorkshop ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + 1}");
                 }
                 ImGui.TableHeadersRow();
 
                 ImGui.TableNextRow();
-                for (int i = 0; i < r.Workshops.Count; ++i)
+                for (int i = 0; IgnoreFourthWorkshop && r.Workshops.Count > 1 ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
                 {
                     ImGui.TableNextColumn();
                     if (ImGui.BeginTable($"table_{c}_{i}", 2, tableFlags))
@@ -396,7 +399,6 @@ public class WorkshopOCImport
             Recommendations.Add(selectedCycle - 1 + i, r);
             i++;
         }
-        _sched.SetCurrentCycle(selectedCycle - 1);
     }
 
     private MJICraftworksObject? TryParseItem(string line)
@@ -469,7 +471,7 @@ public class WorkshopOCImport
 
     private unsafe void ApplyRecommendation(int cycle, DayRec rec)
     {
-        var maxWorkshops = Utils.GetMaxWorkshops();
+        var maxWorkshops = IgnoreFourthWorkshop ? Utils.GetMaxWorkshops() - 1 : Utils.GetMaxWorkshops();
         var numDuplicates = 1 + Math.Max(0, maxWorkshops - rec.Workshops.Count);
         for (var i = 0; i < maxWorkshops; i++)
         {
