@@ -401,26 +401,27 @@ public class WorkshopOCImport
 
     private MJICraftworksObject? TryParseItem(string line)
     {
-        var matchingRows = _botNames.Select((n, i) => (n, i)).Where(t => IsMatch(line, t.n)).ToList();
+        var matchingRows = _botNames.Select((n, i) => (n, i)).Where(t => !string.IsNullOrEmpty(t.n) && IsMatch(line, t.n)).ToList();
         if (matchingRows.Count > 1)
-            throw new Exception($"Failed to import schedule: row '{line}' matches {matchingRows.Count} items: {string.Join(", ", matchingRows.Select(r => r.n))}");
+        {
+            matchingRows = matchingRows.OrderByDescending(t => MatchingScore(t.n, line)).ToList();
+            Service.Log.Info($"Row '{line}' matches {matchingRows.Count} items: {string.Join(", ", matchingRows.Select(r => r.n))}\n" +
+                "First one is most likely the correct match. Please report if this is wrong.");
+        }
         return matchingRows.Count > 0 ? _craftSheet.GetRow((uint)matchingRows.First().i) : null;
     }
 
-    private static bool IsMatch(string line, string item)
+
+    private static bool IsMatch(string x, string y) => Regex.IsMatch(x, $@"\b{Regex.Escape(y)}\b");
+    private static object MatchingScore(string item, string line)
     {
-        if (item.Length == 0)
-            return false;
-        var pos = line.IndexOf(item);
-        if (pos < 0)
-            return false; // no match
-        var prefix = line.Substring(0, pos).TrimEnd();
-        if (prefix.Length > 0 && char.IsLetter(prefix.Last()))
-            return false;
-        var suffix = line.Substring(pos + item.Length).TrimStart();
-        if (suffix.Length > 0 && char.IsLetter(suffix.First()))
-            return false;
-        return true;
+        int score = 0;
+
+        // primitive matching based on how long the string matches. Enough for now but could need expanding later
+        if (line.Contains(item))
+            score += item.Length;
+
+        return score;
     }
 
     private List<List<Rec>> ParseRecOverrides(string str)
