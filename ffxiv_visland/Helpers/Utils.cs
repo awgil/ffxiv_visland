@@ -12,7 +12,7 @@ using System.Reflection;
 
 namespace visland.Helpers;
 
-public unsafe class Utils
+public static unsafe class Utils
 {
     public static bool IconButton(FontAwesomeIcon icon, string text, string tooltip, int width = -1)
     {
@@ -91,6 +91,18 @@ public unsafe class Utils
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("SelectYesno");
         if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
             Callback.Fire(addon, true, 0);
+    }
+
+    // sort elements of a list by key
+    public static void SortBy<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(l).CompareTo(proj(r)));
+    public static void SortByReverse<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(r).CompareTo(proj(l)));
+
+    // swap two values
+    public static void Swap<T>(ref T l, ref T r)
+    {
+        var t = l;
+        l = r;
+        r = t;
     }
 
     // get all types defined in specified assembly
