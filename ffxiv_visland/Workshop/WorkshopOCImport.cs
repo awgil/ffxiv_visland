@@ -79,11 +79,14 @@ public class WorkshopOCImport
     }
 
     public Recs Recommendations = new();
+    public Recs RecommendationsCache = new();
 
     private WorkshopFavors _favors = new();
     private WorkshopSchedule _sched = new();
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
+    private int selectedCycle = 0;
+    private List<int> Cycles { get; set; } = new() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
 
     public WorkshopOCImport()
     {
@@ -129,31 +132,26 @@ public class WorkshopOCImport
 
         ImGui.Separator();
 
-        //ImGui.TextUnformatted("Set single day schedule:");
-        //if (_sched.CurrentCycle <= _sched.CycleInProgress)
+        // The UI does not like clearing the current recommendations even if you reset it right after. Need a solution
+
+        //Utils.TextV("Cycle Override: ");
+        //ImGui.SameLine();
+        //var cyclePrev = selectedCycle == 0 ? "" : Cycles[selectedCycle - 1].ToString();
+        //ImGui.SetNextItemWidth(50);
+        //if (ImGui.BeginCombo("###CycleOverride", cyclePrev))
         //{
-        //    ImGui.SameLine();
-        //    ImGui.TextUnformatted("Current cycle is already in progress");
-        //}
-        //else if (!_sched.CurrentCycleIsEmpty())
-        //{
-        //    ImGui.SameLine();
-        //    ImGui.TextUnformatted("Clear schedule first");
-        //}
-        //else if (Recommendations.MultiDay)
-        //{
-        //    foreach (var (c, r) in Recommendations.Enumerate())
+        //    foreach (var cycle in Cycles)
         //    {
-        //        ImGui.SameLine();
-        //        if (ImGui.Button($"C{c}"))
-        //            ApplyRecommendationToCurrentCycle(r);
+        //        var selected = ImGui.Selectable(cycle.ToString(), selectedCycle == cycle - 1);
+
+        //        if (selected)
+        //        {
+        //            selectedCycle = cycle - 1;
+        //            OverrideCycleStart(selectedCycle);
+        //        }
+
         //    }
-        //}
-        //else
-        //{
-        //    ImGui.SameLine();
-        //    if (ImGui.Button($"C0"))
-        //        ApplyRecommendation(Recommendations.Schedules.First().CycleNumber, Recommendations.Schedules.First());
+        //    ImGui.EndCombo();
         //}
 
         Utils.TextV("Set Schedule:");
@@ -163,6 +161,8 @@ public class WorkshopOCImport
         ImGui.SameLine();
         if (ImGui.Button("Next Week"))
             ApplyRecommendations(true);
+
+        ImGui.Separator();
 
         DrawCycleRecommendations();
     }
@@ -239,9 +239,10 @@ public class WorkshopOCImport
         for (int i = 0; i < 3; ++i)
         {
             var id = _favors.CraftObjectID(offset + i);
+            // the bot doesn't like names with apostrophes because it "breaks their formulas"
             var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
             if (name != null)
-                res += $" favor{i + 1}:{_botNames[(int)id]}";
+                res += $" favor{i + 1}:{_botNames[(int)id].Replace("\'", "")}";
         }
         return res;
     }
@@ -251,6 +252,7 @@ public class WorkshopOCImport
         try
         {
             Recommendations = ParseRecs(str);
+            RecommendationsCache = Recommendations;
         }
         catch (Exception ex)
         {
@@ -377,6 +379,24 @@ public class WorkshopOCImport
             cycle = 0;
             return false;
         }
+    }
+
+    private void OverrideCycleStart(int selectedCycle)
+    {
+        if (selectedCycle == 0)
+        {
+            Recommendations = RecommendationsCache;
+            return;
+        }
+
+        Recommendations.Clear();
+        var i = 0;
+        foreach (var (c, r) in RecommendationsCache.Enumerate())
+        {
+            Recommendations.Add(selectedCycle - 1 + i, r);
+            i++;
+        }
+        _sched.SetCurrentCycle(selectedCycle - 1);
     }
 
     private MJICraftworksObject? TryParseItem(string line)
@@ -510,7 +530,7 @@ public class WorkshopOCImport
         }
     }
 
-    private void ReportError(string msg)
+    private static void ReportError(string msg)
     {
         Service.Log.Error(msg);
         Service.ChatGui.PrintError(msg);
