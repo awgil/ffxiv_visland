@@ -22,19 +22,12 @@ public class GatherWindow : Window, IDisposable
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
-    public class Config : Configuration.Node
-    {
-        public bool DisableOnErrors = false;
-    }
-
-    private Config RouteSettings;
 
     public GatherWindow() : base("Island sanctuary automation")
     {
         Size = new Vector2(800, 800);
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
-        RouteSettings = Service.Config.Get<Config>();
     }
 
     public void Dispose()
@@ -59,9 +52,8 @@ public class GatherWindow : Window, IDisposable
 
     private void DrawExecution()
     {
-        if (ImGui.Checkbox("Stop Route on Error", ref RouteSettings.DisableOnErrors))
-            RouteSettings.NotifyModified();
-
+        if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
+            RouteDB.NotifyModified();
         ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
 
         if (Exec.CurrentRoute == null || Exec.CurrentWaypoint >= Exec.CurrentRoute.Waypoints.Count)

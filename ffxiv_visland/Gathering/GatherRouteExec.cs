@@ -1,9 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling;
-using Dalamud.Interface.Utility.Table;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
-using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -12,7 +10,6 @@ using SharpDX;
 using System;
 using System.Linq;
 using visland.Helpers;
-using Configuration = visland.Helpers.Configuration;
 
 namespace visland.Gathering;
 
@@ -35,18 +32,6 @@ public class GatherRouteExec : IDisposable
     public GatherRouteExec()
     {
         Svc.Toasts.ErrorToast += CheckToDisable;
-    }
-
-    private void CheckToDisable(ref SeString message, ref bool isHandled)
-    {
-        if (Service.Config.Get<GatherWindow.Config>().DisableOnErrors)
-        {
-            Errors.PushBack(Environment.TickCount64);
-            if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) //5 errors within 30 seconds stops the route, can adjust this as necessary
-            {
-                this.Finish();
-            }
-        }
     }
 
     public void Dispose()
@@ -174,4 +159,16 @@ public class GatherRouteExec : IDisposable
     private void ExecuteIslandSprint() => ExecuteActionSafe(ActionType.Action, 31314);
     private void ExecuteMount() => ExecuteActionSafe(ActionType.GeneralAction, 24); // flying mount roulette
     private void ExecuteJump() => ExecuteActionSafe(ActionType.GeneralAction, 2);
+
+    private void CheckToDisable(ref SeString message, ref bool isHandled)
+    {
+        if (Service.Config.Get<GatherRouteDB>().DisableOnErrors)
+        {
+            Errors.PushBack(Environment.TickCount64);
+            if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) //5 errors within 30 seconds stops the route, can adjust this as necessary
+            {
+                Finish();
+            }
+        }
+    }
 }

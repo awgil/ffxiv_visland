@@ -31,6 +31,7 @@ public class GatherRouteDB : Configuration.Node
     }
 
     public List<Route> Routes = new();
+    public bool DisableOnErrors = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {
@@ -45,6 +46,7 @@ public class GatherRouteDB : Configuration.Node
                     Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
             }
         }
+        DisableOnErrors = (bool?)j["DisableOnErrors"] ?? false;
     }
 
     public override JObject Serialize(JsonSerializer ser)
@@ -58,7 +60,10 @@ public class GatherRouteDB : Configuration.Node
                 { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
             });
         }
-        return new JObject() { { "Routes", res } };
+        return new JObject() {
+            { "Routes", res },
+            { "DisableOnErrors", DisableOnErrors },
+        };
     }
 
     public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints)
