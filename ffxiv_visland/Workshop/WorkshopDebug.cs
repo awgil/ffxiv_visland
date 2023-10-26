@@ -6,8 +6,12 @@ namespace visland.Workshop;
 
 public unsafe class WorkshopDebug
 {
-    private WorkshopSchedule _sched = new();
-    private WorkshopOCImport _oc = new();
+    private WorkshopSchedule _sched;
+
+    public WorkshopDebug(WorkshopSchedule sched)
+    {
+        _sched = sched;
+    }
 
     public void Draw()
     {

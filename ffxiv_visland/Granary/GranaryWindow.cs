@@ -11,11 +11,12 @@ unsafe class GranaryWindow : UIAttachedWindow
 {
     private GranaryConfig _config;
     private GranaryState _granary = new();
-    private GranaryDebug _debug = new();
+    private GranaryDebug _debug;
 
     public GranaryWindow() : base("Granary Automation", "MJIGatheringHouse", new(400, 600))
     {
         _config = Service.Config.Get<GranaryConfig>();
+        _debug = new(_granary);
     }
 
     public override void Draw()

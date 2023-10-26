@@ -7,10 +7,15 @@ namespace visland.Workshop;
 
 public class WorkshopManual
 {
+    private WorkshopSchedule _sched;
+
     private List<uint> _recents = new();
     private string _filter = "";
 
-    private WorkshopSchedule _sched = new();
+    public WorkshopManual(WorkshopSchedule sched)
+    {
+        _sched = sched;
+    }
 
     public void Draw()
     {

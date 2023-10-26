@@ -79,18 +79,17 @@ public class WorkshopOCImport
     }
 
     public Recs Recommendations = new();
-    public Recs RecommendationsCache = new();
 
-    private WorkshopFavors _favors = new();
-    private WorkshopSchedule _sched = new();
+    private WorkshopFavors _favors;
+    private WorkshopSchedule _sched;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
     private bool IgnoreFourthWorkshop;
-    private int selectedCycle = 0;
-    private List<int> Cycles { get; set; } = new() { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
 
-    public WorkshopOCImport()
+    public WorkshopOCImport(WorkshopFavors favors, WorkshopSchedule sched)
     {
+        _favors = favors;
+        _sched = sched;
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
     }
@@ -98,7 +97,7 @@ public class WorkshopOCImport
     public void Draw()
     {
         if (ImGui.Button("Import Recommendations From Clipboard"))
-            ImportRecs(ImGui.GetClipboardText());
+            ImportRecsFromClipboard(false);
         ImGuiComponents.HelpMarker("This is for importing schedules from the Overseas Casuals' Discord from your clipboard.\n" +
                         "This importer detects the presence of an item's name (not including \"Isleworks\" et al) on each line.\n" +
                         "You can copy an entire workshop's schedule from the discord, junk included.");
@@ -133,28 +132,6 @@ public class WorkshopOCImport
 
         ImGui.Separator();
 
-        // The UI does not like clearing the current recommendations even if you reset it right after. Need a solution
-
-        //Utils.TextV("Cycle Override: ");
-        //ImGui.SameLine();
-        //var cyclePrev = selectedCycle == 0 ? "" : Cycles[selectedCycle - 1].ToString();
-        //ImGui.SetNextItemWidth(50);
-        //if (ImGui.BeginCombo("###CycleOverride", cyclePrev))
-        //{
-        //    foreach (var cycle in Cycles)
-        //    {
-        //        var selected = ImGui.Selectable(cycle.ToString(), selectedCycle == cycle - 1);
-
-        //        if (selected)
-        //        {
-        //            selectedCycle = cycle - 1;
-        //            OverrideCycleStart(selectedCycle);
-        //        }
-
-        //    }
-        //    ImGui.EndCombo();
-        //}
-
         Utils.TextV("Set Schedule:");
         ImGui.SameLine();
         if (ImGui.Button("This Week"))
@@ -169,6 +146,18 @@ public class WorkshopOCImport
         DrawCycleRecommendations();
     }
 
+    public void ImportRecsFromClipboard(bool silent)
+    {
+        try
+        {
+            Recommendations = ParseRecs(ImGui.GetClipboardText());
+        }
+        catch (Exception ex)
+        {
+            ReportError($"Error: {ex.Message}", silent);
+        }
+    }
+
     private void DrawCycleRecommendations()
     {
         var tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoKeepColumnsVisible;
@@ -177,7 +166,10 @@ public class WorkshopOCImport
         ImGui.BeginChild("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
         {
-            ImGui.TextUnformatted($"Cycle {c}:");
+            Utils.TextV($"Cycle {c}:");
+            ImGui.SameLine();
+            if (ImGui.Button($"Import to active cycle##{c}"))
+                ApplyRecommendationToCurrentCycle(r);
             if (ImGui.BeginTable($"table_{c}", r.Workshops.Count, tableFlags))
             {
                 if (r.Workshops.Count <= 1)
@@ -248,19 +240,6 @@ public class WorkshopOCImport
                 res += $" favor{i + 1}:{_botNames[(int)id].Replace("\'", "")}";
         }
         return res;
-    }
-
-    private void ImportRecs(string str)
-    {
-        try
-        {
-            Recommendations = ParseRecs(str);
-            RecommendationsCache = Recommendations;
-        }
-        catch (Exception ex)
-        {
-            ReportError($"Error: {ex.Message}");
-        }
     }
 
     private void OverrideSideRecsLastWorkshop(string str)
@@ -381,23 +360,6 @@ public class WorkshopOCImport
         {
             cycle = 0;
             return false;
-        }
-    }
-
-    private void OverrideCycleStart(int selectedCycle)
-    {
-        if (selectedCycle == 0)
-        {
-            Recommendations = RecommendationsCache;
-            return;
-        }
-
-        Recommendations.Clear();
-        var i = 0;
-        foreach (var (c, r) in RecommendationsCache.Enumerate())
-        {
-            Recommendations.Add(selectedCycle - 1 + i, r);
-            i++;
         }
     }
 
@@ -533,9 +495,10 @@ public class WorkshopOCImport
         }
     }
 
-    private static void ReportError(string msg)
+    private static void ReportError(string msg, bool silent = false)
     {
         Service.Log.Error(msg);
-        Service.ChatGui.PrintError(msg);
+        if (!silent)
+            Service.ChatGui.PrintError(msg);
     }
 }

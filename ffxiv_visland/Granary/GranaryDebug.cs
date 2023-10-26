@@ -8,8 +8,13 @@ namespace visland.Granary;
 
 public unsafe class GranaryDebug
 {
-    private GranaryState _state = new();
+    private GranaryState _state;
     private UITree _tree = new();
+
+    public GranaryDebug(GranaryState state)
+    {
+        _state = state;
+    }
 
     public void Draw()
     {

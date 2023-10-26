@@ -90,14 +90,12 @@ public sealed class Plugin : IDalamudPlugin
 
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIAnimalManagement", _wndAmimal.AutoCollectPasture);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", _wndExports.AutoExport);
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJICraftSchedule", _wndWorkshop.OnWorkshopSetup);
     }
 
     public void Dispose()
     {
         Service.AddonLifecycle.UnregisterListener(_wndAmimal.AutoCollectPasture);
         Service.AddonLifecycle.UnregisterListener(_wndExports.AutoExport);
-        Service.AddonLifecycle.UnregisterListener(_wndWorkshop.OnWorkshopSetup);
 
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
