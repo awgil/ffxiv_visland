@@ -1,6 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using ECommons.DalamudServices;
 using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -20,12 +22,19 @@ public class GatherWindow : Window, IDisposable
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
+    public class Config : Configuration.Node
+    {
+        public bool DisableOnErrors = false;
+    }
+
+    private Config RouteSettings;
 
     public GatherWindow() : base("Island sanctuary automation")
     {
         Size = new Vector2(800, 800);
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
+        RouteSettings = Service.Config.Get<Config>();
     }
 
     public void Dispose()
@@ -50,6 +59,11 @@ public class GatherWindow : Window, IDisposable
 
     private void DrawExecution()
     {
+        if (ImGui.Checkbox("Stop Route on Error", ref RouteSettings.DisableOnErrors))
+            RouteSettings.NotifyModified();
+
+        ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+
         if (Exec.CurrentRoute == null || Exec.CurrentWaypoint >= Exec.CurrentRoute.Waypoints.Count)
         {
             ImGui.TextUnformatted("Route not running");
