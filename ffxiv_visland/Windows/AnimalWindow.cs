@@ -20,8 +20,6 @@ unsafe class AnimalWindow : UIAttachedWindow
     {
         _config = Service.Config.Get<Config>();
     }
-    //AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIAnimalManagement", AutoCollectPasture);
-    //AddonLifecycle.UnregisterListener(AutoCollectPasture);
 
     public override void Draw()
     {
@@ -29,7 +27,7 @@ unsafe class AnimalWindow : UIAttachedWindow
             _config.NotifyModified();
     }
 
-    private void AutoCollectPasture(AddonEvent eventType, AddonArgs addonInfo)
+    public void AutoCollectPasture(AddonEvent eventType, AddonArgs addonInfo)
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
         if (addonInfo.AddonName != "MJIAnimalManagement") return;

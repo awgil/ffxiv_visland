@@ -22,8 +22,6 @@ unsafe class GranaryWindow : UIAttachedWindow
     {
         _config = Service.Config.Get<Config>();
     }
-    //AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIGatheringHouse", AutoCollectGranary);
-    //AddonLifecycle.UnregisterListener(AutoCollectGranary);
 
     public override void Draw()
     {
@@ -33,7 +31,7 @@ unsafe class GranaryWindow : UIAttachedWindow
             _config.NotifyModified();
     }
 
-    private void AutoCollectGranary(AddonEvent eventType, AddonArgs addonInfo)
+    public void AutoCollectGranary(AddonEvent eventType, AddonArgs addonInfo)
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
         if (addonInfo.AddonName != "MJIGatheringHouse") return;

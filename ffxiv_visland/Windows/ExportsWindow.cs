@@ -21,8 +21,6 @@ unsafe class ExportsWindow : UIAttachedWindow
     {
         _config = Service.Config.Get<Config>();
     }
-    //AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", AutoExport);
-    //AddonLifecycle.UnregisterListener(AutoCollectFarm);
 
     public override void Draw()
     {
@@ -37,7 +35,7 @@ unsafe class ExportsWindow : UIAttachedWindow
         }
     }
 
-    private void AutoExport(AddonEvent eventType, AddonArgs addonInfo)
+    public void AutoExport(AddonEvent eventType, AddonArgs addonInfo)
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
         if (addonInfo.AddonName != "MJIDisposeShop" || addon is null) return;
