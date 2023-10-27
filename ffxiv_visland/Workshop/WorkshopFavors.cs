@@ -19,11 +19,17 @@ public unsafe partial struct MJIManagerFavors
 public unsafe partial struct MJIManagerEx
 {
     [FieldOffset(0x168)] public MJIManagerFavors* Favors;
+
+    [FieldOffset(0x2E0)] public ushort RequestDemandCraftId;
+    [FieldOffset(0x2E4)] public int RequestDemandType; // 0 = none, 1 = everything, 2 = specific object
+    [FieldOffset(0x2E8)] public bool DemandDirty;
 }
 
 public class WorkshopFavors
 {
-    public static unsafe MJIManagerFavors* FavorsData => ((MJIManagerEx*)MJIManager.Instance())->Favors;
+    public static unsafe MJIManagerEx* Manager => ((MJIManagerEx*)MJIManager.Instance());
+    public static unsafe MJIManagerFavors* FavorsData => Manager->Favors;
+    public static unsafe bool DemandDirty => Manager->DemandDirty;
     public unsafe int DataAvailability => FavorsData != null ? FavorsData->DataAvailability : -1;
     public unsafe uint CraftObjectID(int index) => FavorsData != null ? FavorsData->ObjectsIDs[index] : 0u;
     public unsafe int NumDelivered(int index) => FavorsData != null ? FavorsData->NumDelivered[index] : 0;

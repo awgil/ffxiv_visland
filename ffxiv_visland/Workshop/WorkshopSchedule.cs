@@ -57,7 +57,6 @@ public unsafe partial struct AgentMJICraftSchedule
         [FieldOffset(0x814)] public uint NewRestCycles;
         [FieldOffset(0xB58)] public byte CurrentCycle; // currently viewed
         [FieldOffset(0xB59)] public byte CycleInProgress;
-        [FieldOffset(0xB5A)] public byte CurrentIslandRank; // incorrect!
 
         public Span<WorkshopData> Workshops => new(Unsafe.AsPointer(ref WorkshopData[0]), 4);
     }
@@ -69,6 +68,9 @@ public unsafe partial struct AgentMJICraftSchedule
 public unsafe class WorkshopSchedule
 {
     public AgentMJICraftSchedule* Agent;
+
+    private delegate void RequestDemandFullDelegate(MJIManager* self);
+    private RequestDemandFullDelegate _requestDemandFull;
 
     // 'startingHour' is (slot + 17) % 24, where slot 0 is first hour of the cycle
     private delegate void ScheduleCraftDelegate(MJIManager* self, ushort craftObjectId, byte startingHour, byte cycle, byte workshop);
@@ -85,6 +87,7 @@ public unsafe class WorkshopSchedule
     public WorkshopSchedule()
     {
         Agent = (AgentMJICraftSchedule*)AgentModule.Instance()->GetAgentByInternalId(AgentId.MJICraftSchedule);
+        _requestDemandFull = Marshal.GetDelegateForFunctionPointer<RequestDemandFullDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CD E8 ?? ?? ?? ?? 32 C0"));
         _scheduleCraft = Marshal.GetDelegateForFunctionPointer<ScheduleCraftDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 46 28 41 8D 4E FF"));
         _setCurrentCycle = Marshal.GetDelegateForFunctionPointer<SetCurrentCycleDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 48 8B 45 28 48 8B 7C 24"));
     }
@@ -123,9 +126,28 @@ public unsafe class WorkshopSchedule
         SynthesizeEvent(5, new AtkValue[] { new() { Type = AtkValueType.Int, Int = 0 } });
     }
 
+    public void RequestDemand()
+    {
+        Service.Log.Info("Fetching demand");
+        _requestDemandFull(MJIManager.Instance());
+    }
+
+    public static unsafe int GetMaxWorkshops()
+    {
+        var mji = MJIManager.Instance();
+        return mji == null ? 0 : mji->IslandState.CurrentRank switch
+        {
+            < 3 => 0,
+            < 6 => 1,
+            < 8 => 2,
+            < 14 => 3,
+            _ => 4,
+        };
+    }
+
     private void SynthesizeEvent(ulong eventKind, Span<AtkValue> args)
     {
-        var eventData = stackalloc int[] { 0, 0, 0 };
-        Agent->AgentInterface.ReceiveEvent(eventData, args.GetPointer(0), (uint)args.Length, eventKind);
+        AtkValue res = new();
+        Agent->AgentInterface.ReceiveEvent(&res, args.GetPointer(0), (uint)args.Length, eventKind);
     }
 }

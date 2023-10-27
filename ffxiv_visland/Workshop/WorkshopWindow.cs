@@ -18,7 +18,13 @@ unsafe class WorkshopWindow : UIAttachedWindow
         _config = Service.Config.Get<WorkshopConfig>();
         _manual = new(_sched);
         _oc = new(_favors, _sched);
-        _debug = new(_sched);
+        _debug = new(_sched, _favors);
+    }
+
+    public override void PreOpenCheck()
+    {
+        base.PreOpenCheck();
+        _oc.Update();
     }
 
     public override void Draw()
@@ -58,6 +64,8 @@ unsafe class WorkshopWindow : UIAttachedWindow
         if (ImGui.Checkbox("Automatically select next cycle on open", ref _config.AutoOpenNextDay))
             _config.NotifyModified();
         if (ImGui.Checkbox("Automatically import base recs on open", ref _config.AutoImport))
+            _config.NotifyModified();
+        if (ImGui.Checkbox("Use experimental favor solver", ref _config.UseFavorSolver))
             _config.NotifyModified();
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Dalamud;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
+using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
@@ -16,86 +18,35 @@ namespace visland.Workshop;
 
 public class WorkshopOCImport
 {
-    public struct Rec
-    {
-        public int Slot;
-        public uint CraftObjectId;
-
-        public Rec(int slot, uint craftObjectId)
-        {
-            Slot = slot;
-            CraftObjectId = craftObjectId;
-        }
-    }
-
-    public class DayRec
-    {
-        public List<List<Rec>> Workshops = new();
-
-        public bool Empty => Workshops.Count == 0;
-    }
-
-    public class Recs
-    {
-        private List<DayRec> _schedules = new();
-        public uint CyclesMask { get; private set; } // num bits set equal to num schedules
-        public IReadOnlyList<DayRec> Schedules => _schedules;
-
-        public bool Empty => Schedules.Count == 0;
-
-        public void Add(int cycle, DayRec schedule)
-        {
-            if (schedule.Empty)
-                return; // don't care, rest day or something
-
-            if (cycle is < 1 or > 7)
-                throw new Exception($"Cycle index out of bounds: {cycle}");
-            var mask = 1u << cycle - 1;
-            if ((CyclesMask & mask) != 0)
-                throw new Exception($"Duplicate cycle {cycle} in the recs");
-            if ((CyclesMask & ~(mask - 1)) != 0)
-                throw new Exception($"Bad cycle order: {cycle} found after future days");
-
-            _schedules.Add(schedule);
-            CyclesMask |= mask;
-        }
-
-        public IEnumerable<(int cycle, DayRec rec)> Enumerate()
-        {
-            var m = CyclesMask;
-            foreach (var r in Schedules)
-            {
-                var c = BitOperations.TrailingZeroCount(m);
-                yield return (c + 1, r);
-                m &= ~(1u << c);
-            }
-        }
-
-        public void Clear()
-        {
-            _schedules.Clear();
-            CyclesMask = 0;
-        }
-    }
-
-    public Recs Recommendations = new();
+    public WorkshopSolver.Recs Recommendations = new();
 
     private WorkshopFavors _favors;
     private WorkshopSchedule _sched;
+    private WorkshopConfig _config;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
+    private List<Func<bool>> _pendingActions = new();
     private bool IgnoreFourthWorkshop;
 
     public WorkshopOCImport(WorkshopFavors favors, WorkshopSchedule sched)
     {
         _favors = favors;
         _sched = sched;
+        _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
     }
 
+    public void Update()
+    {
+        var numDone = _pendingActions.TakeWhile(f => f()).Count();
+        _pendingActions.RemoveRange(0, numDone);
+    }
+
     public void Draw()
     {
+        using var globalDisable = ImRaii.Disabled(_pendingActions.Count > 0); // disallow any manipulations while delayed actions are in progress
+
         if (ImGui.Button("Import Recommendations From Clipboard"))
             ImportRecsFromClipboard(false);
         ImGuiComponents.HelpMarker("This is for importing schedules from the Overseas Casuals' Discord from your clipboard.\n" +
@@ -107,28 +58,48 @@ public class WorkshopOCImport
 
         ImGui.Separator();
 
-        ImGui.TextUnformatted("Favours");
-        ImGuiComponents.HelpMarker("Click the \"This Week's Favors\" or \"Next Week's Favors\" button to generate a bot command for the OC discord for your favors.\n" +
-                "Then click the #bot-spam button to open discord to the channel, paste in the command and copy its output.\n" +
-                "Finally, click the \"Override 4th workshop\" button to replace the regular recommendations with favor recommendations.");
+        if (!_config.UseFavorSolver)
+        {
+            ImGui.TextUnformatted("Favours");
+            ImGuiComponents.HelpMarker("Click the \"This Week's Favors\" or \"Next Week's Favors\" button to generate a bot command for the OC discord for your favors.\n" +
+                    "Then click the #bot-spam button to open discord to the channel, paste in the command and copy its output.\n" +
+                    "Finally, click the \"Override 4th workshop\" button to replace the regular recommendations with favor recommendations.");
 
+            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "This Week's Favors"))
+                ImGui.SetClipboardText(CreateFavorRequestCommand(false));
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Next Week's Favors"))
+                ImGui.SetClipboardText(CreateFavorRequestCommand(true));
 
-        if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "This Week's Favors"))
-            ImGui.SetClipboardText(CreateFavorRequestCommand(false));
-        ImGui.SameLine();
-        if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Next Week's Favors"))
-            ImGui.SetClipboardText(CreateFavorRequestCommand(true));
+            if (ImGui.Button("Overseas Casuals > #bot-spam"))
+                Util.OpenLink("discord://discord.com/channels/1034534280757522442/1034985297391407126");
+            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+                Util.OpenLink("https://discord.com/channels/1034534280757522442/1034985297391407126");
+            ImGuiComponents.HelpMarker("Left Click: Discord app\nRight Click: Discord in browser");
 
-        if (ImGui.Button("Overseas Casuals > #bot-spam"))
-            Util.OpenLink("discord://discord.com/channels/1034534280757522442/1034985297391407126");
-        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-            Util.OpenLink("https://discord.com/channels/1034534280757522442/1034985297391407126");
-        ImGuiComponents.HelpMarker("Left Click: Discord app\nRight Click: Discord in browser");
+            if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
+                OverrideSideRecsLastWorkshopClipboard();
+            if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
+                OverrideSideRecsAsapClipboard();
+        }
+        else
+        {
+            Utils.TextV("Override 4th workshop with favors:");
+            ImGui.SameLine();
+            if (ImGui.Button($"This week##4th"))
+                OverrideSideRecsLastWorkshopSolver(false);
+            ImGui.SameLine();
+            if (ImGui.Button($"Next week##4th"))
+                OverrideSideRecsLastWorkshopSolver(true);
 
-        if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
-            OverrideSideRecsLastWorkshop(ImGui.GetClipboardText());
-        if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
-            OverrideSideRecsAsap(ImGui.GetClipboardText());
+            Utils.TextV("Override closest workshops with favors:");
+            ImGui.SameLine();
+            if (ImGui.Button($"This week##4th"))
+                OverrideSideRecsAsapSolver(false);
+            ImGui.SameLine();
+            if (ImGui.Button($"Next week##4th"))
+                OverrideSideRecsAsapSolver(true);
+        }
 
         ImGui.Separator();
 
@@ -161,44 +132,48 @@ public class WorkshopOCImport
     private void DrawCycleRecommendations()
     {
         var tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoKeepColumnsVisible;
-        var maxWorkshops = Utils.GetMaxWorkshops();
+        var maxWorkshops = WorkshopSchedule.GetMaxWorkshops();
 
-        ImGui.BeginChild("ScrollableSection");
+        using var scrollSection = ImRaii.Child("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
         {
             Utils.TextV($"Cycle {c}:");
             ImGui.SameLine();
             if (ImGui.Button($"Import to active cycle##{c}"))
                 ApplyRecommendationToCurrentCycle(r);
-            if (ImGui.BeginTable($"table_{c}", r.Workshops.Count, tableFlags))
+
+            using var outerTable = ImRaii.Table($"table_{c}", r.Workshops.Count, tableFlags);
+            if (outerTable)
             {
+                var workshopLimit = r.Workshops.Count - (IgnoreFourthWorkshop && r.Workshops.Count > 1 ? 1 : 0);
                 if (r.Workshops.Count <= 1)
                 {
-                    ImGui.TableSetupColumn($"{(IgnoreFourthWorkshop ? $"Workshops 1-{maxWorkshops - 1}" : "All Workshops")}");
+                    ImGui.TableSetupColumn(IgnoreFourthWorkshop ? $"Workshops 1-{maxWorkshops - 1}" : "All Workshops");
                 }
                 else if (r.Workshops.Count < maxWorkshops)
                 {
                     var numDuplicates = 1 + maxWorkshops - r.Workshops.Count;
                     ImGui.TableSetupColumn($"Workshops 1-{numDuplicates}");
-                    for (int i = 1; IgnoreFourthWorkshop ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
+                    for (int i = 1; i < workshopLimit; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + numDuplicates}");
                 }
                 else
                 {
                     // favors
-                    for (int i = 0; IgnoreFourthWorkshop ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
+                    for (int i = 0; i < workshopLimit; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + 1}");
                 }
                 ImGui.TableHeadersRow();
 
                 ImGui.TableNextRow();
-                for (int i = 0; IgnoreFourthWorkshop && r.Workshops.Count > 1 ? i < r.Workshops.Count - 1 : i < r.Workshops.Count; ++i)
+                for (int i = 0; i < workshopLimit; ++i)
                 {
                     ImGui.TableNextColumn();
-                    if (ImGui.BeginTable($"table_{c}_{i}", 2, tableFlags))
+                    using var innerTable = ImRaii.Table($"table_{c}_{i}", 2, tableFlags);
+                    if (innerTable)
                     {
                         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthFixed);
-                        foreach (var rec in r.Workshops[i])
+                        foreach (var rec in r.Workshops[i].Slots)
                         {
                             ImGui.TableNextRow();
 
@@ -212,12 +187,9 @@ public class WorkshopOCImport
                             ImGui.TextUnformatted(_botNames[(int)rec.CraftObjectId]);
                         }
                     }
-                    ImGui.EndTable();
                 }
             }
-            ImGui.EndTable();
         }
-        ImGui.EndChild();
     }
 
     private string CreateFavorRequestCommand(bool nextWeek)
@@ -242,22 +214,14 @@ public class WorkshopOCImport
         return res;
     }
 
-    private void OverrideSideRecsLastWorkshop(string str)
+    private void OverrideSideRecsLastWorkshopClipboard()
     {
         try
         {
-            var overrideRecs = ParseRecOverrides(str);
+            var overrideRecs = ParseRecOverrides(ImGui.GetClipboardText());
             if (overrideRecs.Count > Recommendations.Schedules.Count)
                 throw new Exception($"Override list is longer than base schedule: {overrideRecs.Count} > {Recommendations.Schedules.Count}");
-
-            foreach (var (r, o) in Recommendations.Schedules.Zip(overrideRecs))
-            {
-                // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
-                if (r.Workshops.Count > 1)
-                    r.Workshops.RemoveAt(r.Workshops.Count - 1);
-                // and add current override as a schedule for last workshop
-                r.Workshops.Add(o);
-            }
+            OverrideSideRecsLastWorkshop(overrideRecs);
         }
         catch (Exception ex)
         {
@@ -265,30 +229,35 @@ public class WorkshopOCImport
         }
     }
 
-    private void OverrideSideRecsAsap(string str)
+    private void OverrideSideRecsLastWorkshopSolver(bool nextWeek)
+    {
+        EnsureDemandAvailable();
+        _pendingActions.Add(() => {
+            OverrideSideRecsLastWorkshop(SolveRecOverrides(nextWeek));
+            return true;
+        });
+    }
+
+    private void OverrideSideRecsLastWorkshop(List<WorkshopSolver.WorkshopRec> overrides)
+    {
+        foreach (var (r, o) in Recommendations.Schedules.Zip(overrides))
+        {
+            // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
+            if (r.Workshops.Count > 1)
+                r.Workshops.RemoveAt(r.Workshops.Count - 1);
+            // and add current override as a schedule for last workshop
+            r.Workshops.Add(o);
+        }
+    }
+
+    private void OverrideSideRecsAsapClipboard()
     {
         try
         {
-            var overrideRecs = ParseRecOverrides(str);
+            var overrideRecs = ParseRecOverrides(ImGui.GetClipboardText());
             if (overrideRecs.Count > Recommendations.Schedules.Count * 4)
                 throw new Exception($"Override list is longer than base schedule: {overrideRecs.Count} > 4 * {Recommendations.Schedules.Count}");
-
-            int nextOverride = 0;
-            foreach (var r in Recommendations.Schedules)
-            {
-                var batchSize = Math.Min(4, overrideRecs.Count - nextOverride);
-                if (batchSize == 0)
-                    break; // nothing left to override
-
-                // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
-                if (r.Workshops.Count > 1)
-                    r.Workshops.RemoveAt(r.Workshops.Count - 1);
-                var maxLeft = 4 - batchSize;
-                if (r.Workshops.Count > maxLeft)
-                    r.Workshops.RemoveRange(maxLeft, r.Workshops.Count - maxLeft);
-                r.Workshops.AddRange(overrideRecs.Skip(nextOverride).Take(batchSize));
-                nextOverride += batchSize;
-            }
+            OverrideSideRecsAsap(overrideRecs);
         }
         catch (Exception ex)
         {
@@ -296,11 +265,40 @@ public class WorkshopOCImport
         }
     }
 
-    private Recs ParseRecs(string str)
+    private void OverrideSideRecsAsapSolver(bool nextWeek)
     {
-        var result = new Recs();
+        EnsureDemandAvailable();
+        _pendingActions.Add(() => {
+            OverrideSideRecsAsap(SolveRecOverrides(nextWeek));
+            return true;
+        });
+    }
 
-        var curRec = new DayRec();
+    private void OverrideSideRecsAsap(List<WorkshopSolver.WorkshopRec> overrides)
+    {
+        int nextOverride = 0;
+        foreach (var r in Recommendations.Schedules)
+        {
+            var batchSize = Math.Min(4, overrides.Count - nextOverride);
+            if (batchSize == 0)
+                break; // nothing left to override
+
+            // if base recs have >1 workshop, remove last (assume we always want to override 4th workshop)
+            if (r.Workshops.Count > 1)
+                r.Workshops.RemoveAt(r.Workshops.Count - 1);
+            var maxLeft = 4 - batchSize;
+            if (r.Workshops.Count > maxLeft)
+                r.Workshops.RemoveRange(maxLeft, r.Workshops.Count - maxLeft);
+            r.Workshops.AddRange(overrides.Skip(nextOverride).Take(batchSize));
+            nextOverride += batchSize;
+        }
+    }
+
+    private WorkshopSolver.Recs ParseRecs(string str)
+    {
+        var result = new WorkshopSolver.Recs();
+
+        var curRec = new WorkshopSolver.DayRec();
         int nextSlot = 24;
         int curCycle = 0;
         foreach (var l in str.Split('\n', '\r'))
@@ -333,7 +331,7 @@ public class WorkshopOCImport
                     curRec.Workshops.Add(new());
                     nextSlot = 0;
                 }
-                curRec.Workshops.Last().Add(new(nextSlot, item.RowId));
+                curRec.Workshops.Last().Add(nextSlot, item.RowId);
                 nextSlot += item.CraftingTime;
             }
         }
@@ -388,9 +386,9 @@ public class WorkshopOCImport
         return score;
     }
 
-    private List<List<Rec>> ParseRecOverrides(string str)
+    private List<WorkshopSolver.WorkshopRec> ParseRecOverrides(string str)
     {
-        var result = new List<List<Rec>>();
+        var result = new List<WorkshopSolver.WorkshopRec>();
         int nextSlot = 24;
 
         foreach (var l in str.Split('\n', '\r'))
@@ -408,12 +406,28 @@ public class WorkshopOCImport
                     result.Add(new());
                     nextSlot = 0;
                 }
-                result.Last().Add(new(nextSlot, item.RowId));
+                result.Last().Add(nextSlot, item.RowId);
                 nextSlot += item.CraftingTime;
             }
         }
 
         return result;
+    }
+
+    private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
+    {
+        var state = new WorkshopSolver.FavorState();
+        var offset = nextWeek ? 6 : 3;
+        for (int i = 0; i < 3; ++i)
+        {
+            state.CraftObjectIds[i] = _favors.CraftObjectID(i + offset);
+            state.CompletedCounts[i] = _favors.NumDelivered(i + offset) + _favors.NumScheduled(i + offset);
+        }
+        if (!WorkshopFavors.DemandDirty)
+        {
+            state.Popularity.Set(nextWeek ? MJIManager.Instance()->NextPopularity : MJIManager.Instance()->CurrentPopularity);
+        }
+        return new WorkshopSolverFavorSheet(state).Recs;
     }
 
     public static string OfficialNameToBotName(string name)
@@ -431,21 +445,25 @@ public class WorkshopOCImport
         return name;
     }
 
-    private unsafe void ApplyRecommendation(int cycle, DayRec rec)
+    private void EnsureDemandAvailable()
     {
-        var maxWorkshops = IgnoreFourthWorkshop ? Utils.GetMaxWorkshops() - 1 : Utils.GetMaxWorkshops();
-        var numDuplicates = 1 + Math.Max(0, maxWorkshops - rec.Workshops.Count);
-        for (var i = 0; i < maxWorkshops; i++)
+        if (WorkshopFavors.DemandDirty)
         {
-            var recs = rec.Workshops[i < numDuplicates ? 0 : 1 + (i - numDuplicates)];
-            foreach (var r in recs)
-            {
-                _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, i);
-            }
+            _sched.RequestDemand();
+            _pendingActions.Add(() => !WorkshopFavors.DemandDirty);
         }
     }
 
-    private void ApplyRecommendationToCurrentCycle(DayRec rec)
+    private unsafe void ApplyRecommendation(int cycle, WorkshopSolver.DayRec rec)
+    {
+        var maxWorkshops = WorkshopSchedule.GetMaxWorkshops();
+        foreach (var w in rec.Enumerate(maxWorkshops))
+            if (!IgnoreFourthWorkshop || w.workshop < maxWorkshops - 1)
+                foreach (var r in w.rec.Slots)
+                    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, w.workshop);
+    }
+
+    private void ApplyRecommendationToCurrentCycle(WorkshopSolver.DayRec rec)
     {
         var cycle = _sched.CurrentCycle;
         ApplyRecommendation(cycle, rec);

@@ -32,7 +32,7 @@ public static class UICombo
         return res;
     }
 
-    public static bool Int(string label, string[] values, ref int v)
+    public static bool Int(string label, string[] values, ref int v, Func<int, bool> filter)
     {
         bool res = false;
         ImGui.SetNextItemWidth(200);
@@ -40,7 +40,7 @@ public static class UICombo
         {
             for (int i = 0; i < values.Length; ++i)
             {
-                if (ImGui.Selectable(values[i], v == i))
+                if (filter(i) && ImGui.Selectable(values[i], v == i))
                 {
                     v = i;
                     res = true;
@@ -50,6 +50,18 @@ public static class UICombo
         }
         return res;
     }
+
+    public static bool Int(string label, string[] values, ref int v) => Int(label, values, ref v, _ => true);
+
+    public static bool UInt(string label, string[] values, ref uint v, Func<uint, bool> filter)
+    {
+        var cast = (int)v;
+        var res = Int(label, values, ref cast, x => filter((uint)x));
+        v = (uint)cast;
+        return res;
+    }
+
+    public static bool UInt(string label, string[] values, ref uint v) => UInt(label, values, ref v, _ => true);
 
     public static bool Bool(string label, string[] values, ref bool v)
     {

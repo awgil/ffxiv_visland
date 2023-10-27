@@ -28,7 +28,8 @@ public class UITree
     {
         if (RawNode(text, leaf, color, contextMenu, doubleClick, select))
         {
-            yield return null;
+            if (!leaf)
+                yield return null;
             ImGui.TreePop();
         }
         ImGui.PopID();
@@ -42,7 +43,8 @@ public class UITree
             var props = map(t);
             if (RawNode(props.Text, props.Leaf, props.Color, contextMenu != null ? () => contextMenu(t) : null, doubleClick != null ? () => doubleClick(t) : null, select != null ? () => select(t) : null))
             {
-                yield return t;
+                if (!props.Leaf)
+                    yield return t;
                 ImGui.TreePop();
             }
             ImGui.PopID();

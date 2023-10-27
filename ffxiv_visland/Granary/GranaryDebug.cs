@@ -42,6 +42,7 @@ public unsafe class GranaryDebug
                 _tree.LeafNode($"Selected days={agent->CurActiveDays} -> {agent->CurProposedDays}");
                 if (agent->Data != null)
                 {
+                    _tree.LeafNode($"Agent data inited: {agent->Data->Initialized}");
                     foreach (var m in _tree.Node("Expeditions", agent->Data->Expeditions.Size() == 0))
                     {
                         int i = 0;

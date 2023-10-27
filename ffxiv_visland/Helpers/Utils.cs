@@ -54,27 +54,6 @@ public static unsafe class Utils
     public static bool DangerousButton(string label) => DangerousItem(() => ImGui.Button(label));
     public static bool DangerousMenuItem(string label) => DangerousItem(() => ImGui.MenuItem(label));
 
-    public static unsafe int GetMaxWorkshops()
-    {
-        try
-        {
-            var currentRank = MJIManager.Instance()->IslandState.CurrentRank;
-            return currentRank switch
-            {
-                1 when currentRank < 3 => 0,
-                2 when currentRank < 6 => 1,
-                3 when currentRank < 8 => 2,
-                4 when currentRank < 14 => 3,
-                _ => 4,
-            };
-        }
-        catch (Exception ex)
-        {
-            Service.Log.Error(ex.Message);
-            return 4;
-        }
-    }
-
     public static void TextV(string s)
     {
         var cur = ImGui.GetCursorPos();
