@@ -4,23 +4,57 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "visland", "ffxiv_visland\visland.csproj", "{33ABD215-C73B-48B4-A7DC-086F50E11324}"
+	ProjectSection(ProjectDependencies) = postProject
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27} = {51BB57F4-CB2F-4C15-9337-C3771B4CBB27}
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD} = {D3F40391-1C5B-4C70-B489-CA117B3A0EDD}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECommons", "ECommons\ECommons\ECommons.csproj", "{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs", "FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj", "{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FFXIVClientStructs.InteropSourceGenerators", "FFXIVClientStructs\FFXIVClientStructs.InteropSourceGenerators\FFXIVClientStructs.InteropSourceGenerators.csproj", "{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Debug|Any CPU.Build.0 = Debug|x64
 		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Debug|x64.ActiveCfg = Debug|x64
 		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Debug|x64.Build.0 = Debug|x64
+		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Release|Any CPU.ActiveCfg = Release|x64
+		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Release|Any CPU.Build.0 = Release|x64
 		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Release|x64.ActiveCfg = Release|x64
 		{33ABD215-C73B-48B4-A7DC-086F50E11324}.Release|x64.Build.0 = Release|x64
+		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Debug|Any CPU.Build.0 = Debug|x64
 		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Debug|x64.ActiveCfg = Debug|x64
 		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Debug|x64.Build.0 = Debug|x64
+		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Release|Any CPU.ActiveCfg = Release|x64
+		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Release|Any CPU.Build.0 = Release|x64
 		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Release|x64.ActiveCfg = Release|x64
 		{4EC77B61-5E48-4895-A1F5-B383D1F6CAC6}.Release|x64.Build.0 = Release|x64
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Debug|x64.Build.0 = Debug|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Release|x64.ActiveCfg = Release|Any CPU
+		{51BB57F4-CB2F-4C15-9337-C3771B4CBB27}.Release|x64.Build.0 = Release|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Debug|x64.Build.0 = Debug|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Release|x64.ActiveCfg = Release|Any CPU
+		{D3F40391-1C5B-4C70-B489-CA117B3A0EDD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

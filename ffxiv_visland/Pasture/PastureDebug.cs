@@ -78,12 +78,6 @@ public unsafe partial struct AgentMJIAnimalManagement
     }
 }
 
-[StructLayout(LayoutKind.Explicit, Size = 0xB78)]
-public unsafe partial struct MJIPastureHandlerEx
-{
-    [FieldOffset(0x2D8)] public StdMap<uint, int> AvailableLeavings; // key=item id, value=uncollected value
-}
-
 [StructLayout(LayoutKind.Explicit, Size = 0x34)]
 public unsafe struct MJIAnimalEx
 {
@@ -117,10 +111,9 @@ public unsafe class PastureDebug
         var sheetItem = Service.LuminaGameData.GetExcelSheet<Item>()!;
         foreach (var n1 in _tree.Node($"State: level={mgr->IslandState.Pasture.Level}, htc={mgr->IslandState.Pasture.HoursToCompletion}, uc={mgr->IslandState.Pasture.UnderConstruction}, efc={mgr->IslandState.Pasture.EligibleForCare}", mgr->PastureHandler == null))
         {
-            var phex = (MJIPastureHandlerEx*)mgr->PastureHandler;
             foreach (var n2 in _tree.Node("Available Leavings"))
             {
-                foreach (var (k, v) in phex->AvailableLeavings)
+                foreach (var (k, v) in mgr->PastureHandler->AvailableMammetLeavings)
                 {
                     _tree.LeafNode($"{k} '{sheetItem.GetRow(k)?.Name}' = {v}");
                 }

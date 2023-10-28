@@ -1,11 +1,16 @@
-﻿using Dalamud.Game.Addon.Lifecycle;
+﻿using Dalamud.Common;
+using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
+using ECommons.Reflection;
 using ImGuiNET;
+using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using visland.Farm;
 using visland.Gathering;
 using visland.Granary;
@@ -54,8 +59,18 @@ public sealed class Plugin : IDalamudPlugin
     private FarmWindow _wndFarm;
     private ExportsWindow _wndExports;
 
-    public Plugin(DalamudPluginInterface dalamud)
+    public unsafe Plugin(DalamudPluginInterface dalamud)
     {
+        var dir = dalamud.ConfigDirectory;
+        if (!dir.Exists)
+            dir.Create();
+        var dalamudRoot = dalamud.GetType().Assembly.
+                GetType("Dalamud.Service`1", true)!.MakeGenericType(dalamud.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).
+                GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, Array.Empty<object>(), null);
+        var dalamudStartInfo = dalamudRoot.GetFoP<DalamudStartInfo>("StartInfo");
+        FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(0, new(Path.Combine(dalamud.ConfigDirectory.FullName, $"{dalamudStartInfo.GameVersion}_cs.json")));
+        FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
+
         ECommonsMain.Init(dalamud, this);
 
         dalamud.Create<Service>();
