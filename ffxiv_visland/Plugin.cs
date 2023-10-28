@@ -98,7 +98,7 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
             WindowSystem.AddWindow(_wndGranary);
-            WindowSystem.AddWindow(_wndPasture);
+            //WindowSystem.AddWindow(_wndPasture);
             WindowSystem.AddWindow(_wndFarm);
             //WindowSystem.AddWindow(_wndExports);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
