@@ -1,28 +1,28 @@
 ﻿using ImGuiNET;
 using visland.Helpers;
 using Dalamud.Interface.Utility.Raii;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using System;
 using System.Collections.Generic;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace visland.Granary;
 
 unsafe class GranaryWindow : UIAttachedWindow
 {
     private GranaryConfig _config;
-    private GranaryState _granary = new();
     private GranaryDebug _debug;
 
     public GranaryWindow() : base("Granary Automation", "MJIGatheringHouse", new(400, 600))
     {
         _config = Service.Config.Get<GranaryConfig>();
-        _debug = new(_granary);
+        _debug = new();
     }
 
     public override void PreOpenCheck()
     {
         base.PreOpenCheck();
-        IsOpen &= _granary.Agent != null && _granary.Agent->Data != null && _granary.Agent->Data->Initialized != 0;
+        var agent = AgentMJIGatheringHouse.Instance();
+        IsOpen &= agent != null && agent->Data != null && agent->Data->Initialized;
     }
 
     public override void Draw()
@@ -41,11 +41,11 @@ unsafe class GranaryWindow : UIAttachedWindow
 
     public override void OnOpen()
     {
-        if (_config.Reassign != GranaryConfig.UpdateStrategy.Manual && _granary.Agent->Data != null)
+        if (_config.Reassign != GranaryConfig.UpdateStrategy.Manual)
         {
             uint reassignMask = 0;
             for (int i = 0; i < 2; ++i)
-                if (TryAutoCollect(i) && _granary.GetGranaryState(i)->RemainingDays < 7)
+                if (TryAutoCollect(i) && GranaryUtils.GetGranaryState(i)->RemainingDays < 7)
                     reassignMask |= 1u << i;
 
             if (reassignMask != 0)
@@ -62,13 +62,14 @@ unsafe class GranaryWindow : UIAttachedWindow
         if (ImGui.Button("Apply!"))
             ForceReassign();
 
-        var data = _granary.Agent != null ? _granary.Agent->Data : null;
-        if (data == null)
-            return;
-
-        GranaryState.CollectResult[] collectStates = [_granary.CalculateGranaryCollectionState(0), _granary.CalculateGranaryCollectionState(1)];
-
         ImGui.Separator();
+        DrawTable();
+    }
+
+    private void DrawTable()
+    {
+        GranaryUtils.CollectResult[] collectStates = [GranaryUtils.CalculateGranaryCollectionState(0), GranaryUtils.CalculateGranaryCollectionState(1)];
+
         using var table = ImRaii.Table("table", 3);
         if (table)
         {
@@ -82,30 +83,31 @@ unsafe class GranaryWindow : UIAttachedWindow
             for (int i = 0; i < 2; ++i)
             {
                 ImGui.TableNextColumn();
-                using (ImRaii.Disabled(collectStates[i] is GranaryState.CollectResult.NothingToCollect or GranaryState.CollectResult.EverythingCapped))
+                using (ImRaii.Disabled(collectStates[i] is GranaryUtils.CollectResult.NothingToCollect or GranaryUtils.CollectResult.EverythingCapped))
                     if (ImGui.Button($"Collect##{i}"))
-                        _granary.Collect(i);
+                        GranaryUtils.Collect(i);
             }
 
-            foreach (var e in data->Expeditions.Span)
+            var agent = AgentMJIGatheringHouse.Instance();
+            for (var e = agent->Data->Expeditions.First; e != agent->Data->Expeditions.Last; ++e)
             {
-                if (!_granary.IsExpeditionUnlocked(e.ExpeditionId))
+                if (!agent->IsExpeditionUnlocked(e))
                     continue;
 
                 ImGui.TableNextRow();
 
                 ImGui.TableNextColumn();
-                ImGui.TextUnformatted($"{e.Name} ({InventoryManager.Instance()->GetInventoryItemCount(e.RareItemId)}/999)");
+                ImGui.TextUnformatted($"{e->Name} ({Utils.NumItems(e->RareItemId)}/999)");
 
                 for (int i = 0; i < 2; ++i)
                 {
                     ImGui.TableNextColumn();
-                    var curDest = _granary.GetGranaryState(i)->ActiveExpeditionId;
-                    var curDays = _granary.GetGranaryState(i)->RemainingDays;
-                    var maxDays = (byte)Math.Min(7, curDays + _granary.MaxDays());
-                    using (ImRaii.Disabled(collectStates[i] != GranaryState.CollectResult.NothingToCollect || curDest == e.ExpeditionId && curDays == maxDays))
-                        if (ImGui.Button($"{(curDest == e.ExpeditionId ? "Max" : "Reassign")}##{i}_{e.ExpeditionId}"))
-                            _granary.SelectExpedition((byte)i, e.ExpeditionId, maxDays);
+                    var curDest = GranaryUtils.GetGranaryState(i)->ActiveExpeditionId;
+                    var curDays = GranaryUtils.GetGranaryState(i)->RemainingDays;
+                    var maxDays = (byte)Math.Min(7, curDays + GranaryUtils.MaxDays());
+                    using (ImRaii.Disabled(collectStates[i] != GranaryUtils.CollectResult.NothingToCollect || curDest == e->ExpeditionId && curDays == maxDays))
+                        if (ImGui.Button($"{(curDest == e->ExpeditionId ? "Max" : "Reassign")}##{i}_{e->ExpeditionId}"))
+                            GranaryUtils.SelectExpedition((byte)i, e->ExpeditionId, maxDays);
                 }
             }
         }
@@ -113,21 +115,21 @@ unsafe class GranaryWindow : UIAttachedWindow
 
     private bool TryAutoCollect(int i)
     {
-        switch (_granary.CalculateGranaryCollectionState(i))
+        switch (GranaryUtils.CalculateGranaryCollectionState(i))
         {
-            case GranaryState.CollectResult.NothingToCollect:
+            case GranaryUtils.CollectResult.NothingToCollect:
                 return true;
-            case GranaryState.CollectResult.CanCollectSafely:
+            case GranaryUtils.CollectResult.CanCollectSafely:
                 if (_config.Collect != CollectStrategy.Manual)
                 {
-                    _granary.Collect(i);
+                    GranaryUtils.Collect(i);
                     return true;
                 }
                 break;
-            case GranaryState.CollectResult.CanCollectWithOvercap:
+            case GranaryUtils.CollectResult.CanCollectWithOvercap:
                 if (_config.Collect == CollectStrategy.FullAuto)
                 {
-                    _granary.Collect(i);
+                    GranaryUtils.Collect(i);
                     return true;
                 }
                 break;
@@ -139,21 +141,22 @@ unsafe class GranaryWindow : UIAttachedWindow
     {
         uint reassignMask = 0;
         for (int i = 0; i < 2; ++i)
-            if (_granary.CalculateGranaryCollectionState(i) == GranaryState.CollectResult.NothingToCollect)
+            if (GranaryUtils.CalculateGranaryCollectionState(i) == GranaryUtils.CollectResult.NothingToCollect)
                 reassignMask |= 1u << i;
         ReassignImpl(reassignMask);
     }
 
     private void ReassignImpl(uint allowedMask)
     {
-        byte[] currentDestinations = [_granary.GetGranaryState(0)->ActiveExpeditionId, _granary.GetGranaryState(1)->ActiveExpeditionId];
+        byte[] currentDestinations = [GranaryUtils.GetGranaryState(0)->ActiveExpeditionId, GranaryUtils.GetGranaryState(1)->ActiveExpeditionId];
         byte[] newDestinations = [currentDestinations[0], currentDestinations[1]];
+        var agent = AgentMJIGatheringHouse.Instance();
         if (_config.Reassign is GranaryConfig.UpdateStrategy.BestDifferent or GranaryConfig.UpdateStrategy.BestSame)
         {
             List<(byte id, int count)> destinations = new();
-            foreach (var e in _granary.Agent->Data->Expeditions.Span)
-                if (_granary.IsExpeditionUnlocked(e.ExpeditionId))
-                    destinations.Add((e.ExpeditionId, InventoryManager.Instance()->GetInventoryItemCount(e.RareItemId)));
+            for (var e = agent->Data->Expeditions.First; e != agent->Data->Expeditions.Last; ++e)
+                if (agent->IsExpeditionUnlocked(e))
+                    destinations.Add((e->ExpeditionId, Utils.NumItems(e->RareItemId)));
             destinations.SortBy(e => e.count);
 
             if (destinations.Count > 0)
@@ -165,16 +168,16 @@ unsafe class GranaryWindow : UIAttachedWindow
             }
         }
 
-        var max = _granary.MaxDays();
+        var max = GranaryUtils.MaxDays();
         for (int i = 0; i < 2; ++i)
         {
             if ((allowedMask & (1u << i)) == 0)
                 continue; // this granary can't be reassigned
-            var curDays = _granary.GetGranaryState(i)->RemainingDays;
+            var curDays = GranaryUtils.GetGranaryState(i)->RemainingDays;
             var newDays = (byte)Math.Min(7, curDays + max);
             if (currentDestinations[i] == newDestinations[i] && curDays == newDays)
                 continue; // this is the best already
-            _granary.SelectExpedition((byte)i, newDestinations[i], newDays);
+            GranaryUtils.SelectExpedition((byte)i, newDestinations[i], newDays);
         }
     }
 }

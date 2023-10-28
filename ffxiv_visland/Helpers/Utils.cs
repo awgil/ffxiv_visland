@@ -1,6 +1,7 @@
 ﻿using Dalamud;
 using Dalamud.Interface;
 using ECommons.Automation;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
@@ -71,6 +72,10 @@ public static unsafe class Utils
         if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
             Callback.Fire(addon, true, 0);
     }
+
+    // get number of owned items by id
+    public static int NumItems(uint id) => InventoryManager.Instance()->GetInventoryItemCount(id);
+    public static int NumCowries() => NumItems(37549);
 
     // sort elements of a list by key
     public static void SortBy<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(l).CompareTo(proj(r)));

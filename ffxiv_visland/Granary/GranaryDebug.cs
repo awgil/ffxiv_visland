@@ -1,5 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using visland.Helpers;
@@ -8,38 +8,31 @@ namespace visland.Granary;
 
 public unsafe class GranaryDebug
 {
-    private GranaryState _state;
     private UITree _tree = new();
-
-    public GranaryDebug(GranaryState state)
-    {
-        _state = state;
-    }
 
     public void Draw()
     {
-        var granary = ((MJIManagerEx*)MJIManager.Instance())->Granaries;
+        var granary = MJIManager.Instance()->GranariesState;
         foreach (var n in _tree.Node($"Granaries state: {(nint)granary:X}"))
         {
             if (granary != null)
             {
-                DrawGranaryState(1, &granary->Granary1);
-                DrawGranaryState(2, &granary->Granary2);
-                _tree.LeafNode($"u90: {(nint)granary->u90:X}");
+                DrawGranaryState(1, ref granary->GranarySpan[0]);
+                DrawGranaryState(2, ref granary->GranarySpan[1]);
             }
         }
 
-        var agent = _state.Agent;
+        var agent = AgentMJIGatheringHouse.Instance();
         foreach (var n in _tree.Node($"Agent: {(nint)agent:X}"))
         {
             if (agent != null)
             {
                 _tree.LeafNode($"Granaries state: {(nint)agent->GranariesState:X}");
-                _tree.LeafNode($"Confirm: addon={agent->ConfirmAddonHandle} #{agent->ConfirmType} '{agent->ConfirmText}'");
-                _tree.LeafNode($"Select: addon={agent->SelectExpeditionAddonHandle}, return='{agent->FinishTimeText1}'/'{agent->FinishTimeText2}'");
+                _tree.LeafNode($"Confirm: addon={agent->ConfirmAddonHandle} #{agent->ConfirmType} '{agent->Strings.ConfirmText}'");
+                _tree.LeafNode($"Select: addon={agent->SelectExpeditionAddonHandle}, return='{agent->Strings.FinishTimeTextSpan[0]}'/'{agent->Strings.FinishTimeTextSpan[1]}'");
                 _tree.LeafNode($"Selected granary={agent->CurGranaryIndex}");
-                _tree.LeafNode($"Selected expedition={agent->CurActiveExpeditionId} {agent->CurExpeditionName}, hover={agent->CurHoveredExpeditionId}, proposed={agent->CurProposedExpeditionId}");
-                _tree.LeafNode($"Selected days={agent->CurActiveDays} -> {agent->CurProposedDays}");
+                _tree.LeafNode($"Selected expedition={agent->CurActiveExpeditionId} {agent->CurExpeditionName}, hover={agent->CurHoveredExpeditionId}, proposed={agent->CurSelectedExpeditionId}");
+                _tree.LeafNode($"Selected days={agent->CurActiveDays} -> {agent->CurSelectedDays}");
                 if (agent->Data != null)
                 {
                     _tree.LeafNode($"Agent data inited: {agent->Data->Initialized}");
@@ -61,7 +54,7 @@ public unsafe class GranaryDebug
                         int i = 0;
                         foreach (var e in agent->Data->ExpeditionDescs.Span)
                         {
-                            _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.u1} {e.RarePouchId} {e.u3} {e.u4} {e.NameId}");
+                            _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.RarePouchId} {e.NameId}");
                         }
                     }
                     foreach (var m in _tree.Node("Expedition Items", agent->Data->ExpeditionItems.Size() == 0))
@@ -69,7 +62,7 @@ public unsafe class GranaryDebug
                         int i = 0;
                         foreach (var e in agent->Data->ExpeditionItems.Span)
                         {
-                            _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.u2} {e.PouchId} {e.u5}");
+                            _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.PouchId} {e.u5}");
                         }
                     }
                     foreach (var m in _tree.Node("Resources", agent->Data->Resources.Size() == 0))
@@ -77,7 +70,7 @@ public unsafe class GranaryDebug
                         int i = 0;
                         foreach (var e in agent->Data->Resources.Span)
                         {
-                            _tree.LeafNode($"[{i++}] {e.PouchId} {e.u2} {e.ItemId} {e.IconId}");
+                            _tree.LeafNode($"[{i++}] {e.PouchId} {e.ItemId} {e.IconId}");
                         }
                     }
                     foreach (var m in _tree.Node("Pending icon updates", agent->Data->ItemsPendingIconUpdate.Size() == 0))
@@ -92,17 +85,17 @@ public unsafe class GranaryDebug
             }
         }
 
-        _tree.LeafNode($"Cowries: {_state.NumCowries()} (enough for {_state.MaxDays()} days)");
+        _tree.LeafNode($"Cowries: {Utils.NumCowries()} (enough for {GranaryUtils.MaxDays()} days)");
     }
 
-    private unsafe void DrawGranaryState(int i, MJIGranaryState* state)
+    private unsafe void DrawGranaryState(int i, ref MJIGranaryState state)
     {
-        var expedition = state->RemainingDays > 0 ? $"{state->ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state->ActiveExpeditionId + 1u)!.Singular}) {state->RemainingDays}days" : "none";
-        foreach (var n in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state->FinishTime)}"))
+        var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state.ActiveExpeditionId + 1u)!.Singular}) {state.RemainingDays}days" : "none";
+        foreach (var n in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}"))
         {
-            DrawGranaryItem("rare", state->RareResourcePouchId, state->RareResourceCount);
+            DrawGranaryItem("rare", state.RareResourcePouchId, state.RareResourceCount);
             for (int k = 0; k < 20; ++k)
-                DrawGranaryItem(k.ToString(), state->NormalResourcePouchIds[k], state->NormalResourceCounts[k]);
+                DrawGranaryItem(k.ToString(), state.NormalResourcePouchIds[k], state.NormalResourceCounts[k]);
         }
     }
 
@@ -111,7 +104,7 @@ public unsafe class GranaryDebug
         if (count <= 0)
             return;
         var item = Service.LuminaRow<MJIItemPouch>(mjiPouchId)!.Item;
-        var avail = InventoryManager.Instance()->GetInventoryItemCount(item.Row);
+        var avail = Utils.NumItems(item.Row);
         _tree.LeafNode($"[{prompt}] {mjiPouchId} {item.Value!.Name}: {avail}+{count}");
     }
 }

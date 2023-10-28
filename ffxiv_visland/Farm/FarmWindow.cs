@@ -117,7 +117,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             for (int i = 0; i < agent->NumSlots; ++i)
             {
                 ref var slot = ref agent->SlotsSpan[i];
-                var inventory = InventoryManager.Instance()->GetInventoryItemCount(slot.YieldItemId);
+                var inventory = Utils.NumItems(slot.YieldItemId);
                 bool overcap = inventory + slot.YieldAvailable > 999;
                 bool full = inventory == 999;
 
@@ -146,7 +146,7 @@ public unsafe class FarmWindow : UIAttachedWindow
                 }
                 else if (slot.SeedItemId != 0)
                 {
-                    if (slot.WasUnderCare || InventoryManager.Instance()->GetInventoryItemCount(37549) >= 5)
+                    if (slot.WasUnderCare || Utils.NumCowries() >= 5)
                     {
                         if (ImGui.Button($"Entrust##{i}"))
                             EntrustOne(i, slot.SeedItemId);
@@ -183,7 +183,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             if (perCropYield[i] == 0)
                 continue;
 
-            var inventory = InventoryManager.Instance()->GetInventoryItemCount(sheet.GetRow((uint)i)!.Item.Row);
+            var inventory = Utils.NumItems(sheet.GetRow((uint)i)!.Item.Row);
             allFull &= inventory >= 999;
             anyOvercap |= inventory + perCropYield[i] > 999;
         }
