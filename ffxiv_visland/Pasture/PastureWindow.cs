@@ -17,7 +17,7 @@ unsafe class PastureWindow : UIAttachedWindow
     private Config _config;
     private PastureDebug _debug = new();
 
-    public PastureWindow() : base("Pasture Automation", "MJIAnimalManagement", new(100, 50))
+    public PastureWindow() : base("Pasture Automation", "MJIAnimalManagement", new(400, 600))
     {
         _config = Service.Config.Get<Config>();
     }

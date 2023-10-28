@@ -5,18 +5,6 @@ namespace visland.Granary;
 
 public class GranaryConfig : Configuration.Node
 {
-    public enum CollectStrategy
-    {
-        [Description("Manual")]
-        Manual,
-
-        [Description("Automatic, if not overcapping")]
-        NoOvercap,
-
-        [Description("Automatic, allow overcap")]
-        FullAuto,
-    }
-
     public enum UpdateStrategy
     {
         [Description("Manual")]

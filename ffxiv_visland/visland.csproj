@@ -64,7 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ECommons\ECommons\ECommons.csproj" />
-    <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs.InteropSourceGenerators\FFXIVClientStructs.InteropSourceGenerators.csproj" />
+    <!--<ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs.InteropSourceGenerators\FFXIVClientStructs.InteropSourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />-->
     <ProjectReference Include="..\FFXIVClientStructs\FFXIVClientStructs\FFXIVClientStructs.csproj" />
   </ItemGroup>
 

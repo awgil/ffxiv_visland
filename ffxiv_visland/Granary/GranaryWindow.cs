@@ -19,6 +19,12 @@ unsafe class GranaryWindow : UIAttachedWindow
         _debug = new(_granary);
     }
 
+    public override void PreOpenCheck()
+    {
+        base.PreOpenCheck();
+        IsOpen &= _granary.Agent != null && _granary.Agent->Data != null && _granary.Agent->Data->Initialized != 0;
+    }
+
     public override void Draw()
     {
         using var tabs = ImRaii.TabBar("Tabs");
@@ -35,7 +41,16 @@ unsafe class GranaryWindow : UIAttachedWindow
 
     public override void OnOpen()
     {
-        Apply();
+        if (_config.Reassign != GranaryConfig.UpdateStrategy.Manual && _granary.Agent->Data != null)
+        {
+            uint reassignMask = 0;
+            for (int i = 0; i < 2; ++i)
+                if (TryAutoCollect(i) && _granary.GetGranaryState(i)->RemainingDays < 7)
+                    reassignMask |= 1u << i;
+
+            if (reassignMask != 0)
+                ReassignImpl(reassignMask);
+        }
     }
 
     private unsafe void DrawMain()
@@ -54,11 +69,12 @@ unsafe class GranaryWindow : UIAttachedWindow
         GranaryState.CollectResult[] collectStates = [_granary.CalculateGranaryCollectionState(0), _granary.CalculateGranaryCollectionState(1)];
 
         ImGui.Separator();
-        using (ImRaii.Table("table", 3))
+        using var table = ImRaii.Table("table", 3);
+        if (table)
         {
             ImGui.TableSetupColumn("Expedition");
-            ImGui.TableSetupColumn("Granary 1");
-            ImGui.TableSetupColumn("Granary 2");
+            ImGui.TableSetupColumn("Granary 1", ImGuiTableColumnFlags.WidthFixed, 100);
+            ImGui.TableSetupColumn("Granary 2", ImGuiTableColumnFlags.WidthFixed, 100);
             ImGui.TableHeadersRow();
 
             ImGui.TableNextRow();
@@ -95,19 +111,6 @@ unsafe class GranaryWindow : UIAttachedWindow
         }
     }
 
-    private void Apply()
-    {
-        uint reassignMask = 0;
-        for (int i = 0; i < 2; ++i)
-            if (TryAutoCollect(i) && _granary.GetGranaryState(i)->RemainingDays < 7)
-                reassignMask |= 1u << i;
-
-        if (reassignMask == 0 || _config.Reassign == GranaryConfig.UpdateStrategy.Manual || _granary.Agent->Data == null)
-            return;
-
-        ReassignImpl(reassignMask);
-    }
-
     private bool TryAutoCollect(int i)
     {
         switch (_granary.CalculateGranaryCollectionState(i))
@@ -115,14 +118,14 @@ unsafe class GranaryWindow : UIAttachedWindow
             case GranaryState.CollectResult.NothingToCollect:
                 return true;
             case GranaryState.CollectResult.CanCollectSafely:
-                if (_config.Collect != GranaryConfig.CollectStrategy.Manual)
+                if (_config.Collect != CollectStrategy.Manual)
                 {
                     _granary.Collect(i);
                     return true;
                 }
                 break;
             case GranaryState.CollectResult.CanCollectWithOvercap:
-                if (_config.Collect == GranaryConfig.CollectStrategy.FullAuto)
+                if (_config.Collect == CollectStrategy.FullAuto)
                 {
                     _granary.Collect(i);
                     return true;

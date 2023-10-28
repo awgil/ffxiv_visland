@@ -222,7 +222,7 @@ public unsafe class GranaryState
     public bool IsExpeditionUnlocked(byte id)
     {
         var data = Agent != null ? Agent->Data : null;
-        return data != null ? _isExpeditionUnlocked(Agent, data->Expeditions.First + id) : false;
+        return data != null && id < data->Expeditions.Size() ? _isExpeditionUnlocked(Agent, data->Expeditions.First + id) : false;
     }
 
     public int NumCowries() => InventoryManager.Instance()->GetInventoryItemCount(37549);

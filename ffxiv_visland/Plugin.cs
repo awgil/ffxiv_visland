@@ -55,7 +55,7 @@ public sealed class Plugin : IDalamudPlugin
     private GatherWindow _wndGather;
     private WorkshopWindow _wndWorkshop;
     private GranaryWindow _wndGranary;
-    private PastureWindow _wndAmimal;
+    private PastureWindow _wndPasture;
     private FarmWindow _wndFarm;
     private ExportsWindow _wndExports;
 
@@ -85,7 +85,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
-        _wndAmimal = new PastureWindow();
+        _wndPasture = new PastureWindow();
         _wndFarm = new FarmWindow();
         _wndExports = new ExportsWindow();
 
@@ -98,20 +98,18 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
             WindowSystem.AddWindow(_wndGranary);
-            WindowSystem.AddWindow(_wndAmimal);
+            WindowSystem.AddWindow(_wndPasture);
             WindowSystem.AddWindow(_wndFarm);
             //WindowSystem.AddWindow(_wndExports);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
 
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIAnimalManagement", _wndAmimal.AutoCollectPasture);
         Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", _wndExports.AutoExport);
     }
 
     public void Dispose()
     {
-        Service.AddonLifecycle.UnregisterListener(_wndAmimal.AutoCollectPasture);
         Service.AddonLifecycle.UnregisterListener(_wndExports.AutoExport);
 
         WindowSystem.RemoveAllWindows();
@@ -119,7 +117,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndGather.Dispose();
         _wndWorkshop.Dispose();
         _wndGranary.Dispose();
-        _wndAmimal.Dispose();
+        _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
     }
