@@ -5,9 +5,9 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using visland.Helpers;
 
-namespace visland.Windows;
+namespace visland.Farm;
 
-unsafe class AnimalWindow : UIAttachedWindow
+unsafe class FarmWindow : UIAttachedWindow
 {
     public class Config : Configuration.Node
     {
@@ -15,26 +15,31 @@ unsafe class AnimalWindow : UIAttachedWindow
     }
 
     private Config _config;
+    private FarmDebug _debug = new();
 
-    public AnimalWindow() : base("Pasture Automation", "MJIAnimalManagement", new(100, 50))
+    public FarmWindow() : base("Farm Automation", "MJIFarmManagement", new(100, 50))
     {
         _config = Service.Config.Get<Config>();
     }
+    //AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIFarmManagement", AutoCollectFarm);
+    //AddonLifecycle.UnregisterListener(AutoCollectFarm);
 
     public override void Draw()
     {
         if (ImGui.Checkbox("Auto Collect", ref _config.AutoCollect))
             _config.NotifyModified();
+        ImGui.Separator();
+        _debug.Draw();
     }
 
-    public void AutoCollectPasture(AddonEvent eventType, AddonArgs addonInfo)
+    private void AutoCollectFarm(AddonEvent eventType, AddonArgs addonInfo)
     {
         var addon = (AtkUnitBase*)addonInfo.Addon;
-        if (addonInfo.AddonName != "MJIAnimalManagement") return;
+        if (addonInfo.AddonName != "MJIFarmManagement") return;
         if (!_config.AutoCollect) return;
-        if (addon->AtkValues[219].Byte != 0) return;
+        if (addon->AtkValues[195].Byte != 0) return;
 
-        Callback.Fire(addon, false, 5);
+        Callback.Fire(addon, false, 3);
         Utils.AutoYesNo();
     }
 }

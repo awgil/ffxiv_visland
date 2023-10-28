@@ -6,8 +6,10 @@ using ECommons;
 using ImGuiNET;
 using System.Linq;
 using System.Numerics;
+using visland.Farm;
 using visland.Gathering;
 using visland.Granary;
+using visland.Pasture;
 using visland.Windows;
 using visland.Workshop;
 
@@ -48,7 +50,7 @@ public sealed class Plugin : IDalamudPlugin
     private GatherWindow _wndGather;
     private WorkshopWindow _wndWorkshop;
     private GranaryWindow _wndGranary;
-    private AnimalWindow _wndAmimal;
+    private PastureWindow _wndAmimal;
     private FarmWindow _wndFarm;
     private ExportsWindow _wndExports;
 
@@ -68,7 +70,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
-        _wndAmimal = new AnimalWindow();
+        _wndAmimal = new PastureWindow();
         _wndFarm = new FarmWindow();
         _wndExports = new ExportsWindow();
 
@@ -81,8 +83,8 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(_wndGather);
             WindowSystem.AddWindow(_wndWorkshop);
             WindowSystem.AddWindow(_wndGranary);
-            //WindowSystem.AddWindow(_wndAmimal);
-            //WindowSystem.AddWindow(_wndFarm);
+            WindowSystem.AddWindow(_wndAmimal);
+            WindowSystem.AddWindow(_wndFarm);
             //WindowSystem.AddWindow(_wndExports);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
