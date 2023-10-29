@@ -77,7 +77,8 @@ public sealed class Plugin : IDalamudPlugin
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
         Service.Config.Initialize();
-        Service.Config.LoadFromFile(dalamud.ConfigFile);
+        if (dalamud.ConfigFile.Exists)
+            Service.Config.LoadFromFile(dalamud.ConfigFile);
         Service.Config.Modified += (_, _) => Service.Config.SaveToFile(dalamud.ConfigFile);
 
         Dalamud = dalamud;
