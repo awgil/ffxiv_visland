@@ -49,6 +49,7 @@ public class GatherRouteExec : IDisposable
 
         var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent] || Service.Condition[ConditionFlag.OccupiedSummoningBell];
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
+        bool isCurrentlyGathering = Service.Condition[ConditionFlag.Gathering]; // condition 6 is true while player is interacting with a node
         if (player == null || player.IsCasting || gathering || aboutToBeMounted || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
@@ -91,7 +92,7 @@ public class GatherRouteExec : IDisposable
         }
 
         var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
-        if (interactObj != null)
+        if (interactObj != null && !isCurrentlyGathering)
         {
             _interact.Exec(() =>
             {
