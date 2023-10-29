@@ -1,8 +1,9 @@
 {
   "Author": "veyn",
-  "Name": "Island sanctuary automation",
+  "Name": "V(ery) Island",
   "Punchline": "Automate island sanctuary activities",
   "Description": "Automate gathering, workshop assignments, etc.",
   "InternalName": "visland",
-  "ApplicableVersion": "any"
+  "ApplicableVersion": "any",
+  "IconUrl": "https://raw.githubusercontent.com/awgil/ffxiv_visland/d3338f6ddbf54365e60fbdf8e85ea8f5abdb745f/icon.png"
 }
