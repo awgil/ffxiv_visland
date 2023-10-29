@@ -1,5 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel.GeneratedSheets2;
@@ -11,50 +12,48 @@ namespace visland.Workshop;
 
 public unsafe class WorkshopDebug
 {
-    private WorkshopSchedule _sched;
     private WorkshopSolver _solver = new();
     private UITree _tree = new();
     private WorkshopSolver.FavorState _favorState = new();
     private WorkshopSolverFavorSheet? _favorSolution;
     private string[] _itemNames;
 
-    public WorkshopDebug(WorkshopSchedule sched)
+    public WorkshopDebug()
     {
-        _sched = sched;
         _itemNames = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Select(o => o.Item.Value?.Name ?? "").ToArray();
     }
 
     public void Draw()
     {
         if (ImGui.Button("Clear"))
-            _sched.ClearCurrentCycleSchedule();
+            WorkshopUtils.ClearCurrentCycleSchedule();
 
-        var ad = _sched.AgentData;
+        var ad = AgentMJICraftSchedule.Instance()->Data;
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         foreach (var na in _tree.Node($"Agent data: {(nint)ad:X}", ad == null))
         {
-            _tree.LeafNode($"init={ad->InitState}, cur-cycle={ad->CurrentCycle}");
-            _tree.LeafNode($"setting addon={ad->SettingAddonId}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingObjectIndex}, numMats={ad->CurScheduleSettingNumMaterials}");
+            _tree.LeafNode($"init={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}");
+            _tree.LeafNode($"setting addon={ad->OpenedModalAddonHandle}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumIngredients}");
             _tree.LeafNode($"rest mask={ad->RestCycles:X}, in-progress={ad->CycleInProgress}");
             int i = 0;
-            foreach (ref var w in ad->Workshops)
+            foreach (ref var w in ad->WorkshopDataSpan)
             {
                 foreach (var n in _tree.Node($"Workshop {i++}: {w.NumScheduleEntries} entries, {w.UsedTimeSlots:X} used", w.NumScheduleEntries == 0))
                 {
                     for (int j = 0; j < w.NumScheduleEntries; ++j)
                     {
-                        ref var e = ref w.Entries[j];
-                        _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({sheet.GetRow(e.CraftObjectId)?.Item.Value?.Name}), u2={e.u2}, u4={e.u4:X}, startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started != 0}, efficient={e.Efficient != 0}");
+                        ref var e = ref w.EntryDataSpan[j];
+                        _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({sheet.GetRow(e.CraftObjectId)?.Item.Value?.Name}), startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started}, efficient={e.Efficient}");
                     }
                 }
             }
 
-            foreach (var n in _tree.Node("Items", ad->Items.Size() == 0))
+            foreach (var n in _tree.Node("Items", ad->Crafts.Size() == 0))
             {
                 i = 0;
-                foreach (var item in ad->Items.Span)
+                foreach (ref readonly var item in ad->Crafts.Span)
                 {
-                    _tree.LeafNode($"Item {i++}: id={item.ObjectId} ({sheet.GetRow(item.ObjectId)?.Item.Value?.Name})");
+                    _tree.LeafNode($"Item {i++}: id={item.CraftObjectId} ({sheet.GetRow(item.CraftObjectId)?.Item.Value?.Name})");
                 }
             }
         }
@@ -77,7 +76,7 @@ public unsafe class WorkshopDebug
             Utils.TextV("Init from game week:");
             ImGui.SameLine();
             if (ImGui.Button("Fetch demand"))
-                _sched.RequestDemand();
+                WorkshopUtils.RequestDemand();
             ImGui.SameLine();
             if (ImGui.Button("Prev"))
                 InitFavorsFromGame(0, -1);

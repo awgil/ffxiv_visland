@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
@@ -7,15 +8,8 @@ namespace visland.Workshop;
 
 public class WorkshopManual
 {
-    private WorkshopSchedule _sched;
-
     private List<uint> _recents = new();
     private string _filter = "";
-
-    public WorkshopManual(WorkshopSchedule sched)
-    {
-        _sched = sched;
-    }
 
     public void Draw()
     {
@@ -68,17 +62,18 @@ public class WorkshopManual
         for (int i = 0; i < 4; ++i)
             if ((workshopIndices & 1 << i) != 0)
                 AddToScheduleSingle(row, i);
-        _sched.SetCurrentCycle(_sched.CurrentCycle); // needed to refresh the ui
+        WorkshopUtils.ResetCurrentCycleToRefreshUI();
         _recents.Remove(row.RowId);
         _recents.Insert(0, row.RowId);
     }
 
     private unsafe void AddToScheduleSingle(MJICraftworksObject row, int workshopIndex)
     {
+        var agentData = AgentMJICraftSchedule.Instance()->Data;
         var slotMask = (1u << row.CraftingTime) - 1;
         int startingCycle = 0;
         int maxCycle = 24 - row.CraftingTime;
-        var usedMask = _sched.AgentData->Workshops[workshopIndex].UsedTimeSlots;
+        var usedMask = agentData->WorkshopDataSpan[workshopIndex].UsedTimeSlots;
         while ((usedMask & slotMask << startingCycle) != 0 && startingCycle <= maxCycle)
             ++startingCycle;
         if (startingCycle > maxCycle)
@@ -87,7 +82,7 @@ public class WorkshopManual
             return;
         }
 
-        _sched.ScheduleItemToWorkshop(row.RowId, startingCycle, _sched.CurrentCycle, workshopIndex);
+        WorkshopUtils.ScheduleItemToWorkshop(row.RowId, startingCycle, agentData->CycleDisplayed, workshopIndex);
     }
 
     private void ReportError(string msg)

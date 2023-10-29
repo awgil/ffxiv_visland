@@ -3,7 +3,9 @@ using Dalamud.Interface;
 using ECommons.Automation;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using Lumina.Excel;
 using System;
@@ -66,11 +68,12 @@ public static unsafe class Utils
         ImGui.TextUnformatted(s);
     }
 
-    public static void AutoYesNo()
+    // note: argument should really be any AtkEventInterface
+    public static AtkValue SynthesizeEvent(AgentInterface* receiver, ulong eventKind, Span<AtkValue> args)
     {
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName("SelectYesno");
-        if (addon != null && addon->IsVisible && addon->UldManager.NodeList[15]->IsVisible)
-            Callback.Fire(addon, true, 0);
+        AtkValue res = new();
+        receiver->ReceiveEvent(&res, args.GetPointer(0), (uint)args.Length, eventKind);
+        return res;
     }
 
     // get number of owned items by id

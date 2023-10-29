@@ -3,6 +3,7 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
@@ -16,20 +17,18 @@ using visland.Helpers;
 
 namespace visland.Workshop;
 
-public class WorkshopOCImport
+public unsafe class WorkshopOCImport
 {
     public WorkshopSolver.Recs Recommendations = new();
 
-    private WorkshopSchedule _sched;
     private WorkshopConfig _config;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = new();
     private bool IgnoreFourthWorkshop;
 
-    public WorkshopOCImport(WorkshopSchedule sched)
+    public WorkshopOCImport()
     {
-        _sched = sched;
         _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
@@ -130,7 +129,7 @@ public class WorkshopOCImport
     private void DrawCycleRecommendations()
     {
         var tableFlags = ImGuiTableFlags.RowBg | ImGuiTableFlags.NoKeepColumnsVisible;
-        var maxWorkshops = WorkshopSchedule.GetMaxWorkshops();
+        var maxWorkshops = WorkshopUtils.GetMaxWorkshops();
 
         using var scrollSection = ImRaii.Child("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
@@ -335,7 +334,7 @@ public class WorkshopOCImport
             }
         }
         // complete current cycle; if the number was not known, assume it is tomorrow
-        result.Add(curCycle > 0 ? curCycle : _sched.CycleInProgress + 2, curRec);
+        result.Add(curCycle > 0 ? curCycle : AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 2, curRec);
 
         return result;
     }
@@ -449,25 +448,25 @@ public class WorkshopOCImport
     {
         if (MJIManager.Instance()->DemandDirty)
         {
-            _sched.RequestDemand();
+            WorkshopUtils.RequestDemand();
             _pendingActions.Add(() => !MJIManager.Instance()->DemandDirty);
         }
     }
 
     private unsafe void ApplyRecommendation(int cycle, WorkshopSolver.DayRec rec)
     {
-        var maxWorkshops = WorkshopSchedule.GetMaxWorkshops();
+        var maxWorkshops = WorkshopUtils.GetMaxWorkshops();
         foreach (var w in rec.Enumerate(maxWorkshops))
             if (!IgnoreFourthWorkshop || w.workshop < maxWorkshops - 1)
                 foreach (var r in w.rec.Slots)
-                    _sched.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, w.workshop);
+                    WorkshopUtils.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, w.workshop);
     }
 
     private void ApplyRecommendationToCurrentCycle(WorkshopSolver.DayRec rec)
     {
-        var cycle = _sched.CurrentCycle;
+        var cycle = AgentMJICraftSchedule.Instance()->Data->CycleDisplayed;
         ApplyRecommendation(cycle, rec);
-        _sched.SetCurrentCycle(cycle); // needed to refresh the ui
+        WorkshopUtils.ResetCurrentCycleToRefreshUI();
     }
 
     private void ApplyRecommendations(bool nextWeek)
@@ -476,14 +475,15 @@ public class WorkshopOCImport
 
         try
         {
+            var agentData = AgentMJICraftSchedule.Instance()->Data;
             if (Recommendations.Schedules.Count > 5)
                 throw new Exception($"Too many days in recs: {Recommendations.Schedules.Count}");
 
-            uint forbiddenCycles = nextWeek ? 0 : (1u << (_sched.CycleInProgress + 1)) - 1;
+            uint forbiddenCycles = nextWeek ? 0 : (1u << (agentData->CycleInProgress + 1)) - 1;
             if ((Recommendations.CyclesMask & forbiddenCycles) != 0)
                 throw new Exception("Some of the cycles in schedule are already in progress or are done");
 
-            var currentRestCycles = nextWeek ? _sched.RestCycles >> 7 : _sched.RestCycles & 0x7F;
+            var currentRestCycles = nextWeek ? agentData->RestCycles >> 7 : agentData->RestCycles & 0x7F;
             if ((currentRestCycles & Recommendations.CyclesMask) != 0)
             {
                 // we need to change rest cycles - set to C1 and last unused
@@ -498,14 +498,14 @@ public class WorkshopOCImport
                 if ((changedRest & forbiddenCycles) != 0)
                     throw new Exception("Can't apply this schedule: it would require changing rest days for cycles that are in progress or already done");
 
-                var newRest = nextWeek ? (rest << 7) | (_sched.RestCycles & 0x7F) : (_sched.RestCycles & 0x3F80) | rest;
-                _sched.SetRestCycles(newRest);
+                var newRest = nextWeek ? (rest << 7) | (agentData->RestCycles & 0x7F) : (agentData->RestCycles & 0x3F80) | rest;
+                WorkshopUtils.SetRestCycles(newRest);
             }
 
-            var cycle = _sched.CurrentCycle;
+            var cycle = agentData->CycleDisplayed;
             foreach (var (c, r) in Recommendations.Enumerate())
                 ApplyRecommendation(c - 1 + (nextWeek ? 7 : 0), r);
-            _sched.SetCurrentCycle(cycle); // needed to refresh the ui
+            WorkshopUtils.ResetCurrentCycleToRefreshUI();
         }
         catch (Exception ex)
         {

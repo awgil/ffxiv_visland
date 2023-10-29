@@ -1,28 +1,28 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using visland.Helpers;
 using ImGuiNET;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace visland.Workshop;
 
 unsafe class WorkshopWindow : UIAttachedWindow
 {
     private WorkshopConfig _config;
-    private WorkshopSchedule _sched = new();
-    private WorkshopManual _manual;
-    private WorkshopOCImport _oc;
-    private WorkshopDebug _debug;
+    private WorkshopManual _manual = new();
+    private WorkshopOCImport _oc = new();
+    private WorkshopDebug _debug = new();
 
     public WorkshopWindow() : base("Workshop automation", "MJICraftSchedule", new(500, 650))
     {
         _config = Service.Config.Get<WorkshopConfig>();
-        _manual = new(_sched);
-        _oc = new(_sched);
-        _debug = new(_sched);
     }
 
     public override void PreOpenCheck()
     {
         base.PreOpenCheck();
+        var agent = AgentMJICraftSchedule.Instance();
+        IsOpen &= agent != null && agent->Data != null;
+
         _oc.Update();
     }
 
@@ -50,7 +50,7 @@ unsafe class WorkshopWindow : UIAttachedWindow
     {
         if (_config.AutoOpenNextDay)
         {
-            _sched.SetCurrentCycle(_sched.CycleInProgress + 1);
+            WorkshopUtils.SetCurrentCycle(AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 1);
         }
         if (_config.AutoImport)
         {

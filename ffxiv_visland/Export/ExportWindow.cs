@@ -131,7 +131,6 @@ unsafe class ExportWindow : UIAttachedWindow
 
         Service.Log.Info($"Exporting {numItems} items above {limit} limit...");
         var listener = *(AgentInterface**)((nint)agent + 0x18);
-        AtkEvent result = new();
-        listener->VTable->ReceiveEvent(listener, &result, SpanExtensions.GetPointer(argsSpan, 0), (uint)args.Count, 0);
+        Utils.SynthesizeEvent(listener, 0, argsSpan);
     }
 }
