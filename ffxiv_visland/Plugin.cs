@@ -1,5 +1,4 @@
 ﻿using Dalamud.Common;
-using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
@@ -11,11 +10,11 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using visland.Export;
 using visland.Farm;
 using visland.Gathering;
 using visland.Granary;
 using visland.Pasture;
-using visland.Windows;
 using visland.Workshop;
 
 namespace visland;
@@ -57,7 +56,7 @@ public sealed class Plugin : IDalamudPlugin
     private GranaryWindow _wndGranary;
     private PastureWindow _wndPasture;
     private FarmWindow _wndFarm;
-    private ExportsWindow _wndExports;
+    private ExportWindow _wndExports;
 
     public unsafe Plugin(DalamudPluginInterface dalamud)
     {
@@ -88,7 +87,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndGranary = new GranaryWindow();
         _wndPasture = new PastureWindow();
         _wndFarm = new FarmWindow();
-        _wndExports = new ExportsWindow();
+        _wndExports = new ExportWindow();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -101,18 +100,14 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(_wndGranary);
             WindowSystem.AddWindow(_wndPasture);
             WindowSystem.AddWindow(_wndFarm);
-            //WindowSystem.AddWindow(_wndExports);
+            WindowSystem.AddWindow(_wndExports);
             Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
-
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "MJIDisposeShop", _wndExports.AutoExport);
     }
 
     public void Dispose()
     {
-        Service.AddonLifecycle.UnregisterListener(_wndExports.AutoExport);
-
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
