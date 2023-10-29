@@ -20,7 +20,6 @@ public class WorkshopOCImport
 {
     public WorkshopSolver.Recs Recommendations = new();
 
-    private WorkshopFavors _favors;
     private WorkshopSchedule _sched;
     private WorkshopConfig _config;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
@@ -28,9 +27,8 @@ public class WorkshopOCImport
     private List<Func<bool>> _pendingActions = new();
     private bool IgnoreFourthWorkshop;
 
-    public WorkshopOCImport(WorkshopFavors favors, WorkshopSchedule sched)
+    public WorkshopOCImport(WorkshopSchedule sched)
     {
-        _favors = favors;
         _sched = sched;
         _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
@@ -192,11 +190,12 @@ public class WorkshopOCImport
         }
     }
 
-    private string CreateFavorRequestCommand(bool nextWeek)
+    private unsafe string CreateFavorRequestCommand(bool nextWeek)
     {
-        if (_favors.DataAvailability != 2)
+        var state = MJIManager.Instance()->FavorState;
+        if (state == null || state->UpdateState != 2)
         {
-            ReportError($"Favor data not available: {_favors.DataAvailability}");
+            ReportError($"Favor data not available: {state->UpdateState}");
             return "";
         }
 
@@ -205,7 +204,7 @@ public class WorkshopOCImport
         var offset = nextWeek ? 6 : 3;
         for (int i = 0; i < 3; ++i)
         {
-            var id = _favors.CraftObjectID(offset + i);
+            var id = state->CraftObjectIds[offset + i];
             // the bot doesn't like names with apostrophes because it "breaks their formulas"
             var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
             if (name != null)
@@ -416,16 +415,17 @@ public class WorkshopOCImport
 
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
     {
+        var mji = MJIManager.Instance();
         var state = new WorkshopSolver.FavorState();
         var offset = nextWeek ? 6 : 3;
         for (int i = 0; i < 3; ++i)
         {
-            state.CraftObjectIds[i] = _favors.CraftObjectID(i + offset);
-            state.CompletedCounts[i] = _favors.NumDelivered(i + offset) + _favors.NumScheduled(i + offset);
+            state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
+            state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
         }
-        if (!WorkshopFavors.DemandDirty)
+        if (!mji->DemandDirty)
         {
-            state.Popularity.Set(nextWeek ? MJIManager.Instance()->NextPopularity : MJIManager.Instance()->CurrentPopularity);
+            state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
         }
         return new WorkshopSolverFavorSheet(state).Recs;
     }
@@ -445,12 +445,12 @@ public class WorkshopOCImport
         return name;
     }
 
-    private void EnsureDemandAvailable()
+    private unsafe void EnsureDemandAvailable()
     {
-        if (WorkshopFavors.DemandDirty)
+        if (MJIManager.Instance()->DemandDirty)
         {
             _sched.RequestDemand();
-            _pendingActions.Add(() => !WorkshopFavors.DemandDirty);
+            _pendingActions.Add(() => !MJIManager.Instance()->DemandDirty);
         }
     }
 

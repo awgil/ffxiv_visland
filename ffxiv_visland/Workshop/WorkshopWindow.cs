@@ -7,7 +7,6 @@ namespace visland.Workshop;
 unsafe class WorkshopWindow : UIAttachedWindow
 {
     private WorkshopConfig _config;
-    private WorkshopFavors _favors = new();
     private WorkshopSchedule _sched = new();
     private WorkshopManual _manual;
     private WorkshopOCImport _oc;
@@ -17,8 +16,8 @@ unsafe class WorkshopWindow : UIAttachedWindow
     {
         _config = Service.Config.Get<WorkshopConfig>();
         _manual = new(_sched);
-        _oc = new(_favors, _sched);
-        _debug = new(_sched, _favors);
+        _oc = new(_sched);
+        _debug = new(_sched);
     }
 
     public override void PreOpenCheck()

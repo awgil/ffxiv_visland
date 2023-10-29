@@ -12,17 +12,15 @@ namespace visland.Workshop;
 public unsafe class WorkshopDebug
 {
     private WorkshopSchedule _sched;
-    private WorkshopFavors _favors;
     private WorkshopSolver _solver = new();
     private UITree _tree = new();
     private WorkshopSolver.FavorState _favorState = new();
     private WorkshopSolverFavorSheet? _favorSolution;
     private string[] _itemNames;
 
-    public WorkshopDebug(WorkshopSchedule sched, WorkshopFavors favors)
+    public WorkshopDebug(WorkshopSchedule sched)
     {
         _sched = sched;
-        _favors = favors;
         _itemNames = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Select(o => o.Item.Value?.Name ?? "").ToArray();
     }
 
@@ -62,15 +60,16 @@ public unsafe class WorkshopDebug
         }
 
         var mji = MJIManager.Instance();
-        var mjiex = (MJIManagerEx*)mji;
-        _tree.LeafNode($"Popularity: dirty={mjiex->DemandDirty}, req={mjiex->RequestDemandType} obj={mjiex->RequestDemandCraftId}");
-        if (!mjiex->DemandDirty)
+        _tree.LeafNode($"Popularity: dirty={mji->DemandDirty}, req={mji->RequestDemandType} obj={mji->RequestDemandCraftId}");
+        if (!mji->DemandDirty)
         {
             DrawPopularity("Curr", mji->CurrentPopularity);
             DrawPopularity("Next", mji->NextPopularity);
         }
 
-        foreach (var nf in _tree.Node($"Favors: avail={_favors.DataAvailability}", _favors.DataAvailability != 2))
+        var favorsData = mji->FavorState;
+        var dataAvail = favorsData != null ? favorsData->UpdateState : -1;
+        foreach (var nf in _tree.Node($"Favors: avail={dataAvail}", dataAvail != 2))
         {
             DrawFavorSetup(0, 4, 8);
             DrawFavorSetup(1, 6, 6);
@@ -82,7 +81,7 @@ public unsafe class WorkshopDebug
             ImGui.SameLine();
             if (ImGui.Button("Prev"))
                 InitFavorsFromGame(0, -1);
-            using (ImRaii.Disabled(mjiex->DemandDirty))
+            using (ImRaii.Disabled(mji->DemandDirty))
             {
                 ImGui.SameLine();
                 if (ImGui.Button("This"))
@@ -144,10 +143,11 @@ public unsafe class WorkshopDebug
 
     private void InitFavorsFromGame(int offset, int pop)
     {
+        var state = MJIManager.Instance()->FavorState;
         for (int i = 0; i < 3; ++i)
         {
-            _favorState.CraftObjectIds[i] = _favors.CraftObjectID(i + offset);
-            _favorState.CompletedCounts[i] = _favors.NumDelivered(i + offset) + _favors.NumScheduled(i + offset);
+            _favorState.CraftObjectIds[i] = state->CraftObjectIds[i + offset];
+            _favorState.CompletedCounts[i] = state->NumDelivered[i + offset] + state->NumScheduled[i + offset];
         }
         if (pop >= 0)
         {
