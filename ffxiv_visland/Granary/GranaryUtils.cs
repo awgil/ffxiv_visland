@@ -8,8 +8,6 @@ namespace visland.Granary;
 
 public static unsafe class GranaryUtils
 {
-    public enum CollectResult { NothingToCollect, CanCollectSafely, CanCollectWithOvercap, EverythingCapped }
-
     public static MJIGranariesState* State()
     {
         var agent = AgentMJIGatheringHouse.Instance();

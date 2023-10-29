@@ -68,7 +68,7 @@ unsafe class GranaryWindow : UIAttachedWindow
 
     private void DrawTable()
     {
-        GranaryUtils.CollectResult[] collectStates = [GranaryUtils.CalculateGranaryCollectionState(0), GranaryUtils.CalculateGranaryCollectionState(1)];
+        CollectResult[] collectStates = [GranaryUtils.CalculateGranaryCollectionState(0), GranaryUtils.CalculateGranaryCollectionState(1)];
 
         using var table = ImRaii.Table("table", 3);
         if (table)
@@ -83,7 +83,7 @@ unsafe class GranaryWindow : UIAttachedWindow
             for (int i = 0; i < 2; ++i)
             {
                 ImGui.TableNextColumn();
-                using (ImRaii.Disabled(collectStates[i] is GranaryUtils.CollectResult.NothingToCollect or GranaryUtils.CollectResult.EverythingCapped))
+                using (ImRaii.Disabled(collectStates[i] is CollectResult.NothingToCollect or CollectResult.EverythingCapped))
                     if (ImGui.Button($"Collect##{i}"))
                         GranaryUtils.Collect(i);
             }
@@ -105,7 +105,7 @@ unsafe class GranaryWindow : UIAttachedWindow
                     var curDest = GranaryUtils.GetGranaryState(i)->ActiveExpeditionId;
                     var curDays = GranaryUtils.GetGranaryState(i)->RemainingDays;
                     var maxDays = (byte)Math.Min(7, curDays + GranaryUtils.MaxDays());
-                    using (ImRaii.Disabled(collectStates[i] != GranaryUtils.CollectResult.NothingToCollect || curDest == e->ExpeditionId && curDays == maxDays))
+                    using (ImRaii.Disabled(collectStates[i] != CollectResult.NothingToCollect || curDest == e->ExpeditionId && curDays == maxDays))
                         if (ImGui.Button($"{(curDest == e->ExpeditionId ? "Max" : "Reassign")}##{i}_{e->ExpeditionId}"))
                             GranaryUtils.SelectExpedition((byte)i, e->ExpeditionId, maxDays);
                 }
@@ -117,16 +117,16 @@ unsafe class GranaryWindow : UIAttachedWindow
     {
         switch (GranaryUtils.CalculateGranaryCollectionState(i))
         {
-            case GranaryUtils.CollectResult.NothingToCollect:
+            case CollectResult.NothingToCollect:
                 return true;
-            case GranaryUtils.CollectResult.CanCollectSafely:
+            case CollectResult.CanCollectSafely:
                 if (_config.Collect != CollectStrategy.Manual)
                 {
                     GranaryUtils.Collect(i);
                     return true;
                 }
                 break;
-            case GranaryUtils.CollectResult.CanCollectWithOvercap:
+            case CollectResult.CanCollectWithOvercap:
                 if (_config.Collect == CollectStrategy.FullAuto)
                 {
                     GranaryUtils.Collect(i);
@@ -141,7 +141,7 @@ unsafe class GranaryWindow : UIAttachedWindow
     {
         uint reassignMask = 0;
         for (int i = 0; i < 2; ++i)
-            if (GranaryUtils.CalculateGranaryCollectionState(i) == GranaryUtils.CollectResult.NothingToCollect)
+            if (GranaryUtils.CalculateGranaryCollectionState(i) == CollectResult.NothingToCollect)
                 reassignMask |= 1u << i;
         ReassignImpl(reassignMask);
     }

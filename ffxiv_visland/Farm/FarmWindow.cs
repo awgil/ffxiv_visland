@@ -1,7 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets2;
 using visland.Helpers;
@@ -10,8 +9,6 @@ namespace visland.Farm;
 
 public unsafe class FarmWindow : UIAttachedWindow
 {
-    public enum CollectResult { NothingToCollect, CanCollectSafely, CanCollectWithOvercap, EverythingCapped }
-
     private FarmConfig _config;
     private FarmDebug _debug = new();
 
@@ -106,7 +103,6 @@ public unsafe class FarmWindow : UIAttachedWindow
 
     private void DrawPlotOperations()
     {
-        var agent = AgentMJIFarmManagement.Instance();
         using var table = ImRaii.Table("table", 2);
         if (table)
         {
@@ -114,6 +110,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             ImGui.TableSetupColumn("Operations");
             ImGui.TableHeadersRow();
 
+            var agent = AgentMJIFarmManagement.Instance();
             for (int i = 0; i < agent->NumSlots; ++i)
             {
                 ref var slot = ref agent->SlotsSpan[i];
