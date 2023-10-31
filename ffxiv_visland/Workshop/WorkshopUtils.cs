@@ -1,7 +1,7 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using FFXIVClientStructs.Interop;
+using Lumina.Excel.GeneratedSheets2;
 using System;
 using visland.Helpers;
 using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -10,6 +10,15 @@ namespace visland;
 
 public static unsafe class WorkshopUtils
 {
+    public static (long index, DateTime startTime) CurrentWeek()
+    {
+        var cycleData = Service.LuminaRow<CycleTime>(2)!;
+        var now = DateTimeOffset.Now.ToUnixTimeSeconds();
+        var index = (now - cycleData.FirstCycle) / cycleData.Cycle;
+        var startTime = cycleData.FirstCycle + cycleData.Cycle * index;
+        return (index, DateTime.UnixEpoch.AddSeconds(startTime));
+    }
+
     public static bool CurrentCycleIsEmpty()
     {
         var agent = AgentMJICraftSchedule.Instance();

@@ -28,13 +28,18 @@ public unsafe class WorkshopDebug
         if (ImGui.Button("Clear"))
             WorkshopUtils.ClearCurrentCycleSchedule();
 
+        var curWeek = WorkshopUtils.CurrentWeek();
+        _tree.LeafNode($"Current week: #{curWeek.index}, started at {curWeek.startTime}");
+
         var ad = AgentMJICraftSchedule.Instance()->Data;
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         foreach (var na in _tree.Node($"Agent data: {(nint)ad:X}", ad == null))
         {
-            _tree.LeafNode($"init={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}");
-            _tree.LeafNode($"setting addon={ad->OpenedModalAddonHandle}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumIngredients}");
+            _tree.LeafNode($"updatestate={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}, groove={ad->Groove}");
+            _tree.LeafNode($"setting addon={ad->OpenedModalAddonHandle}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumMaterials}");
             _tree.LeafNode($"rest mask={ad->RestCycles:X}, in-progress={ad->CycleInProgress}");
+            _tree.LeafNode($"tail: level={ad->IslandLevel} flags={ad->Flags1:X2} {ad->Flags2:X2}");
+
             int i = 0;
             foreach (ref var w in ad->WorkshopDataSpan)
             {
@@ -48,13 +53,61 @@ public unsafe class WorkshopDebug
                 }
             }
 
-            foreach (var n in _tree.Node("Items", ad->Crafts.Size() == 0))
+            foreach (var n in _tree.Node("Raw crafts", ad->Crafts.Size() == 0))
             {
                 i = 0;
                 foreach (ref readonly var item in ad->Crafts.Span)
                 {
-                    _tree.LeafNode($"Item {i++}: id={item.CraftObjectId} ({sheet.GetRow(item.CraftObjectId)?.Item.Value?.Name})");
+                    foreach (var nn in _tree.Node($"Item {i++}: id={item.CraftObjectId} ({item.Name})"))
+                    {
+                        _tree.LeafNode($"Sheet data: itemid={item.ItemId}, level={item.LevelReq}, time={item.CraftingTime}, value={item.Value}");
+                        _tree.LeafNode($"Indices: main={item.CraftIndex}, sorted={item.SortedByNameIndex}");
+                        _tree.LeafNode($"Themes: num={item.NumThemes} [{item.ThemeIds[0]}, {item.ThemeIds[1]}, {item.ThemeIds[2]}]");
+                        _tree.LeafNode($"Props: fav={item.ThisWeekFavor}, pop-cur={item.ThisWeekPopularity}, pop-next={item.NextWeekPopularity}, supply={item.Supply}, demand-shift={item.DemandShift}");
+                    }
                 }
+            }
+            foreach (var n in _tree.Node("Crafts per theme", ad->ThemeNames.Size() == 0))
+            {
+                for (int j = 0; j < (int)ad->ThemeNames.Size(); ++j)
+                {
+                    foreach (var nn in _tree.Node(ad->ThemeNames.Span[j].ToString(), ad->UnlockedObjectsPerThemeSpan[j].Size() == 0))
+                    {
+                        foreach (ref readonly var item in ad->UnlockedObjectsPerThemeSpan[j].Span)
+                        {
+                            _tree.LeafNode($"id={item.Value->CraftObjectId} ({sheet.GetRow(item.Value->CraftObjectId)?.Item.Value?.Name})");
+                        }
+                    }
+                }
+            }
+            foreach (var n in _tree.Node("Crafts sorted by name", ad->CraftsSortedByName.Size() == 0))
+            {
+                foreach (ref readonly var item in ad->CraftsSortedByName.Span)
+                {
+                    _tree.LeafNode($"id={item.Value->CraftObjectId} ({sheet.GetRow(item.Value->CraftObjectId)?.Item.Value?.Name})");
+                }
+            }
+
+            foreach (var n in _tree.Node($"Material allocation for cycle {ad->MaterialUse.Cycle}###matalloc"))
+            {
+                foreach (var nn in _tree.Node("Cycle"))
+                    DrawMaterialAlloc(ref ad->MaterialUse.EntriesSpan[0]);
+                foreach (var nn in _tree.Node("Week"))
+                    DrawMaterialAlloc(ref ad->MaterialUse.EntriesSpan[1]);
+                foreach (var nn in _tree.Node("Week + next"))
+                    DrawMaterialAlloc(ref ad->MaterialUse.EntriesSpan[2]);
+                foreach (var nn in _tree.Node("Workshop 1"))
+                    for (int j = 0; j < 6; ++j)
+                        _tree.LeafNode($"{ad->MaterialUse.StartingHours[j]} == {ad->MaterialUse.CraftIds[j]} '{sheet.GetRow(ad->MaterialUse.CraftIds[j])?.Item.Value?.Name}'");
+                foreach (var nn in _tree.Node("Workshop 2"))
+                    for (int j = 0; j < 6; ++j)
+                        _tree.LeafNode($"{ad->MaterialUse.StartingHours[j + 6]} == {ad->MaterialUse.CraftIds[j + 6]} '{sheet.GetRow(ad->MaterialUse.CraftIds[j + 6])?.Item.Value?.Name}'");
+                foreach (var nn in _tree.Node("Workshop 3"))
+                    for (int j = 0; j < 6; ++j)
+                        _tree.LeafNode($"{ad->MaterialUse.StartingHours[j + 12]} == {ad->MaterialUse.CraftIds[j + 12]} '{sheet.GetRow(ad->MaterialUse.CraftIds[j + 12])?.Item.Value?.Name}'");
+                foreach (var nn in _tree.Node("Workshop 4"))
+                    for (int j = 0; j < 6; ++j)
+                        _tree.LeafNode($"{ad->MaterialUse.StartingHours[j + 18]} == {ad->MaterialUse.CraftIds[j + 18]} '{sheet.GetRow(ad->MaterialUse.CraftIds[j + 18])?.Item.Value?.Name}'");
             }
         }
 
@@ -118,6 +171,14 @@ public unsafe class WorkshopDebug
                 }
             }
         }
+    }
+
+    private void DrawMaterialAlloc(ref AgentMJICraftSchedule.MaterialAllocationEntry entry)
+    {
+        _tree.LeafNode($"index={entry.EntryIndex} unk={entry.uDC}");
+        for (int i = 0; i < 109; ++i)
+            if (entry.UsedAmounts[i] != 0)
+                _tree.LeafNode($"{Service.LuminaRow<MJIItemPouch>((uint)i)?.Item.Value?.Name} = {entry.UsedAmounts[i]}");
     }
 
     private void DrawPopularity(string tag, byte index)
