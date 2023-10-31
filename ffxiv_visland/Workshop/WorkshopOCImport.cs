@@ -414,19 +414,27 @@ public unsafe class WorkshopOCImport
 
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
     {
-        var mji = MJIManager.Instance();
-        var state = new WorkshopSolver.FavorState();
-        var offset = nextWeek ? 6 : 3;
-        for (int i = 0; i < 3; ++i)
+        try
         {
-            state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
-            state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
+            var mji = MJIManager.Instance();
+            var state = new WorkshopSolver.FavorState();
+            var offset = nextWeek ? 6 : 3;
+            for (int i = 0; i < 3; ++i)
+            {
+                state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
+                state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
+            }
+            if (!mji->DemandDirty)
+            {
+                state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
+            }
+            return new WorkshopSolverFavorSheet(state).Recs;
         }
-        if (!mji->DemandDirty)
+        catch (Exception ex)
         {
-            state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
+            ReportError(ex.Message);
+            return new();
         }
-        return new WorkshopSolverFavorSheet(state).Recs;
     }
 
     public static string OfficialNameToBotName(string name)

@@ -106,7 +106,7 @@ public class WorkshopSolverFavorSheet
         else
         {
             // no-links variants (also link46_no84 falls here, for whatever reason?)
-            if (f8l4 != 0)
+            if (f8l4 != 0 && f6l4alt != 0)
             {
                 while (Complete[0] < 6)
                     AddDayAssertPlan(Strategy.NoLinks, f4l4, f4, f4l4, f4, f4l4, f4);
