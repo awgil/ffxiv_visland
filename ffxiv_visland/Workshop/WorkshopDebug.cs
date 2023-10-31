@@ -35,7 +35,7 @@ public unsafe class WorkshopDebug
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         foreach (var na in _tree.Node($"Agent data: {(nint)ad:X}", ad == null))
         {
-            _tree.LeafNode($"updatestate={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}, groove={ad->Groove}");
+            _tree.LeafNode($"updatestate={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}, cur-hour={ad->HourSinceCycleStart}, groove={ad->Groove}");
             _tree.LeafNode($"setting addon={ad->OpenedModalAddonHandle}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumMaterials}");
             _tree.LeafNode($"rest mask={ad->RestCycles:X}, in-progress={ad->CycleInProgress}");
             _tree.LeafNode($"tail: level={ad->IslandLevel} flags={ad->Flags1:X2} {ad->Flags2:X2}");

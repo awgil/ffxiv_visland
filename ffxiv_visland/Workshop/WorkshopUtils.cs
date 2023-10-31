@@ -48,6 +48,7 @@ public static unsafe class WorkshopUtils
         Service.Log.Info($"Resetting current cycle");
         var agent = AgentMJICraftSchedule.Instance();
         agent->SetDisplayedCycle(agent->Data->CycleDisplayed);
+        agent->Data->Flags2 |= 0x01; // ensure material assignment addon is updated (TODO: ensure this is the right way...)
     }
 
     public static void SetCurrentCycle(int cycle)
