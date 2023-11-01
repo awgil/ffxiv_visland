@@ -123,7 +123,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.Log.Debug($"cmd: '{command}', args: '{arguments}'");
         if (arguments.Length == 0)
         {
-            _wndGather.IsOpen = true;
+            _wndGather.IsOpen ^= true;
         }
         else
         {
