@@ -84,7 +84,7 @@ public class WorkshopSolverFavorSheet
             while (Complete[0] < 8 || Complete[1] < 6)
                 AddDayAssertPlan(Strategy.Link46, f4, f6, f4, f6, f4);
             while (Complete[2] < 8)
-                AddDayAssertPlan(Strategy.Link46, f8l4, f6, f8l4, f6);
+                AddDayAssertPlan(Strategy.Link46, f8l4, f8, f8l4, f8);
         }
         else if (link68)
         {

@@ -27,16 +27,12 @@ public unsafe class WorkshopOCImport
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = new();
     private bool IgnoreFourthWorkshop;
-    private readonly List<WorkshopSolver.WorkshopRec> thisWeekFavorRecs;
-    private readonly List<WorkshopSolver.WorkshopRec> nextWeekFavorRecs;
 
     public WorkshopOCImport()
     {
         _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
-        thisWeekFavorRecs = SolveRecOverrides(false);
-        nextWeekFavorRecs = SolveRecOverrides(true);
     }
 
     public void Update()
@@ -97,21 +93,11 @@ public unsafe class WorkshopOCImport
             Utils.TextV("Override closest workshops with favors:");
             ImGui.SameLine();
 
-            using (ImRaii.Disabled(thisWeekFavorRecs.Count > 4))
-            {
-                if (ImGui.Button($"This Week##asap"))
-                    OverrideSideRecsAsapSolver(false);
-            }
-            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && thisWeekFavorRecs.Count > 4)
-                ImGui.SetTooltip("Favor schedule cannot fit in one day.");
-
+            if (ImGui.Button($"This Week##asap"))
+                OverrideSideRecsAsapSolver(false);
             ImGui.SameLine();
-            using (ImRaii.Disabled(nextWeekFavorRecs.Count > 4))
-            {
-                if (ImGui.Button($"Next Week##asap"))
-                    OverrideSideRecsAsapSolver(true);
-            }
-            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && nextWeekFavorRecs.Count > 4) ImGui.SetTooltip("Favor schedule cannot fit in one day.");
+            if (ImGui.Button($"Next Week##asap"))
+                OverrideSideRecsAsapSolver(true);
         }
 
         ImGui.Separator();
@@ -262,6 +248,8 @@ public unsafe class WorkshopOCImport
             // and add current override as a schedule for last workshop
             r.Workshops.Add(o);
         }
+        if (overrides.Count > Recommendations.Schedules.Count)
+            Service.ChatGui.Print("Warning: couldn't fit all overrides into base schedule", "visland");
     }
 
     private void OverrideSideRecsAsapClipboard()
@@ -306,6 +294,8 @@ public unsafe class WorkshopOCImport
             r.Workshops.AddRange(overrides.Skip(nextOverride).Take(batchSize));
             nextOverride += batchSize;
         }
+        if (nextOverride < overrides.Count)
+            Service.ChatGui.Print("Warning: couldn't fit all overrides into base schedule", "visland");
     }
 
     private WorkshopSolver.Recs ParseRecs(string str)
@@ -430,26 +420,28 @@ public unsafe class WorkshopOCImport
 
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
     {
+        var mji = MJIManager.Instance();
+        if (mji->IsPlayerInSanctuary == 0) return new();
+        var state = new WorkshopSolver.FavorState();
+        var offset = nextWeek ? 6 : 3;
+        for (int i = 0; i < 3; ++i)
+        {
+            state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
+            state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
+        }
+        if (!mji->DemandDirty)
+        {
+            state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
+        }
+
         try
         {
-            var mji = MJIManager.Instance();
-            if (mji->IsPlayerInSanctuary == 0) return new();
-            var state = new WorkshopSolver.FavorState();
-            var offset = nextWeek ? 6 : 3;
-            for (int i = 0; i < 3; ++i)
-            {
-                state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
-                state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
-            }
-            if (!mji->DemandDirty)
-            {
-                state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
-            }
             return new WorkshopSolverFavorSheet(state).Recs;
         }
         catch (Exception ex)
         {
             ReportError(ex.Message);
+            Service.Log.Error($"Current favors: {state.CraftObjectIds[0]} #{state.CompletedCounts[0]}, {state.CraftObjectIds[1]} #{state.CompletedCounts[1]}, {state.CraftObjectIds[2]} #{state.CompletedCounts[2]}");
             return new();
         }
     }
