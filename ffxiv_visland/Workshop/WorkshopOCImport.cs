@@ -10,6 +10,7 @@ using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -432,6 +433,7 @@ public unsafe class WorkshopOCImport
         try
         {
             var mji = MJIManager.Instance();
+            if (mji->IsPlayerInSanctuary == 0) return new();
             var state = new WorkshopSolver.FavorState();
             var offset = nextWeek ? 6 : 3;
             for (int i = 0; i < 3; ++i)
