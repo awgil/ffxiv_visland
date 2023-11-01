@@ -245,7 +245,7 @@ public unsafe class WorkshopOCImport
 
     private void OverrideSideRecsLastWorkshopSolver(bool nextWeek)
     {
-        EnsureDemandAvailable();
+        EnsureDemandFavorsAvailable();
         _pendingActions.Add(() => {
             OverrideSideRecsLastWorkshop(SolveRecOverrides(nextWeek));
             return true;
@@ -281,7 +281,7 @@ public unsafe class WorkshopOCImport
 
     private void OverrideSideRecsAsapSolver(bool nextWeek)
     {
-        EnsureDemandAvailable();
+        EnsureDemandFavorsAvailable();
         _pendingActions.Add(() => {
             OverrideSideRecsAsap(SolveRecOverrides(nextWeek));
             return true;
@@ -469,12 +469,12 @@ public unsafe class WorkshopOCImport
         return name;
     }
 
-    private unsafe void EnsureDemandAvailable()
+    private unsafe void EnsureDemandFavorsAvailable()
     {
         if (MJIManager.Instance()->DemandDirty)
         {
-            WorkshopUtils.RequestDemand();
-            _pendingActions.Add(() => !MJIManager.Instance()->DemandDirty);
+            WorkshopUtils.RequestDemandFavors();
+            _pendingActions.Add(() => !MJIManager.Instance()->DemandDirty && MJIManager.Instance()->FavorState->UpdateState == 2);
         }
     }
 

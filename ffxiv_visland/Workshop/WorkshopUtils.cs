@@ -65,10 +65,11 @@ public static unsafe class WorkshopUtils
         Utils.SynthesizeEvent(&agent->AgentInterface, 5, new AtkValue[] { new() { Type = AtkValueType.Int, Int = 0 } });
     }
 
-    public static void RequestDemand()
+    public static void RequestDemandFavors()
     {
-        Service.Log.Info("Fetching demand");
+        Service.Log.Info("Fetching demand & favors");
         MJIManager.Instance()->RequestDemandFull();
+        MJIManager.Instance()->RequestFavorData();
     }
 
     public static int GetMaxWorkshops()

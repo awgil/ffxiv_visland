@@ -25,8 +25,11 @@ public unsafe class WorkshopDebug
 
     public void Draw()
     {
-        if (ImGui.Button("Clear"))
+        if (ImGui.Button("Clear current cycle"))
             WorkshopUtils.ClearCurrentCycleSchedule();
+        ImGui.SameLine();
+        if (ImGui.Button("Refresh favors/demand"))
+            WorkshopUtils.RequestDemandFavors();
 
         var curWeek = WorkshopUtils.CurrentWeek();
         _tree.LeafNode($"Current week: #{curWeek.index}, started at {curWeek.startTime}");
@@ -123,13 +126,16 @@ public unsafe class WorkshopDebug
         var dataAvail = favorsData != null ? favorsData->UpdateState : -1;
         foreach (var nf in _tree.Node($"Favors: avail={dataAvail}", dataAvail != 2))
         {
+            DrawFavorState(0, "Prev");
+            DrawFavorState(3, "This");
+            DrawFavorState(6, "Next");
             DrawFavorSetup(0, 4, 8);
             DrawFavorSetup(1, 6, 6);
             DrawFavorSetup(2, 8, 8);
             Utils.TextV("Init from game week:");
             ImGui.SameLine();
             if (ImGui.Button("Fetch demand"))
-                WorkshopUtils.RequestDemand();
+                WorkshopUtils.RequestDemandFavors();
             ImGui.SameLine();
             if (ImGui.Button("Prev"))
                 InitFavorsFromGame(0, -1);
@@ -188,6 +194,19 @@ public unsafe class WorkshopDebug
         foreach (var np in _tree.Node($"{tag} popularity={index}"))
         {
             _tree.LeafNodes(sheetCraft.Where(o => o.RowId > 0), o => $"{o.RowId} '{o.Item.Value?.Name}' = {pop.Popularity[o.RowId].Value?.Ratio}");
+        }
+    }
+
+    private void DrawFavorState(int offset, string tag)
+    {
+        var f = MJIManager.Instance()->FavorState;
+        foreach (var n in _tree.Node($"{tag} favor state"))
+        {
+            for (int i = 0; i < 3; ++i)
+            {
+                var idx = f->CraftObjectIds[i + offset];
+                _tree.LeafNode($"{idx} '{Service.LuminaRow<MJICraftworksObject>(idx)?.Item.Value?.Name}': delivered={f->NumDelivered[i + offset]}, scheduled={f->NumScheduled[i + offset]}, bonus={f->Bonus(i + offset)}, shipped={f->Shipped(i + offset)}");
+            }
         }
     }
 
