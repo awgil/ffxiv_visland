@@ -80,13 +80,8 @@ public unsafe class WorkshopOCImport
 
             if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
                 OverrideSideRecsLastWorkshopClipboard();
-            using (ImRaii.Disabled(thisWeekFavorRecs.Count > 4))
-            {
-                if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
-                    OverrideSideRecsAsapClipboard();
-                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && thisWeekFavorRecs.Count > 4)
-                    ImGui.SetTooltip("Favor schedule cannot fit in one day.");
-            }
+            if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
+                OverrideSideRecsAsapClipboard();
         }
         else
         {
