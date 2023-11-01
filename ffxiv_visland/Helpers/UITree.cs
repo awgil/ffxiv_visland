@@ -6,18 +6,11 @@ namespace visland.Helpers;
 
 public class UITree
 {
-    public struct NodeProperties
+    public struct NodeProperties(string text, bool leaf = false, uint color = 0xffffffff)
     {
-        public string Text;
-        public bool Leaf;
-        public uint Color;
-
-        public NodeProperties(string text, bool leaf = false, uint color = 0xffffffff)
-        {
-            Text = text;
-            Leaf = leaf;
-            Color = color;
-        }
+        public string Text = text;
+        public bool Leaf = leaf;
+        public uint Color = color;
     }
 
     private uint _selectedID;

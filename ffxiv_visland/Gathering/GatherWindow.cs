@@ -1,8 +1,12 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using ECommons.DalamudServices;
+using ECommons.ImGuiMethods;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,86 +27,80 @@ public class GatherWindow : Window, IDisposable
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
 
-    public GatherWindow() : base("Island sanctuary automation")
+    private int selectedRouteIndex = -1;
+    private static bool loop;
+
+    private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
+    private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
+
+    public GatherWindow() : base("Gathering Automation")
     {
         Size = new Vector2(800, 800);
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
     }
 
-    public void Dispose()
-    {
-        Exec.Dispose();
-    }
+    public void Dispose() => Exec.Dispose();
 
-    public override void PreOpenCheck()
-    {
-        Exec.Update();
-    }
+    public override void PreOpenCheck() => Exec.Update();
 
     public override void Draw()
     {
-        DrawExecution();
-        DrawRoutes();
+        var cra = ImGui.GetContentRegionAvail();
+        var sidebar = cra with { X = cra.X * 0.40f };
+        var editor = cra with { X = cra.X * 0.60f };
 
-        foreach (var a in _postDraw)
-            a();
-        _postDraw.Clear();
+        DrawExecution();
+        ImGui.Spacing();
+
+        DrawSidebar(sidebar);
+        ImGui.SameLine();
+        DrawEditor(editor);
     }
 
     private void DrawExecution()
     {
-        if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
-            RouteDB.NotifyModified();
-        ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+        ImGui.Text("Status: ");
+        ImGui.SameLine();
+
+        if (Exec.CurrentRoute != null)
+            Utils.FlashText($"{(Exec.Paused ? "PAUSED" : "RUNNING")}", new Vector4(1.0f, 1.0f, 1.0f, 1.0f), Exec.Paused ? new Vector4(1.0f, 0.0f, 0.0f, 1.0f) : new Vector4(0.0f, 1.0f, 0.0f, 1.0f), 2);
+        ImGui.SameLine();
 
         if (Exec.CurrentRoute == null || Exec.CurrentWaypoint >= Exec.CurrentRoute.Waypoints.Count)
         {
-            ImGui.TextUnformatted("Route not running");
+            ImGui.Text("Route not running");
             return;
         }
 
         var curPos = Service.ClientState.LocalPlayer?.Position ?? new();
         var wp = Exec.CurrentRoute.Waypoints[Exec.CurrentWaypoint];
-        if (ImGui.Button(Exec.Paused ? "Resume" : "Pause"))
-        {
-            Exec.Paused = !Exec.Paused;
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Stop"))
-        {
-            Exec.Finish();
-        }
         if (Exec.CurrentRoute != null) // Finish() call could've reset it
         {
             ImGui.SameLine();
-            ImGui.TextUnformatted($"Executing: {Exec.CurrentRoute.Name} #{Exec.CurrentWaypoint + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} (dist={(curPos - wp.Position).Length():f3}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})");
+            ImGui.Text($"{Exec.CurrentRoute.Name}: Step #{Exec.CurrentWaypoint + 1}");
         }
     }
 
-    private void DrawRoutes()
+    private unsafe void DrawSidebar(Vector2 size)
     {
-        foreach (var r in _tree.Nodes(RouteDB.Routes, r => new($"{r.Name} ({r.Waypoints.Count} steps)###{r.Name}"), ContextMenuRoute))
+        using (ImRaii.Child("Sidebar", size, false))
         {
-            DrawRoute(r);
-        }
-
-        ImGui.SetNextItemWidth(200);
-        ImGui.InputText("New route name", ref _newName, 256);
-        using (ImRaii.Disabled(_newName.Length == 0 || RouteDB.Routes.Any(r => r.Name == _newName)))
-        {
-            ImGui.SameLine();
-            if (ImGui.Button("Create new"))
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.Plus))
             {
-                RouteDB.Routes.Add(new() { Name = _newName });
+                RouteDB.Routes.Add(new() { Name = "Unnamed Route"});
                 RouteDB.NotifyModified();
             }
+
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Create a New Route");
             ImGui.SameLine();
-            if (ImGui.Button("Import from clipboard"))
+
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.FileImport))
             {
                 try
                 {
-                    RouteDB.Routes.Add(new() { Name = _newName, Waypoints = GatherRouteDB.LoadFromJSONWaypoints(JArray.Parse(ImGui.GetClipboardText())) });
+                    var import = JsonConvert.DeserializeObject<GatherRouteDB.Route>(ImGui.GetClipboardText());
+                    RouteDB.Routes.Add(new() { Name = import!.Name, Waypoints = import.Waypoints });
                     RouteDB.NotifyModified();
                 }
                 catch (JsonReaderException ex)
@@ -111,69 +109,121 @@ public class GatherWindow : Window, IDisposable
                     Service.Log.Error(ex, "Failed to import route");
                 }
             }
-        }
-    }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Import Route from Clipboard");
 
-    private void DrawRoute(GatherRouteDB.Route r)
-    {
-        for (int i = 0; i < r.Waypoints.Count; ++i)
-        {
-            var wp = r.Waypoints[i];
-            foreach (var wn in _tree.Node($"#{i + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => ContextMenuWaypoint(r, i)))
-            {
-                DrawWaypoint(wp);
-            }
-        }
+            ImGui.SameLine();
+            if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
+                RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
 
-        if (ImGui.Button("Interact with target"))
-        {
-            var target = Service.TargetManager.Target;
-            if (target != null)
+            ImGui.Separator();
+
+            for (int i = 0; i < RouteDB.Routes.Count; i++)
             {
-                r.Waypoints.Add(new() { Position = target.Position, Radius = 2, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
-                RouteDB.NotifyModified();
-                Exec.Start(r, r.Waypoints.Count - 1, false, false);
-            }
-        }
-        ImGui.SameLine();
-        if (ImGui.Button("Move to current position"))
-        {
-            Exec.Finish();
-            var player = Service.ClientState.LocalPlayer;
-            if (player != null)
-            {
-                r.Waypoints.Add(new() { Position = player.Position, Radius = 3, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal });
-                RouteDB.NotifyModified();
+                var route = RouteDB.Routes[i];
+                var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
+                if (selectedRoute)
+                    selectedRouteIndex = i;
             }
         }
     }
 
-    private void ContextMenuRoute(GatherRouteDB.Route r)
+    private void DrawEditor(Vector2 size)
     {
-        if (ImGui.MenuItem("Execute once"))
-        {
-            Exec.Start(r, 0, true, false);
-        }
+        if (selectedRouteIndex == -1) return;
+        var route = RouteDB.Routes[selectedRouteIndex];
 
-        if (ImGui.MenuItem("Execute continuously"))
+        using (ImRaii.Child("Editor", size))
         {
-            Exec.Start(r, 0, true, true);
-        }
+            ImGuiEx.TextV("");
+            ImGui.Separator();
 
-        if (Utils.DangerousMenuItem("Delete"))
-        {
-            _postDraw.Add(() =>
+            using (ImRaii.Disabled(Exec.CurrentRoute != null))
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Play))
+                    Exec.Start(route, 0, true, loop);
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Execute Route");
+            ImGui.SameLine();
+
+            ImGui.PushStyleColor(ImGuiCol.Button, loop ? greenColor : redColor);
+            ImGui.PushStyleColor(ImGuiCol.ButtonHovered, loop ? greenColor : redColor);
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
+                loop ^= true;
+            ImGui.PopStyleColor(2);
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Loop Route");
+            ImGui.SameLine();
+
+            if (Exec.CurrentRoute != null)
             {
-                if (Exec.CurrentRoute == r)
+                if (ImGuiEx.IconButton(Exec.Paused ? FontAwesomeIcon.Play : FontAwesomeIcon.Pause))
+                    Exec.Paused = !Exec.Paused;
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip(Exec.Paused ? "Resume" : "Pause");
+                ImGui.SameLine();
+
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Stop))
                     Exec.Finish();
-                RouteDB.Routes.Remove(r);
-                RouteDB.NotifyModified();
-            });
-        }
+                if (ImGui.IsItemHovered()) ImGui.SetTooltip("Stop Route");
+                ImGui.SameLine();
+            }
 
-        if (ImGui.MenuItem("Export to clipboard"))
-        {
-            ImGui.SetClipboardText(GatherRouteDB.SaveToJSONWaypoints(r.Waypoints).ToString(Formatting.None));
+            var canDelete = !ImGui.GetIO().KeyCtrl;
+            using (ImRaii.Disabled(canDelete))
+            {
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.Trash))
+                {
+                    if (Exec.CurrentRoute == route)
+                        Exec.Finish();
+                    RouteDB.Routes.Remove(route);
+                    RouteDB.NotifyModified();
+                }
+            }
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("Delete Route (Hold CTRL)");
+            ImGui.SameLine();
+
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.FileExport))
+            {
+                ImGui.SetClipboardText(JsonConvert.SerializeObject(route));
+            }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Export Route");
+
+            var name = route.Name;
+            if (ImGui.InputText("Name", ref name, 256))
+            {
+                route.Name = name;
+                RouteDB.NotifyModified();
+            }
+
+            for (int i = 0; i < route.Waypoints.Count; ++i)
+            {
+                var wp = route.Waypoints[i];
+                foreach (var wn in _tree.Node($"#{i + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
+                {
+                    DrawWaypoint(wp);
+                }
+            }
+
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.Plus))
+            {
+                Exec.Finish();
+                var player = Service.ClientState.LocalPlayer;
+                if (player != null)
+                {
+                    route.Waypoints.Add(new() { Position = player.Position, Radius = 3, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal });
+                    RouteDB.NotifyModified();
+                }
+            }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Current Position");
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
+            {
+                var target = Service.TargetManager.Target;
+                if (target != null)
+                {
+                    route.Waypoints.Add(new() { Position = target.Position, Radius = 2, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    RouteDB.NotifyModified();
+                    Exec.Start(route, route.Waypoints.Count - 1, false, false);
+                }
+            }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");   
         }
     }
 

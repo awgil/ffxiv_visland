@@ -11,6 +11,7 @@ using Lumina.Excel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 
 namespace visland.Helpers;
@@ -66,6 +67,32 @@ public static unsafe class Utils
         ImGui.SameLine();
         ImGui.SetCursorPos(cur);
         ImGui.TextUnformatted(s);
+    }
+
+    private static float startTime;
+    public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration)
+    {
+        float currentTime = (float)ImGui.GetTime();
+        float elapsedTime = currentTime - startTime;
+
+        float t = (float)Math.Sin(elapsedTime / duration * Math.PI * 2) * 0.5f + 0.5f;
+
+        // Interpolate the color difference
+        Vector4 interpolatedColor = new(
+            colour1.X + t * (colour2.X - colour1.X),
+            colour1.Y + t * (colour2.Y - colour1.Y),
+            colour1.Z + t * (colour2.Z - colour1.Z),
+            1.0f
+        );
+
+        ImGui.PushStyleColor(ImGuiCol.Text, interpolatedColor);
+        ImGui.Text(text);
+        ImGui.PopStyleColor();
+
+        if (elapsedTime >= duration)
+        {
+            startTime = currentTime;
+        }
     }
 
     // note: argument should really be any AtkEventInterface
