@@ -46,7 +46,7 @@ class RepoMigrateWindow : Window
 
 public sealed class Plugin : IDalamudPlugin
 {
-    public string Name => "Island sanctuary automation";
+    public string Name => "visland";
 
     public DalamudPluginInterface Dalamud { get; init; }
 

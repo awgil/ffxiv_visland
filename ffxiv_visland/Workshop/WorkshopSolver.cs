@@ -8,16 +8,10 @@ namespace visland.Workshop;
 
 public class WorkshopSolver
 {
-    public struct SlotRec
+    public struct SlotRec(int slot, uint craftObjectId)
     {
-        public int Slot;
-        public uint CraftObjectId;
-
-        public SlotRec(int slot, uint craftObjectId)
-        {
-            Slot = slot;
-            CraftObjectId = craftObjectId;
-        }
+        public int Slot = slot;
+        public uint CraftObjectId = craftObjectId;
     }
 
     public class WorkshopRec

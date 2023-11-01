@@ -26,12 +26,16 @@ public unsafe class WorkshopOCImport
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = new();
     private bool IgnoreFourthWorkshop;
+    private readonly List<WorkshopSolver.WorkshopRec> thisWeekFavorRecs;
+    private readonly List<WorkshopSolver.WorkshopRec> nextWeekFavorRecs;
 
     public WorkshopOCImport()
     {
         _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? "")).ToList();
+        thisWeekFavorRecs = SolveRecOverrides(false);
+        nextWeekFavorRecs = SolveRecOverrides(true);
     }
 
     public void Update()
@@ -72,30 +76,46 @@ public unsafe class WorkshopOCImport
                 Util.OpenLink("discord://discord.com/channels/1034534280757522442/1034985297391407126");
             if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
                 Util.OpenLink("https://discord.com/channels/1034534280757522442/1034985297391407126");
-            ImGuiComponents.HelpMarker("Left Click: Discord app\nRight Click: Discord in browser");
+            ImGuiComponents.HelpMarker("\uE051: Discord app\n\uE052: Discord in browser");
 
             if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
                 OverrideSideRecsLastWorkshopClipboard();
-            if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
-                OverrideSideRecsAsapClipboard();
+            using (ImRaii.Disabled(thisWeekFavorRecs.Count > 4))
+            {
+                if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
+                    OverrideSideRecsAsapClipboard();
+                if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && thisWeekFavorRecs.Count > 4)
+                    ImGui.SetTooltip("Favor schedule cannot fit in one day.");
+            }
         }
         else
         {
             Utils.TextV("Override 4th workshop with favors:");
             ImGui.SameLine();
-            if (ImGui.Button($"This week##4th"))
+            if (ImGui.Button($"This Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(false);
             ImGui.SameLine();
-            if (ImGui.Button($"Next week##4th"))
+            if (ImGui.Button($"Next Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(true);
 
             Utils.TextV("Override closest workshops with favors:");
             ImGui.SameLine();
-            if (ImGui.Button($"This week##4th"))
-                OverrideSideRecsAsapSolver(false);
+
+            using (ImRaii.Disabled(thisWeekFavorRecs.Count > 4))
+            {
+                if (ImGui.Button($"This Week##4th"))
+                    OverrideSideRecsAsapSolver(false);
+            }
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && thisWeekFavorRecs.Count > 4)
+                ImGui.SetTooltip("Favor schedule cannot fit in one day.");
+
             ImGui.SameLine();
-            if (ImGui.Button($"Next week##4th"))
-                OverrideSideRecsAsapSolver(true);
+            using (ImRaii.Disabled(nextWeekFavorRecs.Count > 4))
+            {
+                if (ImGui.Button($"Next Week##4th"))
+                    OverrideSideRecsAsapSolver(true);
+            }
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && nextWeekFavorRecs.Count > 4) ImGui.SetTooltip("Favor schedule cannot fit in one day.");
         }
 
         ImGui.Separator();
@@ -136,7 +156,7 @@ public unsafe class WorkshopOCImport
         {
             Utils.TextV($"Cycle {c}:");
             ImGui.SameLine();
-            if (ImGui.Button($"Import to active cycle##{c}"))
+            if (ImGui.Button($"Set on Active Cycle##{c}"))
                 ApplyRecommendationToCurrentCycle(r);
 
             using var outerTable = ImRaii.Table($"table_{c}", r.Workshops.Count, tableFlags);
