@@ -99,7 +99,7 @@ public unsafe class WorkshopOCImport
 
             using (ImRaii.Disabled(thisWeekFavorRecs.Count > 4))
             {
-                if (ImGui.Button($"This Week##4th"))
+                if (ImGui.Button($"This Week##asap"))
                     OverrideSideRecsAsapSolver(false);
             }
             if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && thisWeekFavorRecs.Count > 4)
@@ -108,7 +108,7 @@ public unsafe class WorkshopOCImport
             ImGui.SameLine();
             using (ImRaii.Disabled(nextWeekFavorRecs.Count > 4))
             {
-                if (ImGui.Button($"Next Week##4th"))
+                if (ImGui.Button($"Next Week##asap"))
                     OverrideSideRecsAsapSolver(true);
             }
             if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) && nextWeekFavorRecs.Count > 4) ImGui.SetTooltip("Favor schedule cannot fit in one day.");
