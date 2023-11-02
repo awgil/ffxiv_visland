@@ -164,7 +164,10 @@ public class WorkshopSolverFavorSheet
     private void AddDayAssertPlan(Strategy plan, params uint[] objs)
     {
         if (Plan != plan)
-            throw new Exception($"I fucked up: expected plan {plan}, have {Plan}");
+        {
+            Service.Log.Warning($"I fucked up: expected plan {plan}, have {Plan} - for {string.Join(", ", Favors.Select(f => f.Item.Value?.Name))}");
+            Plan = plan;
+        }
         AddDay(objs);
     }
 }
