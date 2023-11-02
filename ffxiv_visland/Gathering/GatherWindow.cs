@@ -1,18 +1,13 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
-using Dalamud.Interface.Internal.Notifications;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using visland.Helpers;
 
@@ -20,9 +15,8 @@ namespace visland.Gathering;
 
 public class GatherWindow : Window, IDisposable
 {
-    private UITree _tree = new();
-    private string _newName = "";
-    private List<Action> _postDraw = new();
+    private readonly UITree _tree = new();
+    private readonly List<Action> _postDraw = new();
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
@@ -56,6 +50,10 @@ public class GatherWindow : Window, IDisposable
         DrawSidebar(sidebar);
         ImGui.SameLine();
         DrawEditor(editor);
+
+        foreach (var a in _postDraw)
+            a();
+        _postDraw.Clear();
     }
 
     private void DrawExecution()
