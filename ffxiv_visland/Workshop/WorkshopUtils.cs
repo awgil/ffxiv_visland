@@ -24,7 +24,7 @@ public static unsafe class WorkshopUtils
         var agent = AgentMJICraftSchedule.Instance();
         if (agent == null || agent->Data == null)
             return false;
-        foreach (ref var w in agent->Data->WorkshopDataSpan)
+        foreach (ref var w in agent->Data->WorkshopSchedulesSpan)
             if (w.NumScheduleEntries != 0)
                 return false;
         return true;
@@ -48,7 +48,7 @@ public static unsafe class WorkshopUtils
         Service.Log.Info($"Resetting current cycle");
         var agent = AgentMJICraftSchedule.Instance();
         agent->SetDisplayedCycle(agent->Data->CycleDisplayed);
-        agent->Data->Flags2 |= 0x01; // ensure material assignment addon is updated (TODO: ensure this is the right way...)
+        agent->Data->Flags1 |= AgentMJICraftSchedule.DataFlags1.MaterialsUpdated; // ensure material assignment addon is updated
     }
 
     public static void SetCurrentCycle(int cycle)

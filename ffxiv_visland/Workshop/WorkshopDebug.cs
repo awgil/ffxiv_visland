@@ -7,6 +7,7 @@ using Lumina.Excel.GeneratedSheets2;
 using System.Collections.Generic;
 using System.Linq;
 using visland.Helpers;
+using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMJIFarmManagement;
 
 namespace visland.Workshop;
 
@@ -38,23 +39,20 @@ public unsafe class WorkshopDebug
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         foreach (var na in _tree.Node($"Agent data: {(nint)ad:X}", ad == null))
         {
-            _tree.LeafNode($"updatestate={ad->UpdateState}, cur-cycle={ad->CycleDisplayed}, cur-hour={ad->HourSinceCycleStart}, groove={ad->Groove}");
-            _tree.LeafNode($"setting addon={ad->OpenedModalAddonHandle}, ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumMaterials}");
-            _tree.LeafNode($"rest mask={ad->RestCycles:X}, in-progress={ad->CycleInProgress}");
-            _tree.LeafNode($"tail: level={ad->IslandLevel} flags={ad->Flags1:X2} {ad->Flags2:X2}");
+            _tree.LeafNode($"updatestate={ad->UpdateState}, level={ad->IslandLevel}");
+            _tree.LeafNode($"addons: modal={ad->OpenedModalAddonHandle} ({ad->OpenedModalAddonId}, review={ad->ReviewMaterialsAddonHandle}, confirm={ad->ConfirmAddonHandle}");
+            _tree.LeafNode($"setting: ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumMaterials}, init={ad->CurScheduleSettingMaterialsInitializedMask:X2}");
+            _tree.LeafNode($"s/d: sort={ad->CurSupplyDemandSort:X}, time={ad->CurSupplyDemandFilterTime:X}, cat={ad->CurSupplyDemandFilterCategory:X}, cpop={ad->CurSupplyDemandFilterThisWeekPopularity:X}, npop={ad->CurSupplyDemandFilterNextWeekPopularity:X}, s={ad->CurSupplyDemandFilterSupply:X}, d={ad->CurSupplyDemandFilterDemandShift:X}, f={ad->CurSupplyDemandFilterFavors:X}");
+            _tree.LeafNode($"ctx: sched={ad->CurContextMenuScheduleEntryWorkshop}/{ad->CurContextMenuScheduleEntrySlot}, sd={ad->CurContextMenuSupplyDemandRow}, preset={ad->CurContextMenuPresetIndex}");
+            _tree.LeafNode($"groove={ad->Groove}, cur-cycle={ad->CycleDisplayed}, cur-hour={ad->HourSinceCycleStart}, in-progress={ad->CycleInProgress}");
+            _tree.LeafNode($"rest mask={ad->RestCycles:X}, proposed={ad->NewRestCycles:X}, prompt={ad->ConfirmPrompt}");
+            _tree.LeafNode($"flags1={ad->Flags1}");
+            _tree.LeafNode($"flags2={ad->Flags2}");
 
             int i = 0;
-            foreach (ref var w in ad->WorkshopDataSpan)
-            {
-                foreach (var n in _tree.Node($"Workshop {i++}: {w.NumScheduleEntries} entries, {w.UsedTimeSlots:X} used", w.NumScheduleEntries == 0))
-                {
-                    for (int j = 0; j < w.NumScheduleEntries; ++j)
-                    {
-                        ref var e = ref w.EntryDataSpan[j];
-                        _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({sheet.GetRow(e.CraftObjectId)?.Item.Value?.Name}), startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started}, efficient={e.Efficient}");
-                    }
-                }
-            }
+            foreach (ref var w in ad->WorkshopSchedulesSpan)
+                DrawWorkshopSchedule(ref w, $"Workshop {i++}");
+            DrawWorkshopSchedule(ref ad->CopiedSchedule, "Workshop in clipboard");
 
             foreach (var n in _tree.Node("Raw crafts", ad->Crafts.Size() == 0))
             {
@@ -66,7 +64,7 @@ public unsafe class WorkshopDebug
                         _tree.LeafNode($"Sheet data: itemid={item.ItemId}, level={item.LevelReq}, time={item.CraftingTime}, value={item.Value}");
                         _tree.LeafNode($"Indices: main={item.CraftIndex}, sorted={item.SortedByNameIndex}");
                         _tree.LeafNode($"Themes: num={item.NumThemes} [{item.ThemeIds[0]}, {item.ThemeIds[1]}, {item.ThemeIds[2]}]");
-                        _tree.LeafNode($"Props: fav={item.ThisWeekFavor}, pop-cur={item.ThisWeekPopularity}, pop-next={item.NextWeekPopularity}, supply={item.Supply}, demand-shift={item.DemandShift}");
+                        _tree.LeafNode($"Props: fav={item.Favor}, pop-cur={item.ThisWeekPopularity}, pop-next={item.NextWeekPopularity}, supply={item.Supply}, demand-shift={item.DemandShift}");
                     }
                 }
             }
@@ -175,6 +173,18 @@ public unsafe class WorkshopDebug
                         _tree.LeafNodes(r.Slots, s => $"{s.Slot}: {s.CraftObjectId} '{sheet.GetRow(s.CraftObjectId)?.Item.Value?.Name}'");
                     }
                 }
+            }
+        }
+    }
+
+    private void DrawWorkshopSchedule(ref AgentMJICraftSchedule.WorkshopData w, string tag)
+    {
+        foreach (var n in _tree.Node($"{tag}: {w.NumScheduleEntries} entries, {w.NumEfficientCrafts} eff, {w.UsedTimeSlots:X} used", w.NumScheduleEntries == 0))
+        {
+            for (int j = 0; j < w.NumScheduleEntries; ++j)
+            {
+                ref var e = ref w.EntryDataSpan[j];
+                _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({Service.LuminaRow<MJICraftworksObject>(e.CraftObjectId)?.Item.Value?.Name}), flags={e.Flags} startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started}, efficient={e.Efficient}");
             }
         }
     }

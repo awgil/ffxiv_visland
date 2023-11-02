@@ -73,7 +73,7 @@ public class WorkshopManual
         var slotMask = (1u << row.CraftingTime) - 1;
         int startingCycle = 0;
         int maxCycle = 24 - row.CraftingTime;
-        var usedMask = agentData->WorkshopDataSpan[workshopIndex].UsedTimeSlots;
+        var usedMask = agentData->WorkshopSchedulesSpan[workshopIndex].UsedTimeSlots;
         while ((usedMask & slotMask << startingCycle) != 0 && startingCycle <= maxCycle)
             ++startingCycle;
         if (startingCycle > maxCycle)
