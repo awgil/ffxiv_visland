@@ -3,7 +3,10 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using Dalamud.Utility;
 using ECommons.ImGuiMethods;
+using ECommons.LanguageHelpers;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
 using Newtonsoft.Json;
 using System;
@@ -27,7 +30,11 @@ public class GatherWindow : Window, IDisposable
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
 
-    public GatherWindow() : base("Gathering Automation")
+    private string searchString = string.Empty;
+    private readonly List<GatherRouteDB.Route> FilteredRoutes = new();
+    private bool hornybonk;
+
+    public GatherWindow() : base("Gathering Automation", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         Size = new Vector2(800, 800);
         SizeCondition = ImGuiCond.FirstUseEver;
@@ -40,12 +47,13 @@ public class GatherWindow : Window, IDisposable
 
     public override void Draw()
     {
+        DrawExecution();
+        ImGui.Separator();
+        ImGui.Spacing();
+
         var cra = ImGui.GetContentRegionAvail();
         var sidebar = cra with { X = cra.X * 0.40f };
         var editor = cra with { X = cra.X * 0.60f };
-
-        DrawExecution();
-        ImGui.Spacing();
 
         DrawSidebar(sidebar);
         ImGui.SameLine();
@@ -114,14 +122,42 @@ public class GatherWindow : Window, IDisposable
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
 
+            ImGuiEx.TextV("Search: ");
+            ImGui.SameLine();
+            ImGuiEx.SetNextItemFullWidth();
+            if (ImGui.InputText("###RouteSearch", ref searchString, 500))
+            {
+                if (searchString.Equals("ERP", StringComparison.CurrentCultureIgnoreCase) && !hornybonk)
+                {
+                    hornybonk = true;
+                    Util.OpenLink("https://duckduckgo.com/?t=h_&q=grass&iax=images&ia=images");
+                }
+                else
+                {
+                    hornybonk = false;
+                }
+                FilteredRoutes.Clear();
+                if (searchString.Length > 0)
+                {
+                    foreach (var route in RouteDB.Routes)
+                    {
+                        if (route.Name.Contains(searchString, StringComparison.CurrentCultureIgnoreCase))
+                            FilteredRoutes.Add(route);
+                    }
+                }
+            }
+
             ImGui.Separator();
 
-            for (int i = 0; i < RouteDB.Routes.Count; i++)
+            using (ImRaii.Child("routes"))
             {
-                var route = RouteDB.Routes[i];
-                var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
-                if (selectedRoute)
-                    selectedRouteIndex = i;
+                for (int i = 0; i < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); i++)
+                {
+                    var route = RouteDB.Routes[i];
+                    var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
+                    if (selectedRoute)
+                        selectedRouteIndex = i;
+                }
             }
         }
     }
@@ -133,9 +169,6 @@ public class GatherWindow : Window, IDisposable
 
         using (ImRaii.Child("Editor", size))
         {
-            ImGuiEx.TextV("");
-            ImGui.Separator();
-
             using (ImRaii.Disabled(Exec.CurrentRoute != null))
                 if (ImGuiComponents.IconButton(FontAwesomeIcon.Play))
                     Exec.Start(route, 0, true, loop);
@@ -184,21 +217,14 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Export Route");
 
             var name = route.Name;
-            if (ImGui.InputText("Name", ref name, 256))
+            ImGuiEx.TextV("Name: ");
+            ImGui.SameLine();
+            if (ImGui.InputText("", ref name, 256))
             {
                 route.Name = name;
                 RouteDB.NotifyModified();
             }
-
-            for (int i = 0; i < route.Waypoints.Count; ++i)
-            {
-                var wp = route.Waypoints[i];
-                foreach (var wn in _tree.Node($"#{i + 1}: [{wp.Position.X:f3}, {wp.Position.Y:f3}, {wp.Position.Z:f3}] +- {wp.Radius:f3} ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
-                {
-                    DrawWaypoint(wp);
-                }
-            }
-
+            ImGui.SameLine();
             if (ImGuiComponents.IconButton(FontAwesomeIcon.Plus))
             {
                 Exec.Finish();
@@ -221,7 +247,19 @@ public class GatherWindow : Window, IDisposable
                     Exec.Start(route, route.Waypoints.Count - 1, false, false);
                 }
             }
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");   
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");
+
+            using (ImRaii.Child("waypoints"))
+            {
+                for (int i = 0; i < route.Waypoints.Count; ++i)
+                {
+                    var wp = route.Waypoints[i];
+                    foreach (var wn in _tree.Node($"#{i + 1}: Goto: [{wp.Position.X:f0}, {wp.Position.Y:f0}, {wp.Position.Z:f0}] ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
+                    {
+                        DrawWaypoint(wp);
+                    }
+                }
+            }
         }
     }
 
