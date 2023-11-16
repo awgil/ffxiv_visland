@@ -67,6 +67,7 @@ public class GatherRouteDB : Configuration.Node
     public float DefaultWaypointRadius = 3;
     public float DefaultInteractionRadius = 2;
     public bool DisableOnErrors = false;
+    public bool WasFlyingInManual = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {
