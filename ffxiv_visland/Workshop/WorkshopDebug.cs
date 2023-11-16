@@ -1,4 +1,5 @@
 ﻿using Dalamud.Interface.Utility.Raii;
+using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
@@ -130,7 +131,7 @@ public unsafe class WorkshopDebug
             DrawFavorSetup(0, 4, 8);
             DrawFavorSetup(1, 6, 6);
             DrawFavorSetup(2, 8, 8);
-            Utils.TextV("Init from game week:");
+            ImGuiEx.TextV("Init from game week:");
             ImGui.SameLine();
             if (ImGui.Button("Fetch demand"))
                 WorkshopUtils.RequestDemandFavors();
@@ -223,7 +224,7 @@ public unsafe class WorkshopDebug
     private void DrawFavorSetup(int idx, int duration, int req)
     {
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
-        Utils.TextV($"{duration}h:");
+        ImGuiEx.TextV($"{duration}h:");
         ImGui.SameLine();
         UICombo.UInt($"###c{idx}", _itemNames, ref _favorState.CraftObjectIds[idx], i => i != 0 && sheet.GetRow(i)?.CraftingTime == duration);
         ImGui.SameLine();

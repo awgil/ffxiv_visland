@@ -4,13 +4,14 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
+using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
-using ECommons.LanguageHelpers;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Numerics;
 using visland.Helpers;
 
@@ -19,7 +20,7 @@ namespace visland.Gathering;
 public class GatherWindow : Window, IDisposable
 {
     private readonly UITree _tree = new();
-    private readonly List<Action> _postDraw = new();
+    private readonly List<System.Action> _postDraw = new();
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
@@ -118,6 +119,12 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Import Route from Clipboard");
 
             ImGui.SameLine();
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
+            {
+                ImGui.OpenPopup("Advanced Options");
+            }
+            DrawRouteSettingsPopup();
+            ImGui.SameLine();
             if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
@@ -159,6 +166,18 @@ public class GatherWindow : Window, IDisposable
                         selectedRouteIndex = i;
                 }
             }
+        }
+    }
+
+    private void DrawRouteSettingsPopup()
+    {
+        using var popup = ImRaii.Popup("Advanced Options");
+        if (popup.Success)
+        {
+            if (ImGui.SliderFloat("Default Waypoint Radius", ref RouteDB.DefaultWaypointRadius, 0, 100))
+                RouteDB.NotifyModified();
+            if (ImGui.SliderFloat("Default Interaction Radius", ref RouteDB.DefaultInteractionRadius, 0, 100))
+                RouteDB.NotifyModified();
         }
     }
 
@@ -231,7 +250,7 @@ public class GatherWindow : Window, IDisposable
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
                 {
-                    route.Waypoints.Add(new() { Position = player.Position, Radius = 3, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal });
+                    route.Waypoints.Add(new() { Position = player.Position, Radius = RouteDB.DefaultWaypointRadius, ZoneID = Service.ClientState.TerritoryType, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal });
                     RouteDB.NotifyModified();
                 }
             }
@@ -242,7 +261,7 @@ public class GatherWindow : Window, IDisposable
                 var target = Service.TargetManager.Target;
                 if (target != null)
                 {
-                    route.Waypoints.Add(new() { Position = target.Position, Radius = 2, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    route.Waypoints.Add(new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
                     RouteDB.NotifyModified();
                     Exec.Start(route, route.Waypoints.Count - 1, false, false);
                 }
@@ -254,7 +273,7 @@ public class GatherWindow : Window, IDisposable
                 for (int i = 0; i < route.Waypoints.Count; ++i)
                 {
                     var wp = route.Waypoints[i];
-                    foreach (var wn in _tree.Node($"#{i + 1}: Goto: [{wp.Position.X:f0}, {wp.Position.Y:f0}, {wp.Position.Z:f0}] ({wp.Movement}) @ {wp.InteractWithName} ({wp.InteractWithOID:X})###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
+                    foreach (var wn in _tree.Node($"#{i + 1}: Goto: [{wp.Position.X:f0}, {wp.Position.Y:f0}, {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
                     {
                         DrawWaypoint(wp);
                     }
@@ -265,18 +284,95 @@ public class GatherWindow : Window, IDisposable
 
     private void DrawWaypoint(GatherRouteDB.Waypoint wp)
     {
+        if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && Service.ClientState.LocalPlayer is var player && player != null)
+        {
+            wp.Position = player.Position;
+            wp.ZoneID = Service.ClientState.TerritoryType;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Set Position to Current");
+        ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
+        if (ImGui.InputInt("ZoneID", ref wp.ZoneID))
+            RouteDB.NotifyModified();
+        //if (wp.ZoneID != 0)
+        //    ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
         if (ImGui.InputFloat("Radius", ref wp.Radius))
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
 
-        if (ImGui.Button("Set position to current") && Service.ClientState.LocalPlayer is var player && player != null)
-        {
-            wp.Position = player.Position;
-            RouteDB.NotifyModified();
-        }
+        //if (wp.showInteractions)
+        //{
+        //    if (UICombo.Enum("Interaction Type", ref wp.Interaction))
+        //        RouteDB.NotifyModified();
+        //    switch (wp.Interaction)
+        //    {
+        //        case GatherRouteDB.InteractionType.None: break;
+        //        case GatherRouteDB.InteractionType.Standard: break;
+        //        case GatherRouteDB.InteractionType.Maim:
+        //            if (ImGui.InputInt($"Bring health to x%###{nameof(GatherRouteDB.InteractionType.Maim)}", ref wp.MaimPercent))
+        //                RouteDB.NotifyModified();
+        //            break;
+        //        case GatherRouteDB.InteractionType.Kill: break;
+        //        case GatherRouteDB.InteractionType.Heal:
+        //            if (ImGui.InputInt($"Heal to x%###{nameof(GatherRouteDB.InteractionType.Heal)}", ref wp.HealPercent))
+        //                RouteDB.NotifyModified();
+        //            break;
+        //        case GatherRouteDB.InteractionType.Emote:
+        //            if (ImGui.InputInt($"Use Emote###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID))
+        //                RouteDB.NotifyModified();
+        //            ImGui.SameLine();
+        //            if (wp.EmoteID != 0)
+        //            {
+        //                using (ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, 0))
+        //                    ImGui.TextColored(Colours.UIForeground576, $"{(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}");
+        //            }
+        //            break;
+        //        case GatherRouteDB.InteractionType.TalkTo: break;
+        //        case GatherRouteDB.InteractionType.PickupQuest:
+        //            if (ImGui.InputInt($"Quest ID###{nameof(GatherRouteDB.InteractionType.PickupQuest)}", ref wp.QuestID))
+        //                RouteDB.NotifyModified();
+        //            ImGui.Text($"{QuestsHelper.GetNameOfQuest((ushort)wp.QuestID)}");
+        //            break;
+        //        case GatherRouteDB.InteractionType.TurnInQuest:
+        //            if (ImGui.InputInt($"Quest ID###{nameof(GatherRouteDB.InteractionType.TurnInQuest)}", ref wp.QuestID))
+        //                RouteDB.NotifyModified();
+        //            ImGui.Text($"{QuestsHelper.GetNameOfQuest((ushort)wp.QuestID)}");
+        //            break;
+        //        case GatherRouteDB.InteractionType.HandOver:
+        //            if (ImGui.InputInt($"Item ID###{nameof(GatherRouteDB.InteractionType.HandOver)}", ref wp.ItemID))
+        //                RouteDB.NotifyModified();
+        //            break;
+        //        case GatherRouteDB.InteractionType.UseItem:
+        //            if (ImGui.InputInt($"Item ID###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID))
+        //                RouteDB.NotifyModified();
+        //            break;
+        //    }
+        //}
+
+        //if (wp.showWaits)
+        //{
+        //    if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
+        //        RouteDB.NotifyModified();
+        //    if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
+        //        RouteDB.NotifyModified();
+        //}
+
+        //if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
+        //{
+        //    wp.showInteractions ^= true;
+        //    RouteDB.NotifyModified();
+        //}
+        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Interactions");
+        //ImGui.SameLine();
+        //if (ImGuiEx.IconButton(FontAwesomeIcon.Clock))
+        //{
+        //    wp.showWaits ^= true;
+        //    RouteDB.NotifyModified();
+        //}
+        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Waits");
     }
 
     private void ContextMenuWaypoint(GatherRouteDB.Route r, int i)

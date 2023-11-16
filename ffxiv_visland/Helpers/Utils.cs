@@ -18,22 +18,6 @@ namespace visland.Helpers;
 
 public static unsafe class Utils
 {
-    public static bool IconButton(FontAwesomeIcon icon, string text, string tooltip, int width = -1)
-    {
-        ImGui.PushFont(UiBuilder.IconFont);
-
-        if (width > 0)
-            ImGui.SetNextItemWidth(32);
-
-        var result = ImGui.Button($"{icon.ToIconString()}##{icon.ToIconString()}-{tooltip}");
-        ImGui.PopFont();
-
-        if (tooltip != null)
-            TextTooltip(tooltip);
-
-        return result;
-    }
-
     public static void TextTooltip(string text)
     {
         if (ImGui.IsItemHovered())
@@ -57,17 +41,6 @@ public static unsafe class Utils
     }
     public static bool DangerousButton(string label) => DangerousItem(() => ImGui.Button(label));
     public static bool DangerousMenuItem(string label) => DangerousItem(() => ImGui.MenuItem(label));
-
-    public static void TextV(string s)
-    {
-        var cur = ImGui.GetCursorPos();
-        ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0);
-        ImGui.Button("");
-        ImGui.PopStyleVar();
-        ImGui.SameLine();
-        ImGui.SetCursorPos(cur);
-        ImGui.TextUnformatted(s);
-    }
 
     private static float startTime;
     public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration)

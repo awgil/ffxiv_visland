@@ -8,7 +8,9 @@ using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using SharpDX;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using visland.Helpers;
 
 namespace visland.Gathering;
@@ -29,6 +31,9 @@ public class GatherRouteExec : IDisposable
     private Throttle _action = new();
     private CircularBuffer<long> Errors = new(5);
 
+    private Stopwatch waypointTimer = new();
+    private bool Waiting = false;
+
     public GatherRouteExec()
     {
         Svc.Toasts.ErrorToast += CheckToDisable;
@@ -46,7 +51,7 @@ public class GatherRouteExec : IDisposable
         var player = Service.ClientState.LocalPlayer;
         _camera.SpeedH = _camera.SpeedV = default;
         _movement.DesiredPosition = player?.Position ?? new();
-
+        
         var gathering = Service.Condition[ConditionFlag.OccupiedInQuestEvent] || Service.Condition[ConditionFlag.OccupiedInEvent] || Service.Condition[ConditionFlag.OccupiedSummoningBell] || Service.Condition[ConditionFlag.Gathering];
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
         if (player == null || player.IsCasting || gathering || aboutToBeMounted || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
@@ -55,7 +60,19 @@ public class GatherRouteExec : IDisposable
         // ensure we don't get afk-kicked while running the route
         _afk.ResetTimers();
 
+    WaypointStarting:
+    {
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
+
+        if (Waiting)
+        {
+            if (waypointTimer.ElapsedMilliseconds >= wp.WaitTimeMs)
+            {
+                Waiting = false;
+                waypointTimer.Reset();
+            }
+        }
+
         var toWaypoint = wp.Position - player.Position;
         var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
         bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
@@ -101,6 +118,10 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
+        var qh = new QuestsHelper();
+        if (wp.Interaction == GatherRouteDB.InteractionType.Emote)
+            QuestsHelper.EmoteAt((uint)wp.EmoteID);
+
         if (!ContinueToNext)
         {
             Finish();
@@ -109,6 +130,17 @@ public class GatherRouteExec : IDisposable
 
         Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
+        if (wp.WaitTimeMs > 0)
+        {
+            if (!Waiting)
+            {
+                Waiting = true;
+                waypointTimer.Restart();
+
+            }
+            goto WaypointStarting;
+        }
+    }
         if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
         {
             if (LoopAtEnd)

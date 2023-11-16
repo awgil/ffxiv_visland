@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using ImGuiNET;
 using visland.Helpers;
+using ECommons.ImGuiMethods;
 
 namespace visland.Pasture;
 
@@ -80,14 +81,14 @@ unsafe class PastureWindow : UIAttachedWindow
                 {
                     ImGui.SameLine();
                     using (ImRaii.PushColor(ImGuiCol.Text, 0xff0000ff))
-                        Utils.TextV(res == CollectResult.EverythingCapped ? "Inventory is full!" : "Warning: some resources will overcap!");
+                        ImGuiEx.TextV(res == CollectResult.EverythingCapped ? "Inventory is full!" : "Warning: some resources will overcap!");
                 }
             }
         }
         else
         {
             // TODO: think about any other global operations?
-            Utils.TextV("Nothing to collect!");
+            ImGuiEx.TextV("Nothing to collect!");
         }
     }
 

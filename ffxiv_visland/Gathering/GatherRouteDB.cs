@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Dalamud.Game.ClientState.Conditions;
+using FFXIVClientStructs.FFXIV.Client.Game;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.Numerics;
@@ -15,13 +17,44 @@ public class GatherRouteDB : Configuration.Node
         MountNoFly = 2,
     }
 
+    public enum InteractionType
+    {
+        None = 0,
+        Standard = 1,
+        Maim = 2,
+        Kill = 3,
+        Heal = 4,
+        Emote = 5,
+        TalkTo = 6,
+        PickupQuest = 7,
+        TurnInQuest = 8,
+        HandOver = 9,
+        UseItem = 10,
+        UseAction = 11,
+    }
+
     public class Waypoint
     {
         public Vector3 Position;
+        public int ZoneID;
         public float Radius;
         public Movement Movement;
         public uint InteractWithOID = 0;
         public string InteractWithName = "";
+
+        public bool showInteractions;
+        public InteractionType Interaction;
+        public int EmoteID;
+        public int MaimPercent;
+        public int HealPercent;
+        public int QuestID;
+        public int ItemID;
+        public ActionType ActionType;
+        public int ActionID;
+
+        public bool showWaits;
+        public ConditionFlag WaitForCondition;
+        public int WaitTimeMs;
     }
 
     public class Route
@@ -31,6 +64,8 @@ public class GatherRouteDB : Configuration.Node
     }
 
     public List<Route> Routes = new();
+    public float DefaultWaypointRadius = 3;
+    public float DefaultInteractionRadius = 2;
     public bool DisableOnErrors = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)

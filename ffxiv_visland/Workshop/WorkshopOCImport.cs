@@ -2,6 +2,7 @@
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
+using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
@@ -82,7 +83,7 @@ public unsafe class WorkshopOCImport
         }
         else
         {
-            Utils.TextV("Override 4th workshop with favors:");
+            ImGuiEx.TextV("Override 4th workshop with favors:");
             ImGui.SameLine();
             if (ImGui.Button($"This Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(false);
@@ -90,7 +91,7 @@ public unsafe class WorkshopOCImport
             if (ImGui.Button($"Next Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(true);
 
-            Utils.TextV("Override closest workshops with favors:");
+            ImGuiEx.TextV("Override closest workshops with favors:");
             ImGui.SameLine();
 
             if (ImGui.Button($"This Week##asap"))
@@ -102,7 +103,7 @@ public unsafe class WorkshopOCImport
 
         ImGui.Separator();
 
-        Utils.TextV("Set Schedule:");
+        ImGuiEx.TextV("Set Schedule:");
         ImGui.SameLine();
         if (ImGui.Button("This Week"))
             ApplyRecommendations(false);
@@ -136,7 +137,7 @@ public unsafe class WorkshopOCImport
         using var scrollSection = ImRaii.Child("ScrollableSection");
         foreach (var (c, r) in Recommendations.Enumerate())
         {
-            Utils.TextV($"Cycle {c}:");
+            ImGuiEx.TextV($"Cycle {c}:");
             ImGui.SameLine();
             if (ImGui.Button($"Set on Active Cycle##{c}"))
                 ApplyRecommendationToCurrentCycle(r);
