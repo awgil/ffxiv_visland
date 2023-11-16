@@ -294,8 +294,8 @@ public class GatherWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        if (ImGui.InputInt("ZoneID", ref wp.ZoneID))
-            RouteDB.NotifyModified();
+        //if (ImGui.InputInt("ZoneID", ref wp.ZoneID))
+        //    RouteDB.NotifyModified();
         //if (wp.ZoneID != 0)
         //    ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
         if (ImGui.InputFloat("Radius", ref wp.Radius))
