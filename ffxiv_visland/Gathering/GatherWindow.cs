@@ -189,7 +189,9 @@ public class GatherWindow : Window, IDisposable
     private void DrawEditor(Vector2 size)
     {
         if (selectedRouteIndex == -1) return;
-        var route = RouteDB.Routes[selectedRouteIndex];
+
+        var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
+        var route = routeSource[selectedRouteIndex];
 
         using (ImRaii.Child("Editor", size))
         {
