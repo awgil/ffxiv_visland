@@ -1,17 +1,20 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
+using Dalamud.Interface.Internal.Windows.Data.Widgets;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Numerics;
 using visland.Helpers;
 
@@ -28,6 +31,7 @@ public class GatherWindow : Window, IDisposable
     private int selectedRouteIndex = -1;
     private static bool loop;
 
+    private readonly List<uint> Colours = Svc.Data.GetExcelSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
 
@@ -330,7 +334,7 @@ public class GatherWindow : Window, IDisposable
         //            if (wp.EmoteID != 0)
         //            {
         //                using (ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, 0))
-        //                    ImGui.TextColored(Colours.UIForeground576, $"{(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}");
+        //                    ImGui.TextColored(Utils.ConvertToVector4(Colours[10]), $"{(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}");
         //            }
         //            break;
         //        case GatherRouteDB.InteractionType.TalkTo: break;

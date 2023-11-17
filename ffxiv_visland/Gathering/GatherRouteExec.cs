@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling;
 using ECommons.CircularBuffers;
+using ECommons.Configuration;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -10,9 +11,7 @@ using SharpDX;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using visland.Helpers;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace visland.Gathering;
 
@@ -27,11 +26,13 @@ public class GatherRouteExec : IDisposable
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
     private OverrideAFK _afk = new();
+    private QuestsHelper _qh = new();
 
     private Throttle _interact = new();
     private Throttle _action = new();
     private CircularBuffer<long> Errors = new(5);
 
+    private long ThrottleTime { get; set; } = Environment.TickCount64;
     private Stopwatch waypointTimer = new();
     private bool Waiting = false;
 
@@ -67,98 +68,78 @@ public class GatherRouteExec : IDisposable
         // ensure we don't get afk-kicked while running the route
         _afk.ResetTimers();
 
-        WaypointStarting:
+        var wp = CurrentRoute.Waypoints[CurrentWaypoint];
+        var toWaypoint = wp.Position - player.Position;
+        var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
+        bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+
+        if (needToGetCloser)
         {
-            var wp = CurrentRoute.Waypoints[CurrentWaypoint];
-
-            if (Waiting)
+            bool mounted = Service.Condition[ConditionFlag.Mounted];
+            if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted)
             {
-                if (waypointTimer.ElapsedMilliseconds >= wp.WaitTimeMs)
-                {
-                    Waiting = false;
-                    waypointTimer.Reset();
-                }
-            }
-
-            var toWaypoint = wp.Position - player.Position;
-            var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
-            bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
-
-            if (needToGetCloser)
-            {
-                bool mounted = Service.Condition[ConditionFlag.Mounted];
-                if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted)
-                {
-                    ExecuteMount();
-                    return;
-                }
-
-                _movement.DesiredPosition = wp.Position;
-                _camera.SpeedH = _camera.SpeedV = 360.Degrees();
-                _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
-
-                var sprintStatus = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
-                var sprintRemaining = sprintStatus?.RemainingTime ?? 0;
-                if (sprintRemaining < 5 && !mounted && MJIManager.Instance()->IsPlayerInSanctuary == 1)
-                {
-                    ExecuteIslandSprint();
-                }
-
-                bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
-                if (wp.Movement == GatherRouteDB.Movement.MountFly && mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
-                {
-                    // TODO: improve, jump is not the best really...
-                    ExecuteJump();
-                }
-
+                ExecuteMount();
                 return;
             }
 
-            var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
-            if (interactObj != null)
+            _movement.DesiredPosition = wp.Position;
+            _camera.SpeedH = _camera.SpeedV = 360.Degrees();
+            _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
+
+            var sprintStatus = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
+            var sprintRemaining = sprintStatus?.RemainingTime ?? 0;
+            if (sprintRemaining < 5 && !mounted && MJIManager.Instance()->IsPlayerInSanctuary == 1)
             {
-                _interact.Exec(() =>
-                {
-                    Service.Log.Debug("Interacting...");
-                    TargetSystem.Instance()->InteractWithObject(interactObj);
-                });
-                return;
+                ExecuteIslandSprint();
             }
 
-            var qh = new QuestsHelper();
-            if (wp.Interaction == GatherRouteDB.InteractionType.Emote)
-                QuestsHelper.EmoteAt((uint)wp.EmoteID);
-
-            if (!ContinueToNext)
+            bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
+            if (wp.Movement == GatherRouteDB.Movement.MountFly && mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
             {
-                Finish();
-                return;
+                // TODO: improve, jump is not the best really...
+                ExecuteJump();
             }
 
-            Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
+            return;
+        }
 
-            if (wp.WaitTimeMs > 0)
+        switch (wp.Interaction)
+        {
+            case GatherRouteDB.InteractionType.Standard:
+                var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
+                if (interactObj != null) { _interact.Exec(() => { Service.Log.Debug("Interacting..."); TargetSystem.Instance()->InteractWithObject(interactObj); }); return; }
+                break;
+            case GatherRouteDB.InteractionType.Emote:
+                QuestsHelper.EmoteAt((uint)wp.EmoteID, wp.InteractWithOID);
+                break;
+        }
+
+        if (!ContinueToNext)
+        {
+            Finish();
+            return;
+        }
+
+        Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
+
+        if (Environment.TickCount64 - ThrottleTime >= wp.WaitTimeMs)
+        {
+            if (wp.WaitForCondition == ConditionFlag.None || Svc.Condition[wp.WaitForCondition])
             {
-                if (!Waiting)
+                if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
                 {
-                    Waiting = true;
-                    waypointTimer.Restart();
-
+                    ThrottleTime = Environment.TickCount64;
+                    if (LoopAtEnd)
+                    {
+                        CurrentWaypoint = 0;
+                    }
+                    else
+                    {
+                        Finish();
+                    }
                 }
-                goto WaypointStarting;
             }
         }
-            if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
-            {
-                if (LoopAtEnd)
-                {
-                    CurrentWaypoint = 0;
-                }
-                else
-                {
-                    Finish();
-                }
-            }
     }
 
     public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd)
@@ -169,6 +150,7 @@ public class GatherRouteExec : IDisposable
         LoopAtEnd = loopAtEnd;
         _camera.Enabled = true;
         _movement.Enabled = true;
+        ThrottleTime = Environment.TickCount64;
     }
 
     public void Finish()

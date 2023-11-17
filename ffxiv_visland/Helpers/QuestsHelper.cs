@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using static ECommons.GenericHelpers;
-using visland.Gathering;
 
 namespace visland.Helpers;
 
@@ -43,7 +42,6 @@ public class QuestsHelper
     public static DoEmoteDelegate DoEmote;
 
     protected ECommons.Automation.TaskManager tm;
-    public GatherRouteExec Exec = new();
 
     public QuestsHelper()
     {

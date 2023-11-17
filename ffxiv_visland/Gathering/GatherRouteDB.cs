@@ -2,6 +2,7 @@
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using visland.Helpers;
@@ -43,7 +44,7 @@ public class GatherRouteDB : Configuration.Node
         public string InteractWithName = "";
 
         public bool showInteractions;
-        public InteractionType Interaction;
+        public InteractionType Interaction = InteractionType.Standard;
         public int EmoteID;
         public int MaimPercent;
         public int HealPercent;
