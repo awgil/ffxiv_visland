@@ -18,14 +18,14 @@ namespace visland.Helpers;
 
 public static unsafe class Utils
 {
-    public static void TextTooltip(string text)
+    public static Vector4 ConvertToVector4(uint color)
     {
-        if (ImGui.IsItemHovered())
-        {
-            ImGui.BeginTooltip();
-            ImGui.TextUnformatted(text);
-            ImGui.EndTooltip();
-        }
+        var r = (byte)(color >> 24);
+        var g = (byte)(color >> 16);
+        var b = (byte)(color >> 8);
+        var a = (byte)color;
+
+        return new Vector4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
 
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
