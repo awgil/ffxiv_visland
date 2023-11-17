@@ -103,17 +103,6 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        //var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
-        //if (interactObj != null)
-        //{
-        //    _interact.Exec(() =>
-        //    {
-        //        Service.Log.Debug("Interacting...");
-        //        TargetSystem.Instance()->InteractWithObject(interactObj);
-        //    });
-        //    return;
-        //}
-
         switch (wp.Interaction)
         {
             case GatherRouteDB.InteractionType.Standard:
@@ -135,16 +124,19 @@ public class GatherRouteExec : IDisposable
 
         if (Environment.TickCount64 - ThrottleTime >= wp.WaitTimeMs)
         {
-            if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
+            if (wp.WaitForCondition == ConditionFlag.None || Svc.Condition[wp.WaitForCondition])
             {
-                ThrottleTime = Environment.TickCount64;
-                if (LoopAtEnd)
+                if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
                 {
-                    CurrentWaypoint = 0;
-                }
-                else
-                {
-                    Finish();
+                    ThrottleTime = Environment.TickCount64;
+                    if (LoopAtEnd)
+                    {
+                        CurrentWaypoint = 0;
+                    }
+                    else
+                    {
+                        Finish();
+                    }
                 }
             }
         }
