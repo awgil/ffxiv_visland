@@ -121,7 +121,7 @@ public class GatherRouteExec : IDisposable
                 if (interactObj != null) { _interact.Exec(() => { Service.Log.Debug("Interacting..."); TargetSystem.Instance()->InteractWithObject(interactObj); }); return; }
                 break;
             case GatherRouteDB.InteractionType.Emote:
-                QuestsHelper.EmoteAt((uint)wp.EmoteID);
+                QuestsHelper.EmoteAt((uint)wp.EmoteID, wp.InteractWithOID);
                 break;
         }
 
@@ -132,8 +132,6 @@ public class GatherRouteExec : IDisposable
         }
 
         Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
-
-        Svc.Log.Info($"{Environment.TickCount64} - {ThrottleTime} >= {wp.WaitTimeMs} = {Environment.TickCount64 - ThrottleTime} {Environment.TickCount64 - ThrottleTime >= wp.WaitTimeMs}");
 
         if (Environment.TickCount64 - ThrottleTime >= wp.WaitTimeMs)
         {
