@@ -10,9 +10,7 @@ using SharpDX;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using visland.Helpers;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace visland.Gathering;
 
@@ -27,6 +25,7 @@ public class GatherRouteExec : IDisposable
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
     private OverrideAFK _afk = new();
+    private QuestsHelper _qh = new();
 
     private Throttle _interact = new();
     private Throttle _action = new();
@@ -71,14 +70,14 @@ public class GatherRouteExec : IDisposable
         {
             var wp = CurrentRoute.Waypoints[CurrentWaypoint];
 
-            if (Waiting)
-            {
-                if (waypointTimer.ElapsedMilliseconds >= wp.WaitTimeMs)
-                {
-                    Waiting = false;
-                    waypointTimer.Reset();
-                }
-            }
+            //if (Waiting)
+            //{
+            //    if (waypointTimer.ElapsedMilliseconds >= wp.WaitTimeMs)
+            //    {
+            //        Waiting = false;
+            //        waypointTimer.Reset();
+            //    }
+            //}
 
             var toWaypoint = wp.Position - player.Position;
             var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
@@ -125,7 +124,6 @@ public class GatherRouteExec : IDisposable
                 return;
             }
 
-            var qh = new QuestsHelper();
             if (wp.Interaction == GatherRouteDB.InteractionType.Emote)
                 QuestsHelper.EmoteAt((uint)wp.EmoteID);
 
@@ -137,16 +135,16 @@ public class GatherRouteExec : IDisposable
 
             Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
-            if (wp.WaitTimeMs > 0)
-            {
-                if (!Waiting)
-                {
-                    Waiting = true;
-                    waypointTimer.Restart();
+            //if (wp.WaitTimeMs > 0)
+            //{
+            //    if (!Waiting)
+            //    {
+            //        Waiting = true;
+            //        waypointTimer.Restart();
 
-                }
-                goto WaypointStarting;
-            }
+            //    }
+            //    goto WaypointStarting;
+            //}
         }
             if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
             {
