@@ -160,7 +160,8 @@ public class GatherWindow : Window, IDisposable
             {
                 for (int i = 0; i < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); i++)
                 {
-                    var route = RouteDB.Routes[i];
+                    var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
+                    var route = routeSource[i];
                     var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
                     if (selectedRoute)
                         selectedRouteIndex = i;
