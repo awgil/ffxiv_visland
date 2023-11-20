@@ -11,7 +11,6 @@ using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
@@ -341,7 +340,7 @@ public unsafe class WorkshopOCImport
             }
         }
         // complete current cycle; if the number was not known, assume it is tomorrow
-        result.Add(curCycle > 0 ? curCycle : AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 2, curRec);
+        result.Add(curCycle > 0 ? curCycle : (AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 2) % 7, curRec);
 
         return result;
     }

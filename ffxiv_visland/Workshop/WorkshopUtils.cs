@@ -3,6 +3,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets2;
 using System;
+using System.Collections.Generic;
 using visland.Helpers;
 using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
@@ -83,5 +84,24 @@ public static unsafe class WorkshopUtils
             < 14 => 3,
             _ => 4,
         };
+    }
+
+    public static List<int> GetCurrentRestCycles()
+    {
+        var restDays1 = MJIManager.Instance()->CraftworksRestDays[0];
+        var restDays2 = MJIManager.Instance()->CraftworksRestDays[1];
+        var restDays3 = MJIManager.Instance()->CraftworksRestDays[2];
+        var restDays4 = MJIManager.Instance()->CraftworksRestDays[3];
+
+        return new List<int> { restDays1, restDays2, restDays3, restDays4 };
+    }
+
+    public static int GetNextNonRestCycle(int cycle)
+    {
+        var restCycles = GetCurrentRestCycles();
+        while (restCycles.Contains(cycle))
+            cycle++;
+
+        return cycle;
     }
 }
