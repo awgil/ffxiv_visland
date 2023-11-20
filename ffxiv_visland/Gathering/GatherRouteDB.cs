@@ -22,16 +22,20 @@ public class GatherRouteDB : Configuration.Node
     {
         None = 0,
         Standard = 1,
-        Maim = 2,
-        Kill = 3,
-        Heal = 4,
-        Emote = 5,
-        TalkTo = 6,
-        PickupQuest = 7,
-        TurnInQuest = 8,
-        HandOver = 9,
-        UseItem = 10,
-        UseAction = 11,
+        Emote = 2,
+        UseItem = 3,
+        UseAction = 4,
+
+        // probably a better idea to just have TextAdvance integration rather than reinventing the wheel
+        //TalkTo = 5,
+        //PickupQuest = 6,
+        //TurnInQuest = 7,
+        //HandOver = 8,
+
+        // bit out of scope for this
+        //Maim = 9,
+        //Kill = 10,
+        //Heal = 11,
     }
 
     public class Waypoint
@@ -46,12 +50,9 @@ public class GatherRouteDB : Configuration.Node
         public bool showInteractions;
         public InteractionType Interaction = InteractionType.Standard;
         public int EmoteID;
-        public int MaimPercent;
-        public int HealPercent;
-        public int QuestID;
         public int ItemID;
-        public ActionType ActionType;
         public int ActionID;
+        public int QuestID;
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;

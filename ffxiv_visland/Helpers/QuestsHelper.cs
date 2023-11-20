@@ -129,6 +129,24 @@ public class QuestsHelper
         DoEmote(emoteAgent, emoteID, 0, true, true);
     }
 
+    public static unsafe void UseAction(uint actionID, uint targetOID = 0)
+    {
+        if (targetOID != 0)
+        {
+            unsafe
+            {
+                var obj = GetObjectToInteractWith(targetOID);
+                if (obj != null)
+                    Service.TargetManager.Target = Service.ObjectTable.CreateObjectReference((nint)obj);
+            }
+        }
+        try
+        {
+            ActionManager.Instance()->UseAction(ActionType.Action, actionID, targetOID);
+        }
+        catch (Exception e) { e.Log(); }
+    }
+
     public static string GetNameOfQuest(ushort questID)
     {
         if (questID > 0)

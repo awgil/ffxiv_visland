@@ -1,6 +1,8 @@
 ﻿using Dalamud;
 using Dalamud.Interface;
+using Dalamud.Interface.Utility;
 using ECommons.Automation;
+using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -27,6 +29,98 @@ public static unsafe class Utils
 
         return new Vector4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
+
+    public record ExcelSheetOptions<T> where T : ExcelRow
+    {
+        public Func<T, string> FormatRow { get; init; } = row => row.ToString();
+        public Func<T, string, bool> SearchPredicate { get; init; } = null;
+        public Func<T, bool, bool> DrawSelectable { get; init; } = null;
+        public IEnumerable<T> FilteredSheet { get; init; } = null;
+        public Vector2? Size { get; init; } = null;
+    }
+
+    public record ExcelSheetComboOptions<T> : ExcelSheetOptions<T> where T : ExcelRow
+    {
+        public Func<T, string> GetPreview { get; init; } = null;
+        public ImGuiComboFlags ComboFlags { get; init; } = ImGuiComboFlags.None;
+    }
+
+    private static string sheetSearchText;
+    private static ExcelRow[] filteredSearchSheet;
+    private static string prevSearchID;
+    private static Type prevSearchType;
+
+    private static void ExcelSheetSearchInput<T>(string id, IEnumerable<T> filteredSheet, Func<T, string, bool> searchPredicate) where T : ExcelRow
+    {
+        if (ImGui.IsWindowAppearing() && ImGui.IsWindowFocused() && !ImGui.IsAnyItemActive())
+        {
+            if (id != prevSearchID)
+            {
+                if (typeof(T) != prevSearchType)
+                {
+                    sheetSearchText = string.Empty;
+                    prevSearchType = typeof(T);
+                }
+
+                filteredSearchSheet = null;
+                prevSearchID = id;
+            }
+
+            ImGui.SetKeyboardFocusHere(0);
+        }
+
+        if (ImGui.InputTextWithHint("##ExcelSheetSearch", "Search", ref sheetSearchText, 128, ImGuiInputTextFlags.AutoSelectAll))
+            filteredSearchSheet = null;
+
+        filteredSearchSheet ??= filteredSheet.Where(s => searchPredicate(s, sheetSearchText)).Cast<ExcelRow>().ToArray();
+    }
+
+    public static bool ExcelSheetCombo<T>(string id, ref int selectedRow, ExcelSheetComboOptions<T> options = null) where T : ExcelRow
+    {
+        options ??= new ExcelSheetComboOptions<T>();
+        var sheet = Svc.Data.GetExcelSheet<T>();
+        if (sheet == null) return false;
+
+        var getPreview = options.GetPreview ?? options.FormatRow;
+        if (!ImGui.BeginCombo(id, sheet.GetRow((uint)selectedRow) is { } r ? getPreview(r) : selectedRow.ToString(), options.ComboFlags | ImGuiComboFlags.HeightLargest)) return false;
+
+        ExcelSheetSearchInput(id, options.FilteredSheet ?? sheet, options.SearchPredicate ?? ((row, s) => options.FormatRow(row).Contains(s, StringComparison.CurrentCultureIgnoreCase)));
+
+        ImGui.BeginChild("ExcelSheetSearchList", options.Size ?? new Vector2(0, 200 * ImGuiHelpers.GlobalScale), true);
+
+        var ret = false;
+        var drawSelectable = options.DrawSelectable ?? ((row, selected) => ImGui.Selectable(options.FormatRow(row), selected));
+        for (var i = 0; i < filteredSearchSheet.Length; i++)
+        {
+            var row = (T)filteredSearchSheet[i];
+            ImGui.PushID(i);
+            if (!drawSelectable(row, selectedRow == row.RowId)) continue;
+            selectedRow = (int)row.RowId;
+            ret = true;
+            break;
+        }
+
+        // ImGui issue #273849, children keep popups from closing automatically
+        if (ret)
+            ImGui.CloseCurrentPopup();
+
+        ImGui.EndChild();
+        ImGui.EndCombo();
+        return ret;
+    }
+
+    private static string FormatActionRow(Lumina.Excel.GeneratedSheets.Action a) => a.RowId switch
+    {
+        _ => $"[#{a.RowId} {a.ClassJob.Value?.Abbreviation}{(a.IsPvP ? " PVP" : string.Empty)}] {a.Name}"
+    };
+
+    private readonly static Dictionary<uint, Lumina.Excel.GeneratedSheets.Action> Actions = Svc.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Action>()?.Where(i => i.ClassJobCategory.Row > 0 && i.ActionCategory.Row <= 4 && i.RowId > 8).ToDictionary(i => i.RowId, i => i)!;
+
+    public static readonly ExcelSheetComboOptions<Lumina.Excel.GeneratedSheets.Action> actionComboOptions = new()
+    {
+        FormatRow = FormatActionRow,
+        FilteredSheet = Actions.Select(kv => kv.Value)
+    };
 
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
     public static bool DangerousItem(Func<bool> item)

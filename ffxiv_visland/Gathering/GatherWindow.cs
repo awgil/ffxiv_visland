@@ -1,14 +1,12 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
-using Dalamud.Interface.Internal.Windows.Data.Widgets;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
-using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using System;
@@ -34,6 +32,10 @@ public class GatherWindow : Window, IDisposable
     private readonly List<uint> Colours = Svc.Data.GetExcelSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
+
+    private readonly List<int> Emotes = Svc.Data.GetExcelSheet<Emote>()?.Select(x => (int)x.RowId).ToList()!;
+    private readonly List<int> Items = Svc.Data.GetExcelSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
+    //private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Select(x => (int)x.RowId).ToList()!;
 
     private string searchString = string.Empty;
     private readonly List<GatherRouteDB.Route> FilteredRoutes = new();
@@ -301,85 +303,61 @@ public class GatherWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        //if (ImGui.InputInt("ZoneID", ref wp.ZoneID))
+        // this isn't valuable now, but would be used when navlib releases to teleport to the appropiate zone
+        //if (ImGui.DragInt("ZoneID", ref wp.ZoneID, 1, Zones.First(), Zones.Last()))
         //    RouteDB.NotifyModified();
-        //if (wp.ZoneID != 0)
-        //    ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
+        //ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
         if (ImGui.InputFloat("Radius", ref wp.Radius))
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
 
-        //if (wp.showInteractions)
-        //{
-        //    if (UICombo.Enum("Interaction Type", ref wp.Interaction))
-        //        RouteDB.NotifyModified();
-        //    switch (wp.Interaction)
-        //    {
-        //        case GatherRouteDB.InteractionType.None: break;
-        //        case GatherRouteDB.InteractionType.Standard: break;
-        //        case GatherRouteDB.InteractionType.Maim:
-        //            if (ImGui.InputInt($"Bring health to x%###{nameof(GatherRouteDB.InteractionType.Maim)}", ref wp.MaimPercent))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //        case GatherRouteDB.InteractionType.Kill: break;
-        //        case GatherRouteDB.InteractionType.Heal:
-        //            if (ImGui.InputInt($"Heal to x%###{nameof(GatherRouteDB.InteractionType.Heal)}", ref wp.HealPercent))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //        case GatherRouteDB.InteractionType.Emote:
-        //            if (ImGui.InputInt($"Use Emote###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID))
-        //                RouteDB.NotifyModified();
-        //            ImGui.SameLine();
-        //            if (wp.EmoteID != 0)
-        //            {
-        //                using (ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, 0))
-        //                    ImGui.TextColored(Utils.ConvertToVector4(Colours[10]), $"{(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}");
-        //            }
-        //            break;
-        //        case GatherRouteDB.InteractionType.TalkTo: break;
-        //        case GatherRouteDB.InteractionType.PickupQuest:
-        //            if (ImGui.InputInt($"Quest ID###{nameof(GatherRouteDB.InteractionType.PickupQuest)}", ref wp.QuestID))
-        //                RouteDB.NotifyModified();
-        //            ImGui.Text($"{QuestsHelper.GetNameOfQuest((ushort)wp.QuestID)}");
-        //            break;
-        //        case GatherRouteDB.InteractionType.TurnInQuest:
-        //            if (ImGui.InputInt($"Quest ID###{nameof(GatherRouteDB.InteractionType.TurnInQuest)}", ref wp.QuestID))
-        //                RouteDB.NotifyModified();
-        //            ImGui.Text($"{QuestsHelper.GetNameOfQuest((ushort)wp.QuestID)}");
-        //            break;
-        //        case GatherRouteDB.InteractionType.HandOver:
-        //            if (ImGui.InputInt($"Item ID###{nameof(GatherRouteDB.InteractionType.HandOver)}", ref wp.ItemID))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //        case GatherRouteDB.InteractionType.UseItem:
-        //            if (ImGui.InputInt($"Item ID###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //    }
-        //}
+        if (wp.showInteractions)
+        {
+            if (UICombo.Enum("Interaction Type", ref wp.Interaction))
+                RouteDB.NotifyModified();
+            switch (wp.Interaction)
+            {
+                case GatherRouteDB.InteractionType.None: break;
+                case GatherRouteDB.InteractionType.Standard: break;
+                case GatherRouteDB.InteractionType.Emote:
+                    ImGui.PushItemWidth(100);
+                    if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
+                        RouteDB.NotifyModified();
+                    break;
+                case GatherRouteDB.InteractionType.UseItem:
+                    ImGui.PushItemWidth(100);
+                    if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
+                        RouteDB.NotifyModified();
+                    break;
+                case GatherRouteDB.InteractionType.UseAction:
+                    if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
+                        RouteDB.NotifyModified();
+                    break;
+            }
+        }
 
-        //if (wp.showWaits)
-        //{
-        //    if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
-        //        RouteDB.NotifyModified();
-        //    if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
-        //        RouteDB.NotifyModified();
-        //}
+        if (wp.showWaits)
+        {
+            if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
+                RouteDB.NotifyModified();
+            if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
+                RouteDB.NotifyModified();
+        }
 
-        //if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
-        //{
-        //    wp.showInteractions ^= true;
-        //    RouteDB.NotifyModified();
-        //}
-        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Interactions");
-        //ImGui.SameLine();
-        //if (ImGuiEx.IconButton(FontAwesomeIcon.Clock))
-        //{
-        //    wp.showWaits ^= true;
-        //    RouteDB.NotifyModified();
-        //}
-        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Waits");
+        if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
+        {
+            wp.showInteractions ^= true;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Interactions");
+        ImGui.SameLine();
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Clock))
+        {
+            wp.showWaits ^= true;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Waits");
     }
 
     private void ContextMenuWaypoint(GatherRouteDB.Route r, int i)

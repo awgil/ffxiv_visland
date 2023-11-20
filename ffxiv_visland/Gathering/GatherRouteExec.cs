@@ -112,6 +112,12 @@ public class GatherRouteExec : IDisposable
             case GatherRouteDB.InteractionType.Emote:
                 QuestsHelper.EmoteAt((uint)wp.EmoteID, wp.InteractWithOID);
                 break;
+            case GatherRouteDB.InteractionType.UseItem:
+                QuestsHelper.UseItemOn((uint)wp.ItemID, wp.InteractWithOID);
+                break;
+            case GatherRouteDB.InteractionType.UseAction:
+                QuestsHelper.UseAction((uint)wp.ActionID, wp.InteractWithOID);
+                break;
         }
 
         if (!ContinueToNext)
@@ -122,6 +128,7 @@ public class GatherRouteExec : IDisposable
 
         Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
+        // this is technically a little off because of when the throttle is set, but it's good enough :tm:
         if (Environment.TickCount64 - ThrottleTime >= wp.WaitTimeMs)
         {
             if (wp.WaitForCondition == ConditionFlag.None || Svc.Condition[wp.WaitForCondition])
