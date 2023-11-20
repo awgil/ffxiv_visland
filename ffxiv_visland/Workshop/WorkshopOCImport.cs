@@ -339,8 +339,9 @@ public unsafe class WorkshopOCImport
                 nextSlot += item.CraftingTime;
             }
         }
-        // complete current cycle; if the number was not known, assume it is tomorrow
-        result.Add(curCycle > 0 ? curCycle : (AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 2) % 7, curRec);
+        // complete current cycle; if the number was not known, assume it is tomorrow.
+        // On the 7th day, importing a rec will assume the next week, but we can't import into the next week so just modulo it to the first week. Theoretically shouldn't cause problems.
+        result.Add(curCycle > 0 ? curCycle : (AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 2) % 7 + 1, curRec);
 
         return result;
     }
