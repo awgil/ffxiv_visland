@@ -108,7 +108,7 @@ public class GatherRouteDB : Configuration.Node
     {
         JArray jw = new();
         foreach (var wp in waypoints)
-            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Movement, wp.InteractWithOID });
+            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Movement, wp.InteractWithOID, wp.showInteractions, wp.Interaction, wp.EmoteID, wp.ActionID, wp.ItemID, wp.showWaits, wp.WaitTimeMs, wp.WaitForCondition });
         return jw;
     }
 

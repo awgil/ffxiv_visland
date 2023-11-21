@@ -282,7 +282,7 @@ public class GatherWindow : Window, IDisposable
                 for (int i = 0; i < route.Waypoints.Count; ++i)
                 {
                     var wp = route.Waypoints[i];
-                    foreach (var wn in _tree.Node($"#{i + 1}: Goto: [{wp.Position.X:f0}, {wp.Position.Y:f0}, {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
+                    foreach (var wn in _tree.Node($"#{i + 1}: [x: {wp.Position.X:f0}, z: {wp.Position.Y:f0}, y: {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
                     {
                         DrawWaypoint(wp);
                     }
@@ -307,57 +307,57 @@ public class GatherWindow : Window, IDisposable
         //if (ImGui.DragInt("ZoneID", ref wp.ZoneID, 1, Zones.First(), Zones.Last()))
         //    RouteDB.NotifyModified();
         //ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
-        if (ImGui.InputFloat("Radius", ref wp.Radius))
+        if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
 
-        //if (wp.showInteractions)
-        //{
-        //    if (UICombo.Enum("Interaction Type", ref wp.Interaction))
-        //        RouteDB.NotifyModified();
-        //    switch (wp.Interaction)
-        //    {
-        //        case GatherRouteDB.InteractionType.None: break;
-        //        case GatherRouteDB.InteractionType.Standard: break;
-        //        case GatherRouteDB.InteractionType.Emote:
-        //            ImGui.PushItemWidth(100);
-        //            if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //        case GatherRouteDB.InteractionType.UseItem:
-        //            ImGui.PushItemWidth(100);
-        //            if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //        case GatherRouteDB.InteractionType.UseAction:
-        //            if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
-        //                RouteDB.NotifyModified();
-        //            break;
-        //    }
-        //}
+        if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
+        {
+            wp.showInteractions ^= true;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Interactions");
+        ImGui.SameLine();
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Clock))
+        {
+            wp.showWaits ^= true;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Waits");
 
-        //if (wp.showWaits)
-        //{
-        //    if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
-        //        RouteDB.NotifyModified();
-        //    if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
-        //        RouteDB.NotifyModified();
-        //}
+        if (wp.showInteractions)
+        {
+            if (UICombo.Enum("Interaction Type", ref wp.Interaction))
+                RouteDB.NotifyModified();
+            switch (wp.Interaction)
+            {
+                case GatherRouteDB.InteractionType.None: break;
+                case GatherRouteDB.InteractionType.Standard: break;
+                case GatherRouteDB.InteractionType.Emote:
+                    ImGui.PushItemWidth(100);
+                    if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
+                        RouteDB.NotifyModified();
+                    break;
+                case GatherRouteDB.InteractionType.UseItem:
+                    ImGui.PushItemWidth(100);
+                    if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
+                        RouteDB.NotifyModified();
+                    break;
+                case GatherRouteDB.InteractionType.UseAction:
+                    if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
+                        RouteDB.NotifyModified();
+                    break;
+            }
+        }
 
-        //if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
-        //{
-        //    wp.showInteractions ^= true;
-        //    RouteDB.NotifyModified();
-        //}
-        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Interactions");
-        //ImGui.SameLine();
-        //if (ImGuiEx.IconButton(FontAwesomeIcon.Clock))
-        //{
-        //    wp.showWaits ^= true;
-        //    RouteDB.NotifyModified();
-        //}
-        //if (ImGui.IsItemHovered()) ImGui.SetTooltip("Toggle Waits");
+        if (wp.showWaits)
+        {
+            if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
+                RouteDB.NotifyModified();
+            if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
+                RouteDB.NotifyModified();
+        }
     }
 
     private void ContextMenuWaypoint(GatherRouteDB.Route r, int i)
