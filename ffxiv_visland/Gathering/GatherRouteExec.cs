@@ -20,7 +20,6 @@ public class GatherRouteExec : IDisposable
     public GatherRouteDB.Route? CurrentRoute;
     public int CurrentWaypoint;
     public bool ContinueToNext;
-    public bool LoopAtEnd;
     public bool Paused;
 
     private OverrideCamera _camera = new();
@@ -136,7 +135,7 @@ public class GatherRouteExec : IDisposable
                 if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
                 {
                     ThrottleTime = Environment.TickCount64;
-                    if (LoopAtEnd)
+                    if (GatherWindow.loop)
                     {
                         CurrentWaypoint = 0;
                     }
@@ -154,7 +153,6 @@ public class GatherRouteExec : IDisposable
         CurrentRoute = route;
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
-        LoopAtEnd = loopAtEnd;
         _camera.Enabled = true;
         _movement.Enabled = true;
         ThrottleTime = Environment.TickCount64;
@@ -167,7 +165,6 @@ public class GatherRouteExec : IDisposable
         CurrentRoute = null;
         CurrentWaypoint = 0;
         ContinueToNext = false;
-        LoopAtEnd = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
         if (Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
