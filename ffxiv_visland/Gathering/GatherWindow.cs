@@ -205,8 +205,9 @@ public class GatherWindow : Window, IDisposable
 
             ImGui.PushStyleColor(ImGuiCol.Button, loop ? greenColor : redColor);
             ImGui.PushStyleColor(ImGuiCol.ButtonHovered, loop ? greenColor : redColor);
-            if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
-                loop ^= true;
+            using (ImRaii.Disabled(Exec.CurrentRoute != null))
+                if (ImGuiComponents.IconButton(FontAwesomeIcon.SyncAlt))
+                    loop ^= true;
             ImGui.PopStyleColor(2);
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Loop Route");
             ImGui.SameLine();
