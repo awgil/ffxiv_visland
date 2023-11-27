@@ -27,7 +27,7 @@ public class GatherWindow : Window, IDisposable
     public GatherRouteExec Exec = new();
 
     private int selectedRouteIndex = -1;
-    private static bool loop;
+    public static bool loop;
 
     private readonly List<uint> Colours = Svc.Data.GetExcelSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
