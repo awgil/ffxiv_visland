@@ -245,6 +245,7 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Export Route");
 
             var name = route.Name;
+            var movementType = Service.Condition[ConditionFlag.InFlight] ? GatherRouteDB.Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountNoFly : GatherRouteDB.Movement.Normal;
             ImGuiEx.TextV("Name: ");
             ImGui.SameLine();
             if (ImGui.InputText("", ref name, 256))
@@ -259,7 +260,7 @@ public class GatherWindow : Window, IDisposable
                 var player = Service.ClientState.LocalPlayer;
                 if (player != null)
                 {
-                    route.Waypoints.Add(new() { Position = player.Position, Radius = RouteDB.DefaultWaypointRadius, ZoneID = Service.ClientState.TerritoryType, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal });
+                    route.Waypoints.Add(new() { Position = player.Position, Radius = RouteDB.DefaultWaypointRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType });
                     RouteDB.NotifyModified();
                 }
             }
@@ -270,7 +271,7 @@ public class GatherWindow : Window, IDisposable
                 var target = Service.TargetManager.Target;
                 if (target != null)
                 {
-                    route.Waypoints.Add(new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                    route.Waypoints.Add(new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
                     RouteDB.NotifyModified();
                     Exec.Start(route, route.Waypoints.Count - 1, false, false);
                 }

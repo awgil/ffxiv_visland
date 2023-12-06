@@ -102,6 +102,17 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
+        //var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
+        //if (interactObj != null)
+        //{
+        //    _interact.Exec(() =>
+        //    {
+        //        Service.Log.Debug("Interacting...");
+        //        TargetSystem.Instance()->InteractWithObject(interactObj);
+        //    });
+        //    return;
+        //}
+
         switch (wp.Interaction)
         {
             case GatherRouteDB.InteractionType.Standard:
