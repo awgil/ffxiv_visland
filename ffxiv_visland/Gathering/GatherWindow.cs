@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
+using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
@@ -13,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Numerics;
 using visland.Helpers;
+using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
 
@@ -245,7 +248,7 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Export Route");
 
             var name = route.Name;
-            var movementType = Service.Condition[ConditionFlag.InFlight] ? GatherRouteDB.Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? GatherRouteDB.Movement.MountNoFly : GatherRouteDB.Movement.Normal;
+            var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
             ImGuiEx.TextV("Name: ");
             ImGui.SameLine();
             if (ImGui.InputText("", ref name, 256))
@@ -333,19 +336,19 @@ public class GatherWindow : Window, IDisposable
                 RouteDB.NotifyModified();
             switch (wp.Interaction)
             {
-                case GatherRouteDB.InteractionType.None: break;
-                case GatherRouteDB.InteractionType.Standard: break;
-                case GatherRouteDB.InteractionType.Emote:
+                case InteractionType.None: break;
+                case InteractionType.Standard: break;
+                case InteractionType.Emote:
                     ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
+                    if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
                         RouteDB.NotifyModified();
                     break;
-                case GatherRouteDB.InteractionType.UseItem:
+                case InteractionType.UseItem:
                     ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(GatherRouteDB.InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
+                    if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
                         RouteDB.NotifyModified();
                     break;
-                case GatherRouteDB.InteractionType.UseAction:
+                case InteractionType.UseAction:
                     if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
                         RouteDB.NotifyModified();
                     break;
@@ -376,6 +379,75 @@ public class GatherWindow : Window, IDisposable
         if (ImGui.MenuItem("Execute route starting from this step and then loop"))
         {
             Exec.Start(r, i, true, true);
+        }
+
+        var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
+        var target = Service.TargetManager.Target;
+
+        if (ImGui.MenuItem("Insert step above"))
+        {
+            _postDraw.Add(() =>
+            {
+                if (i > 0 && i < r.Waypoints.Count)
+                {
+                    if (Exec.CurrentRoute == r)
+                        Exec.Finish();
+                    if (Service.ClientState.LocalPlayer != null)
+                    {
+                        r.Waypoints.Insert(i, new() { Position = Service.ClientState.LocalPlayer.Position, Radius = RouteDB.DefaultWaypointRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType });
+                        RouteDB.NotifyModified();
+                    }
+                }
+            });
+        }
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+        {
+            _postDraw.Add(() =>
+            {
+                if (i > 0 && i < r.Waypoints.Count)
+                {
+                    if (Exec.CurrentRoute == r)
+                        Exec.Finish();
+                    if (target != null)
+                    {
+                        r.Waypoints.Insert(i, new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                        RouteDB.NotifyModified();
+                    }
+                }
+            });
+        }
+
+        if (ImGui.MenuItem("Insert step below"))
+        {
+            _postDraw.Add(() =>
+            {
+                if (i > 0 && i < r.Waypoints.Count)
+                {
+                    if (Exec.CurrentRoute == r)
+                        Exec.Finish();
+                    if (Service.ClientState.LocalPlayer != null)
+                    {
+                        r.Waypoints.Insert(i + 1, new() { Position = Service.ClientState.LocalPlayer.Position, Radius = RouteDB.DefaultWaypointRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType });
+                        RouteDB.NotifyModified();
+                    }
+                }
+            });
+        }
+        if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
+        {
+            _postDraw.Add(() =>
+            {
+                if (i > 0 && i < r.Waypoints.Count)
+                {
+                    if (Exec.CurrentRoute == r)
+                        Exec.Finish();
+                    if (target != null)
+                    {
+                        r.Waypoints.Insert(i + 1, new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
+                        RouteDB.NotifyModified();
+                    }
+                }
+            });
         }
 
         if (ImGui.MenuItem("Move up"))
