@@ -1,5 +1,7 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Text.SeStringHandling;
+using ECommons;
+using ECommons.Automation;
 using ECommons.CircularBuffers;
 using ECommons.Configuration;
 using ECommons.DalamudServices;
@@ -7,6 +9,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using SharpDX;
 using System;
 using System.Diagnostics;
@@ -63,6 +66,17 @@ public class GatherRouteExec : IDisposable
             Service.Config.Get<GatherRouteDB>().WasFlyingInManual = true;
             Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 0);
         }
+
+        if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && MJIManager.Instance()->CurrentMode != 1)
+        {
+            // you can't just change the CurrentMode in MJIManager
+            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
+            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, 0, 1, 82042, 0, 0);   
+        }
+
+        // the context menu doesn't respect the updateState for some reason
+        if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
+            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
 
         // ensure we don't get afk-kicked while running the route
         _afk.ResetTimers();
