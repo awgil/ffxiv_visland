@@ -131,7 +131,7 @@ public class GatherRouteExec : IDisposable
         {
             case GatherRouteDB.InteractionType.Standard:
                 var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
-                if (interactObj != null) { _interact.Exec(() => { Service.Log.Debug("Interacting..."); TargetSystem.Instance()->InteractWithObject(interactObj); }); return; }
+                if (interactObj != null) { _interact.Exec(() => { Service.Log.Debug("Interacting..."); TargetSystem.Instance()->OpenObjectInteraction(interactObj); }); return; }
                 break;
             case GatherRouteDB.InteractionType.Emote:
                 QuestsHelper.EmoteAt((uint)wp.EmoteID, wp.InteractWithOID);
