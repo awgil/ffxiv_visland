@@ -188,6 +188,8 @@ public class GatherWindow : Window, IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.SliderFloat("Default Interaction Radius", ref RouteDB.DefaultInteractionRadius, 0, 100))
                 RouteDB.NotifyModified();
+            if (ImGui.Checkbox("Auto Enable Gather Mode on Route Start", ref RouteDB.GatherModeOnStart))
+                RouteDB.NotifyModified();
         }
     }
 

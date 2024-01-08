@@ -68,6 +68,7 @@ public class GatherRouteDB : Configuration.Node
     public List<Route> Routes = new();
     public float DefaultWaypointRadius = 3;
     public float DefaultInteractionRadius = 2;
+    public bool GatherModeOnStart = true;
     public bool DisableOnErrors = false;
     public bool WasFlyingInManual = false;
 

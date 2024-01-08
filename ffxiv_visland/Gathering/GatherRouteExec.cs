@@ -3,7 +3,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.Automation;
 using ECommons.CircularBuffers;
-using ECommons.Configuration;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
@@ -20,6 +19,7 @@ namespace visland.Gathering;
 
 public class GatherRouteExec : IDisposable
 {
+    public GatherRouteDB RouteDB;
     public GatherRouteDB.Route? CurrentRoute;
     public int CurrentWaypoint;
     public bool ContinueToNext;
@@ -40,6 +40,7 @@ public class GatherRouteExec : IDisposable
 
     public GatherRouteExec()
     {
+        RouteDB = Service.Config.Get<GatherRouteDB>();
         Svc.Toasts.ErrorToast += CheckToDisable;
     }
 
@@ -67,17 +68,19 @@ public class GatherRouteExec : IDisposable
             Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 0);
         }
 
-        if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && MJIManager.Instance()->CurrentMode != 1)
+        if (RouteDB.GatherModeOnStart)
         {
-            // you can't just change the CurrentMode in MJIManager
-            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
-            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, 0, 1, 82042, 0, 0);   
+            if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && MJIManager.Instance()->CurrentMode != 1)
+            {
+                // you can't just change the CurrentMode in MJIManager
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, 0, 1, 82042, 0, 0);
+            }
+
+            // the context menu doesn't respect the updateState for some reason
+            if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
         }
-
-        // the context menu doesn't respect the updateState for some reason
-        if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
-            Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
-
         // ensure we don't get afk-kicked while running the route
         _afk.ResetTimers();
 
