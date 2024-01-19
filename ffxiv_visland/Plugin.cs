@@ -163,7 +163,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         var originActor = relativeToPlayer ? Service.ClientState.LocalPlayer : null;
         var origin = originActor?.Position ?? new();
-        var offset = new Vector3(float.Parse(args[1], new CultureInfo("en-US")), float.Parse(args[2], new CultureInfo("en-US")), float.Parse(args[3], new CultureInfo("en-US")));
+        var offset = new Vector3(float.Parse(args[1], CultureInfo.InvariantCulture), float.Parse(args[2], CultureInfo.InvariantCulture), float.Parse(args[3], CultureInfo.InvariantCulture));
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = new() };
         route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
         _wndGather.Exec.Start(route, 0, false, false);
