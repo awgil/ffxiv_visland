@@ -86,6 +86,9 @@ public class GatherRouteDB : Configuration.Node
             }
         }
         DisableOnErrors = (bool?)j["DisableOnErrors"] ?? false;
+        GatherModeOnStart = (bool?)j["GatherModeOnStart"] ?? true;
+        DefaultWaypointRadius = (float?)j["DefaultWaypointRadius"] ?? 3;
+        DefaultInteractionRadius = (float?)j["DefaultInteractionRadius"] ?? 2;
     }
 
     public override JObject Serialize(JsonSerializer ser)
@@ -102,6 +105,9 @@ public class GatherRouteDB : Configuration.Node
         return new JObject() {
             { "Routes", res },
             { "DisableOnErrors", DisableOnErrors },
+            { "GatherModeOnStart", GatherModeOnStart },
+            { "DefaultWaypointRadius", DefaultWaypointRadius },
+            { "DefaultInteractionRadius", DefaultInteractionRadius }
         };
     }
 
