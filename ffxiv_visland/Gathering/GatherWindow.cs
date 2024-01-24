@@ -5,7 +5,6 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
-using ECommons.GameHelpers;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
 using Lumina.Excel.GeneratedSheets;
@@ -14,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Numerics;
 using visland.Helpers;
 using static visland.Gathering.GatherRouteDB;
@@ -41,7 +39,7 @@ public class GatherWindow : Window, IDisposable
     //private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Select(x => (int)x.RowId).ToList()!;
 
     private string searchString = string.Empty;
-    private readonly List<GatherRouteDB.Route> FilteredRoutes = new();
+    private readonly List<Route> FilteredRoutes = new();
     private bool hornybonk;
 
     public GatherWindow() : base("Gathering Automation", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
@@ -115,7 +113,7 @@ public class GatherWindow : Window, IDisposable
             {
                 try
                 {
-                    var import = JsonConvert.DeserializeObject<GatherRouteDB.Route>(ImGui.GetClipboardText());
+                    var import = JsonConvert.DeserializeObject<Route>(ImGui.GetClipboardText());
                     RouteDB.Routes.Add(new() { Name = import!.Name, Waypoints = import.Waypoints });
                     RouteDB.NotifyModified();
                 }
@@ -125,7 +123,26 @@ public class GatherWindow : Window, IDisposable
                     Service.Log.Error(ex, "Failed to import route");
                 }
             }
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Import Route from Clipboard");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Import Route from Clipboard (\uE052 Base64)");
+                if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                {
+                    try
+                    {
+                        var import = JsonConvert.DeserializeObject<Route>(Utils.FromCompressedBase64(ImGui.GetClipboardText()));
+                        RouteDB.Routes.Add(new() { Name = import!.Name, Waypoints = import.Waypoints });
+                        RouteDB.NotifyModified();
+                    }
+                    catch (JsonReaderException ex)
+                    {
+                        Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
+                        Service.Log.Error(ex, "Failed to import route");
+                    }
+                }
+            }
+
+            // eyJOYW1lIjoidGVzdCByb3V0ZSIsIldheXBvaW50cyI6W3siUG9zaXRpb24iOnsiWCI6MC40MTA2LCJZIjowLjAsIloiOjUuMTYzMjk5Nn0sIlpvbmVJRCI6MCwiUmFkaXVzIjozLjAsIk1vdmVtZW50IjowLCJJbnRlcmFjdFdpdGhPSUQiOjAsIkludGVyYWN0V2l0aE5hbWUiOiIiLCJzaG93SW50ZXJhY3Rpb25zIjp0cnVlLCJJbnRlcmFjdGlvbiI6MywiRW1vdGVJRCI6MCwiSXRlbUlEIjoyNTksIkFjdGlvbklEIjowLCJRdWVzdElEIjowLCJzaG93V2FpdHMiOmZhbHNlLCJXYWl0Rm9yQ29uZGl0aW9uIjowLCJXYWl0VGltZU1zIjowfSx7IlBvc2l0aW9uIjp7IlgiOjIuNTczODQ4LCJZIjowLjAzMDAyNDE3LCJaIjotMS45MDE0NDM4fSwiWm9uZUlEIjowLCJSYWRpdXMiOjMuMCwiTW92ZW1lbnQiOjAsIkludGVyYWN0V2l0aE9JRCI6MCwiSW50ZXJhY3RXaXRoTmFtZSI6IiIsInNob3dJbnRlcmFjdGlvbnMiOmZhbHNlLCJJbnRlcmFjdGlvbiI6MSwiRW1vdGVJRCI6MCwiSXRlbUlEIjowLCJBY3Rpb25JRCI6MCwiUXVlc3RJRCI6MCwic2hvd1dhaXRzIjp0cnVlLCJXYWl0Rm9yQ29uZGl0aW9uIjo1LCJXYWl0VGltZU1zIjoxODgzN30seyJQb3NpdGlvbiI6eyJYIjotMC41MzMxNDg1LCJZIjowLjAzMDAyNDEyOCwiWiI6MC43MTc0NTg1NX0sIlpvbmVJRCI6MCwiUmFkaXVzIjozLjAsIk1vdmVtZW50IjowLCJJbnRlcmFjdFdpdGhPSUQiOjAsIkludGVyYWN0V2l0aE5hbWUiOiIiLCJzaG93SW50ZXJhY3Rpb25zIjp0cnVlLCJJbnRlcmFjdGlvbiI6NCwiRW1vdGVJRCI6MCwiSXRlbUlEIjowLCJBY3Rpb25JRCI6NzM5MiwiUXVlc3RJRCI6MCwic2hvd1dhaXRzIjpmYWxzZSwiV2FpdEZvckNvbmRpdGlvbiI6MCwiV2FpdFRpbWVNcyI6MH1dfQ==
 
             ImGui.SameLine();
             if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
@@ -198,7 +215,7 @@ public class GatherWindow : Window, IDisposable
         if (selectedRouteIndex == -1) return;
 
         var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
-        var route = routeSource[selectedRouteIndex];
+        var route = selectedRouteIndex >= routeSource.Count ? routeSource.Last() : routeSource[selectedRouteIndex];
 
         using (ImRaii.Child("Editor", size))
         {
@@ -247,7 +264,12 @@ public class GatherWindow : Window, IDisposable
             {
                 ImGui.SetClipboardText(JsonConvert.SerializeObject(route));
             }
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Export Route");
+            if (ImGui.IsItemHovered())
+            {
+                ImGui.SetTooltip("Export Route (\uE052 Base64)");
+                if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
+                    ImGui.SetClipboardText(Utils.ToCompressedBase64(route));
+            }
 
             var name = route.Name;
             var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
@@ -297,7 +319,7 @@ public class GatherWindow : Window, IDisposable
         }
     }
 
-    private void DrawWaypoint(GatherRouteDB.Waypoint wp)
+    private void DrawWaypoint(Waypoint wp)
     {
         if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && Service.ClientState.LocalPlayer is var player && player != null)
         {
@@ -366,7 +388,7 @@ public class GatherWindow : Window, IDisposable
         }
     }
 
-    private void ContextMenuWaypoint(GatherRouteDB.Route r, int i)
+    private void ContextMenuWaypoint(Route r, int i)
     {
         if (ImGui.MenuItem("Execute this step only"))
         {

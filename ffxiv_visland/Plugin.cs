@@ -16,6 +16,7 @@ using visland.Export;
 using visland.Farm;
 using visland.Gathering;
 using visland.Granary;
+using visland.Helpers;
 using visland.Pasture;
 using visland.Workshop;
 
@@ -155,8 +156,21 @@ public sealed class Plugin : IDalamudPlugin
                 case "execonce":
                     ExecuteCommand(string.Join(" ", args.Skip(1)), true);
                     break;
+                case "exectemp":
+                    ExecuteTempRoute(args[1], false);
+                    break;
+                case "exectemponce":
+                    ExecuteTempRoute(args[1], true);
+                    break;
             }
         }
+    }
+
+    private void ExecuteTempRoute(string base64, bool once)
+    {
+        var json = Utils.FromCompressedBase64(base64);
+        var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(json);
+        _wndGather.Exec.Start(route, 0, true, !once);
     }
 
     private void MoveToCommand(string[] args, bool relativeToPlayer)

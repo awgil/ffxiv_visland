@@ -10,11 +10,15 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using Lumina.Excel;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Text;
 
 namespace visland.Helpers;
 
@@ -204,6 +208,36 @@ public static unsafe class Utils
     {
         var b = typeof(Base);
         return GetAllTypes(asm).Where(t => t?.IsSubclassOf(b) ?? false).Select(t => t!);
+    }
+
+    public static unsafe string ToCompressedBase64<T>(T data)
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(data, Formatting.None);
+            var bytes = Encoding.UTF8.GetBytes(json);
+            using var compressedStream = new MemoryStream();
+            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
+            {
+                zipStream.Write(bytes, 0, bytes.Length);
+            }
+
+            return Convert.ToBase64String(compressedStream.ToArray());
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    public static string FromCompressedBase64(this string compressedBase64)
+    {
+        var data = Convert.FromBase64String(compressedBase64);
+        using var compressedStream = new MemoryStream(data);
+        using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+        using var resultStream = new MemoryStream();
+        zipStream.CopyTo(resultStream);
+        return Encoding.UTF8.GetString(resultStream.ToArray());
     }
 }
 
