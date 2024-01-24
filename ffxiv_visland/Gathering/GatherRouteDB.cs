@@ -137,6 +137,14 @@ public class GatherRouteDB : Configuration.Node
                 Movement = movement,
                 InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : 2012985,
                 InteractWithName = jwea[4].Value<string>() ?? "",
+                showInteractions = jwea[7].Value<bool>(),
+                Interaction = jwea.Count > 8 ? (InteractionType)jwea[8].Value<int>() : InteractionType.Standard,
+                EmoteID = jwea[9].Value<int>(),
+                ActionID = jwea[10].Value<int>(),
+                ItemID = jwea[11].Value<int>(),
+                showWaits = jwea[12].Value<bool>(),
+                WaitTimeMs = jwea[13].Value<int>(),
+                WaitForCondition = jwea.Count > 14 ? (ConditionFlag)jwea[14].Value<int>() : ConditionFlag.None,
             });
         }
         return res;
