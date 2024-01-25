@@ -24,6 +24,7 @@ public class GatherRouteExec : IDisposable
     public int CurrentWaypoint;
     public bool ContinueToNext;
     public bool Paused;
+    public bool Loop;
 
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
@@ -119,17 +120,6 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        //var interactObj = !gathering ? FindObjectToInteractWith(wp) : null;
-        //if (interactObj != null)
-        //{
-        //    _interact.Exec(() =>
-        //    {
-        //        Service.Log.Debug("Interacting...");
-        //        TargetSystem.Instance()->InteractWithObject(interactObj);
-        //    });
-        //    return;
-        //}
-
         switch (wp.Interaction)
         {
             case GatherRouteDB.InteractionType.Standard:
@@ -163,7 +153,7 @@ public class GatherRouteExec : IDisposable
                 if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
                 {
                     ThrottleTime = Environment.TickCount64;
-                    if (GatherWindow.loop)
+                    if (Loop)
                     {
                         CurrentWaypoint = 0;
                     }
@@ -181,6 +171,7 @@ public class GatherRouteExec : IDisposable
         CurrentRoute = route;
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
+        Loop = loopAtEnd;
         _camera.Enabled = true;
         _movement.Enabled = true;
         ThrottleTime = Environment.TickCount64;

@@ -170,7 +170,8 @@ public sealed class Plugin : IDalamudPlugin
     {
         var json = Utils.FromCompressedBase64(base64);
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(json);
-        _wndGather.Exec.Start(route, 0, true, !once);
+        if (route != null)
+            _wndGather.Exec.Start(route, 0, true, !once);
     }
 
     private void MoveToCommand(string[] args, bool relativeToPlayer)
