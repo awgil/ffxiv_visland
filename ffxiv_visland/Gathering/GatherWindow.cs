@@ -221,7 +221,7 @@ public class GatherWindow : Window, IDisposable
         {
             using (ImRaii.Disabled(Exec.CurrentRoute != null))
                 if (ImGuiComponents.IconButton(FontAwesomeIcon.Play))
-                    Exec.Start(route, 0, true, loop);
+                    Exec.Start(route, 0, true, loop, true);
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Execute Route");
             ImGui.SameLine();
 
