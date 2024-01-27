@@ -25,7 +25,6 @@ public class GatherRouteExec : IDisposable
     public bool ContinueToNext;
     public bool Paused;
     public bool Loop;
-    public bool WindowStart;
 
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
@@ -154,7 +153,7 @@ public class GatherRouteExec : IDisposable
                 if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
                 {
                     ThrottleTime = Environment.TickCount64;
-                    if ((Loop && !WindowStart) || (WindowStart && GatherWindow.loop))
+                    if (Loop)
                     {
                         CurrentWaypoint = 0;
                     }
@@ -167,13 +166,12 @@ public class GatherRouteExec : IDisposable
         }
     }
 
-    public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd, bool windowStart = false)
+    public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd)
     {
         CurrentRoute = route;
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
         Loop = loopAtEnd;
-        WindowStart = windowStart;
         _camera.Enabled = true;
         _movement.Enabled = true;
         ThrottleTime = Environment.TickCount64;
