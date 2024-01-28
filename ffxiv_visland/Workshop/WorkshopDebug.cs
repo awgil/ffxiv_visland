@@ -8,7 +8,6 @@ using Lumina.Excel.GeneratedSheets2;
 using System.Collections.Generic;
 using System.Linq;
 using visland.Helpers;
-using static FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentMJIFarmManagement;
 
 namespace visland.Workshop;
 

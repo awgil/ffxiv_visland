@@ -1,14 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.DalamudServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
-using System.IO.Compression;
-using System.IO;
 using System.Numerics;
 using visland.Helpers;
-using System.Text;
 
 namespace visland.Gathering;
 

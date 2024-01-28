@@ -14,6 +14,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using visland.Helpers;
+using visland.IPC;
 
 namespace visland.Gathering;
 
@@ -38,10 +39,12 @@ public class GatherRouteExec : IDisposable
     private long ThrottleTime { get; set; } = Environment.TickCount64;
     private Stopwatch waypointTimer = new();
     private bool Waiting = false;
+    private VislandIPC _ipc;
 
     public GatherRouteExec()
     {
         RouteDB = Service.Config.Get<GatherRouteDB>();
+        _ipc = new VislandIPC(Svc.PluginInterface);
         Svc.Toasts.ErrorToast += CheckToDisable;
     }
 
@@ -49,6 +52,7 @@ public class GatherRouteExec : IDisposable
     {
         _camera.Dispose();
         _movement.Dispose();
+        _ipc.Dispose();
         Svc.Toasts.ErrorToast -= CheckToDisable;
     }
 
@@ -174,6 +178,7 @@ public class GatherRouteExec : IDisposable
         Loop = loopAtEnd;
         _camera.Enabled = true;
         _movement.Enabled = true;
+        _ipc.Running = true;
         ThrottleTime = Environment.TickCount64;
     }
 
@@ -186,6 +191,7 @@ public class GatherRouteExec : IDisposable
         ContinueToNext = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
+        _ipc.Running = false;
         if (Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
             Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 1);
     }

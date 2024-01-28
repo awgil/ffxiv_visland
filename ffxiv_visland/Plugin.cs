@@ -3,7 +3,6 @@ using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
-using ECommons.DalamudServices;
 using ECommons.Reflection;
 using ImGuiNET;
 using System;
@@ -17,6 +16,7 @@ using visland.Farm;
 using visland.Gathering;
 using visland.Granary;
 using visland.Helpers;
+using visland.IPC;
 using visland.Pasture;
 using visland.Workshop;
 
@@ -52,6 +52,7 @@ public sealed class Plugin : IDalamudPlugin
     public string Name => "visland";
 
     public DalamudPluginInterface Dalamud { get; init; }
+    private VislandIPC _vislandIPC;
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
@@ -84,6 +85,7 @@ public sealed class Plugin : IDalamudPlugin
         Service.Config.Modified += (_, _) => Service.Config.SaveToFile(dalamud.ConfigFile);
 
         Dalamud = dalamud;
+        _vislandIPC = new VislandIPC(dalamud);
 
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();
@@ -111,6 +113,7 @@ public sealed class Plugin : IDalamudPlugin
 
     public void Dispose()
     {
+        _vislandIPC.Dispose();
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
