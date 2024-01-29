@@ -106,7 +106,20 @@ public sealed class Plugin : IDalamudPlugin
             WindowSystem.AddWindow(_wndPasture);
             WindowSystem.AddWindow(_wndFarm);
             WindowSystem.AddWindow(_wndExports);
-            Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand) { HelpMessage = "Show plugin gathering UI" });
+            Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand)
+            {
+                HelpMessage = "Opens the Gathering Menu\n" +
+                $"/{Name} moveto <X> <Y> <Z> → move to raw coordinates\n" +
+                $"/{Name} movedir <X> <Y> <Z> → move this many units over (relative to player facing)\n" +
+                $"/{Name} stop → stop current route\n" +
+                $"/{Name} pause → pause current route\n" +
+                $"/{Name} resume → resume current route\n" +
+                $"/{Name} exec <name> → run route by name continuously\n" +
+                $"/{Name} execonce <name> → run route by name once\n" +
+                $"/{Name} exectemp <base64 route> → run anonymous route continuously\n" +
+                $"/{Name} exectemponce <base64 route> → run anonymous route once",
+                ShowInHelp = true,
+            });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
     }
