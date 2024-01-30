@@ -116,8 +116,8 @@ public sealed class Plugin : IDalamudPlugin
                 $"/{Name} resume → resume current route\n" +
                 $"/{Name} exec <name> → run route by name continuously\n" +
                 $"/{Name} execonce <name> → run route by name once\n" +
-                $"/{Name} exectemp <base64 route> → run anonymous route continuously\n" +
-                $"/{Name} exectemponce <base64 route> → run anonymous route once",
+                $"/{Name} exectemp <base64 route> → run unsaved route continuously\n" +
+                $"/{Name} exectemponce <base64 route> → run unsaved route once",
                 ShowInHelp = true,
             });
             Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
