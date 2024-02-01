@@ -87,8 +87,6 @@ public class GatherWindow : Window, IDisposable
             return;
         }
 
-        var curPos = Service.ClientState.LocalPlayer?.Position ?? new();
-        var wp = Exec.CurrentRoute.Waypoints[Exec.CurrentWaypoint];
         if (Exec.CurrentRoute != null) // Finish() call could've reset it
         {
             ImGui.SameLine();
