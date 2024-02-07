@@ -139,6 +139,9 @@ public class GatherRouteExec : IDisposable
             case GatherRouteDB.InteractionType.UseAction:
                 QuestsHelper.UseAction((uint)wp.ActionID, wp.InteractWithOID);
                 break;
+            case GatherRouteDB.InteractionType.QuestTalk:
+                QuestsHelper.QuestTalk(wp.InteractWithOID);
+                break;
         }
 
         if (!ContinueToNext)

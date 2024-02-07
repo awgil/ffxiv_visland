@@ -80,6 +80,17 @@ public class QuestsHelper
         return null;
     }
 
+    public static void QuestTalk(uint npcOID)
+    {
+        unsafe
+        {
+            var obj = GetObjectToInteractWith(npcOID);
+            if (obj != null)
+                TargetSystem.Instance()->InteractWithObject(obj, false);
+        }
+    }
+
+
     public static void PickUpQuest(ushort questID, uint npcOID)
     {
         unsafe

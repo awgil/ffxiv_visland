@@ -23,6 +23,7 @@ public class GatherRouteDB : Configuration.Node
         Emote = 2,
         UseItem = 3,
         UseAction = 4,
+        QuestTalk = 5,
 
         // probably a better idea to just have TextAdvance integration rather than reinventing the wheel
         //TalkTo = 5,
