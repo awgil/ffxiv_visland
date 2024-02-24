@@ -1,4 +1,5 @@
 ﻿using Dalamud.Common;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
@@ -79,6 +80,8 @@ public sealed class Plugin : IDalamudPlugin
         dalamud.Create<Service>();
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
+        Service.Condition.ConditionChange += OnConditionChange;
+
         Service.Config.Initialize();
         if (dalamud.ConfigFile.Exists)
             Service.Config.LoadFromFile(dalamud.ConfigFile);
@@ -135,6 +138,12 @@ public sealed class Plugin : IDalamudPlugin
         _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
+    }
+
+    private void OnConditionChange(ConditionFlag flag, bool val)
+    {
+        if (flag == ConditionFlag.BetweenAreas && val)
+            _wndGather.Exec.Finish();
     }
 
     private void OnCommand(string command, string arguments)
