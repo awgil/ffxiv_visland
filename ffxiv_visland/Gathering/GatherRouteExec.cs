@@ -38,7 +38,6 @@ public class GatherRouteExec : IDisposable
 
     private long ThrottleTime { get; set; } = Environment.TickCount64;
     private Stopwatch waypointTimer = new();
-    private bool Waiting = false;
     private VislandIPC _ipc;
 
     public GatherRouteExec()
@@ -140,7 +139,7 @@ public class GatherRouteExec : IDisposable
                 QuestsHelper.UseAction((uint)wp.ActionID, wp.InteractWithOID);
                 break;
             case GatherRouteDB.InteractionType.QuestTalk:
-                QuestsHelper.QuestTalk(wp.InteractWithOID);
+                QuestsHelper.TalkTo(wp.InteractWithOID);
                 break;
         }
 

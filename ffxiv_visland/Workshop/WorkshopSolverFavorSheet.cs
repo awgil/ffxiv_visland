@@ -31,7 +31,7 @@ public class WorkshopSolverFavorSheet
 
         Complete = state.CompletedCounts.ToArray();
         Links = Favors.Select(BuildLinks).ToArray();
-        Recs = new();
+        Recs = [];
 
         var f4 = state.CraftObjectIds[0];
         var f6 = state.CraftObjectIds[1];

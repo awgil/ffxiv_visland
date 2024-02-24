@@ -1,13 +1,16 @@
 ﻿using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
+using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using System;
 using visland.Helpers;
 
 namespace visland;
 
 public class Service
 {
+    [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
     [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] public static IDataManager DataManager { get; private set; } = null!;
@@ -27,4 +30,22 @@ public class Service
     public static T? LuminaRow<T>(uint row) where T : Lumina.Excel.ExcelRow => LuminaGameData.GetExcelSheet<T>(Lumina.Data.Language.English)?.GetRow(row);
 
     public static Configuration Config = new();
+
+    internal static bool IsInitialized = false;
+    public static void Init(DalamudPluginInterface pi)
+    {
+        if (IsInitialized)
+        {
+            Log.Debug("Services already initialized, skipping");
+        }
+        IsInitialized = true;
+        try
+        {
+            pi.Create<Service>();
+        }
+        catch (Exception ex)
+        {
+            Log.Error($"Error initalising {nameof(Service)}", ex);
+        }
+    }
 }

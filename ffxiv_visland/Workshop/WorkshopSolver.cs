@@ -16,14 +16,14 @@ public class WorkshopSolver
 
     public class WorkshopRec
     {
-        public List<SlotRec> Slots = new();
+        public List<SlotRec> Slots = [];
 
         public void Add(int slot, uint craftObjectId) => Slots.Add(new(slot, craftObjectId));
     }
 
     public class DayRec
     {
-        public List<WorkshopRec> Workshops = new();
+        public List<WorkshopRec> Workshops = [];
 
         public bool Empty => Workshops.Count == 0;
 
@@ -43,7 +43,7 @@ public class WorkshopSolver
 
     public class Recs
     {
-        private List<DayRec> _schedules = new();
+        private List<DayRec> _schedules = [];
         public uint CyclesMask { get; private set; } // num bits set equal to num schedules
         public IReadOnlyList<DayRec> Schedules => _schedules;
 

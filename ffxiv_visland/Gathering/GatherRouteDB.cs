@@ -61,10 +61,10 @@ public class GatherRouteDB : Configuration.Node
     public class Route
     {
         public string Name = "";
-        public List<Waypoint> Waypoints = new();
+        public List<Waypoint> Waypoints = [];
     }
 
-    public List<Route> Routes = new();
+    public List<Route> Routes = [];
     public float DefaultWaypointRadius = 3;
     public float DefaultInteractionRadius = 2;
     public bool GatherModeOnStart = true;
@@ -79,8 +79,7 @@ public class GatherRouteDB : Configuration.Node
             foreach (var jr in ja)
             {
                 var jn = jr["Name"]?.Value<string>();
-                var jw = jr["Waypoints"] as JArray;
-                if (jn != null && jw != null)
+                if (jn != null && jr["Waypoints"] is JArray jw)
                     Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
             }
         }
@@ -92,7 +91,7 @@ public class GatherRouteDB : Configuration.Node
 
     public override JObject Serialize(JsonSerializer ser)
     {
-        JArray res = new();
+        JArray res = [];
         foreach (var r in Routes)
         {
             res.Add(new JObject()
@@ -112,7 +111,7 @@ public class GatherRouteDB : Configuration.Node
 
     public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints)
     {
-        JArray jw = new();
+        JArray jw = [];
         foreach (var wp in waypoints)
             jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Movement, wp.InteractWithOID, wp.showInteractions, wp.Interaction, wp.EmoteID, wp.ActionID, wp.ItemID, wp.showWaits, wp.WaitTimeMs, wp.WaitForCondition });
         return jw;
@@ -120,11 +119,10 @@ public class GatherRouteDB : Configuration.Node
 
     public static List<Waypoint> LoadFromJSONWaypoints(JArray j)
     {
-        List<Waypoint> res = new();
+        List<Waypoint> res = [];
         foreach (var jwe in j)
         {
-            var jwea = jwe as JArray;
-            if (jwea == null || jwea.Count < 5)
+            if (jwe is not JArray jwea || jwea.Count < 5)
                 continue;
             var movement = jwea.Count <= 5 ? Movement.Normal
                 : jwea[5].Type == JTokenType.Boolean ? jwea[5].Value<bool>() ? Movement.MountFly : Movement.Normal

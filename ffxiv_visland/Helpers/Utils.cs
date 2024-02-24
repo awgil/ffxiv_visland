@@ -33,22 +33,22 @@ public static unsafe class Utils
     public record ExcelSheetOptions<T> where T : ExcelRow
     {
         public Func<T, string> FormatRow { get; init; } = row => row.ToString();
-        public Func<T, string, bool> SearchPredicate { get; init; } = null;
-        public Func<T, bool, bool> DrawSelectable { get; init; } = null;
-        public IEnumerable<T> FilteredSheet { get; init; } = null;
+        public Func<T, string, bool>? SearchPredicate { get; init; } = null;
+        public Func<T, bool, bool>? DrawSelectable { get; init; } = null;
+        public IEnumerable<T>? FilteredSheet { get; init; } = null;
         public Vector2? Size { get; init; } = null;
     }
 
     public record ExcelSheetComboOptions<T> : ExcelSheetOptions<T> where T : ExcelRow
     {
-        public Func<T, string> GetPreview { get; init; } = null;
+        public Func<T, string>? GetPreview { get; init; } = null;
         public ImGuiComboFlags ComboFlags { get; init; } = ImGuiComboFlags.None;
     }
 
-    private static string sheetSearchText;
-    private static ExcelRow[] filteredSearchSheet;
-    private static string prevSearchID;
-    private static Type prevSearchType;
+    private static string? sheetSearchText;
+    private static ExcelRow[]? filteredSearchSheet;
+    private static string? prevSearchID;
+    private static Type? prevSearchType;
 
     private static void ExcelSheetSearchInput<T>(string id, IEnumerable<T> filteredSheet, Func<T, string, bool> searchPredicate) where T : ExcelRow
     {
@@ -75,7 +75,7 @@ public static unsafe class Utils
         filteredSearchSheet ??= filteredSheet.Where(s => searchPredicate(s, sheetSearchText)).Cast<ExcelRow>().ToArray();
     }
 
-    public static bool ExcelSheetCombo<T>(string id, ref int selectedRow, ExcelSheetComboOptions<T> options = null) where T : ExcelRow
+    public static bool ExcelSheetCombo<T>(string id, ref int selectedRow, ExcelSheetComboOptions<T>? options = null) where T : ExcelRow
     {
         options ??= new ExcelSheetComboOptions<T>();
         var sheet = Svc.Data.GetExcelSheet<T>();

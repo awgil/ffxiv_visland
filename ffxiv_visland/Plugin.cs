@@ -3,6 +3,7 @@ using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
+using ECommons.Automation;
 using ECommons.Reflection;
 using ImGuiNET;
 using System;
@@ -49,13 +50,16 @@ class RepoMigrateWindow : Window
 
 public sealed class Plugin : IDalamudPlugin
 {
-    public string Name => "visland";
+    public static string Name => "visland";
 
     public DalamudPluginInterface Dalamud { get; init; }
+    internal static Plugin P;
     private VislandIPC _vislandIPC;
+    internal TaskManager TaskManager;
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
+    //private QuestingWindow _wndQuests;
     private WorkshopWindow _wndWorkshop;
     private GranaryWindow _wndGranary;
     private PastureWindow _wndPasture;
@@ -75,6 +79,9 @@ public sealed class Plugin : IDalamudPlugin
         FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
         ECommonsMain.Init(dalamud, this);
+        Service.Init(dalamud);
+        AutoCutsceneSkipper.Init(null);
+        AutoCutsceneSkipper.Disable();
 
         dalamud.Create<Service>();
         dalamud.UiBuilder.Draw += WindowSystem.Draw;
@@ -85,9 +92,12 @@ public sealed class Plugin : IDalamudPlugin
         Service.Config.Modified += (_, _) => Service.Config.SaveToFile(dalamud.ConfigFile);
 
         Dalamud = dalamud;
+        P = this;
+        TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
         _vislandIPC = new VislandIPC(dalamud);
 
         _wndGather = new GatherWindow();
+        //_wndQuests = new QuestingWindow();
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
         _wndPasture = new PastureWindow();
@@ -101,6 +111,7 @@ public sealed class Plugin : IDalamudPlugin
         else
         {
             WindowSystem.AddWindow(_wndGather);
+            //WindowSystem.AddWindow(_wndQuests);
             WindowSystem.AddWindow(_wndWorkshop);
             WindowSystem.AddWindow(_wndGranary);
             WindowSystem.AddWindow(_wndPasture);
@@ -130,6 +141,7 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
+        //_wndQuests.Dispose();
         _wndWorkshop.Dispose();
         _wndGranary.Dispose();
         _wndPasture.Dispose();
@@ -178,6 +190,9 @@ public sealed class Plugin : IDalamudPlugin
                 case "exectemponce":
                     ExecuteTempRoute(args[1], true);
                     break;
+                //case "quests":
+                //    _wndQuests.IsOpen ^= true;
+                //    break;
             }
         }
     }
@@ -195,7 +210,7 @@ public sealed class Plugin : IDalamudPlugin
         var originActor = relativeToPlayer ? Service.ClientState.LocalPlayer : null;
         var origin = originActor?.Position ?? new();
         var offset = new Vector3(float.Parse(args[1], CultureInfo.InvariantCulture), float.Parse(args[2], CultureInfo.InvariantCulture), float.Parse(args[3], CultureInfo.InvariantCulture));
-        var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = new() };
+        var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = [] };
         route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
         _wndGather.Exec.Start(route, 0, false, false);
     }

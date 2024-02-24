@@ -93,7 +93,7 @@ public static unsafe class WorkshopUtils
         var restDays3 = MJIManager.Instance()->CraftworksRestDays[2];
         var restDays4 = MJIManager.Instance()->CraftworksRestDays[3];
 
-        return new List<int> { restDays1, restDays2, restDays3, restDays4 };
+        return [restDays1, restDays2, restDays3, restDays4];
     }
 
     public static int GetNextNonRestCycle(int cycle)

@@ -1,8 +1,11 @@
-﻿using ECommons.Automation;
+﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons;
+using ECommons.Automation;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
@@ -10,8 +13,10 @@ using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using static ECommons.GenericHelpers;
+using static visland.Plugin;
 
 namespace visland.Helpers;
 
@@ -33,6 +38,7 @@ public class QuestsHelper
     // if we handle Talk skipping and quest pickup natively, we need to not conflict with YesAlready or TextAdvance
     private static readonly Dictionary<uint, Quest>? QuestSheet = Svc.Data?.GetExcelSheet<Quest>()?.Where(x => x.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i);
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public static nint itemContextMenuAgent = nint.Zero;
     public delegate void UseItemDelegate(nint itemContextMenuAgent, uint itemID, uint inventoryPage, uint inventorySlot, short a5);
     public static UseItemDelegate UseItem;
@@ -40,12 +46,10 @@ public class QuestsHelper
     public static nint emoteAgent = nint.Zero;
     public delegate void DoEmoteDelegate(nint agent, uint emoteID, long a3, bool a4, bool a5);
     public static DoEmoteDelegate DoEmote;
-
-    protected ECommons.Automation.TaskManager tm;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public QuestsHelper()
     {
-        tm = new();
         unsafe
         {
             try
@@ -69,46 +73,50 @@ public class QuestsHelper
         }
     }
 
-    public static bool IsQuestAccepted(ushort questID) => new QuestManager().IsQuestAccepted(questID);
-    public static bool IsQuestComplete(ushort questID) => QuestManager.IsQuestComplete(questID);
-    public static byte GetCurrentQuestSequence(ushort questID) => QuestManager.GetQuestSequence(questID);
+    public static string GetMobName(uint npcID) => Svc.Data.GetExcelSheet<BNpcName>()?.GetRow(npcID)?.Singular.RawString ?? "";
+
+    public static bool IsQuestAccepted(int questID) => new QuestManager().IsQuestAccepted((uint)questID);
+    public static bool IsQuestCompleted(int questID) => QuestManager.IsQuestComplete((uint)questID);
+    public static byte GetQuestStep(int questID) => QuestManager.GetQuestSequence((uint)questID);
+    public static unsafe bool HasQuest(int questID) => QuestManager.Instance()->NormalQuestsSpan.ToArray().ToList().Any(q => q.QuestId == questID);
+    public static bool IsTodoChecked(int questID, int questStep, int objectiveIndex) => true; // TODO: might need to reverse the agent or something. Doing this by addon does not seem like a good idea
+
+    public static unsafe void GetTo(int zoneID, Vector3 pos, float radius = 0f)
+    {
+        if (Svc.ClientState.TerritoryType != zoneID)
+            P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
+        P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
+        P.TaskManager.Enqueue(() => Chat.Instance.ExecuteCommand($"/vnavmesh moveto {pos.X} {pos.Y} {pos.Z}"));
+        //P.TaskManager.Enqueue(() => !IsNavRunning());
+    }
 
     private static unsafe GameObject* GetObjectToInteractWith(uint objID)
     {
-        if (Service.ObjectTable.TryGetFirst(x => x.DataId == objID, out var obj) && obj != null)
-            return obj.IsTargetable ? (GameObject*)obj.Address : null;
-        return null;
+        return Service.ObjectTable.TryGetFirst(x => x.DataId == objID, out var obj) && obj != null
+            ? obj.IsTargetable ? (GameObject*)obj.Address : null
+            : (GameObject*)null;
     }
 
-    public static void QuestTalk(uint npcOID)
+    public static unsafe void TalkTo(uint npcOID)
     {
-        unsafe
-        {
-            var obj = GetObjectToInteractWith(npcOID);
-            if (obj != null)
-                TargetSystem.Instance()->InteractWithObject(obj, false);
-        }
+        var obj = GetObjectToInteractWith(npcOID);
+        if (obj != null)
+            P.TaskManager.Enqueue(() => TargetSystem.Instance()->InteractWithObject(obj, false));
+        P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.OccupiedInQuestEvent]);
     }
 
-
-    public static void PickUpQuest(ushort questID, uint npcOID)
+    public static unsafe void PickUpQuest(int questID, uint npcOID)
     {
-        unsafe
-        {
-            var obj = GetObjectToInteractWith(npcOID);
-            if (obj != null)
-                TargetSystem.Instance()->InteractWithObject(obj, false);
-        }
+        var obj = GetObjectToInteractWith(npcOID);
+        if (obj != null)
+            TargetSystem.Instance()->InteractWithObject(obj, false);
     }
 
-    public static void TurnInQuest(ushort questID, uint npcOID, uint itemID = 0, bool allowHQ = false, int rewardSlot = -1)
+    public static unsafe void TurnInQuest(int questID, uint npcOID, uint itemID = 0, bool allowHQ = false, int rewardSlot = -1)
     {
-        unsafe
-        {
-            var obj = GetObjectToInteractWith(npcOID);
-            if (obj != null)
-                TargetSystem.Instance()->InteractWithObject(obj, false);
-        }
+        var obj = GetObjectToInteractWith(npcOID);
+        if (obj != null)
+            TargetSystem.Instance()->InteractWithObject(obj, false);
     }
 
     public static void UseItemOn(uint itemID, uint targetOID = 0)
@@ -125,16 +133,13 @@ public class QuestsHelper
         UseItem(itemContextMenuAgent, itemID, 9999, 0, 0);
     }
 
-    public static void EmoteAt(uint emoteID, uint targetOID = 0)
+    public static unsafe void EmoteAt(uint emoteID, uint targetOID = 0)
     {
         if (targetOID != 0)
         {
-            unsafe
-            {
-                var obj = GetObjectToInteractWith(targetOID);
-                if (obj != null)
-                    Service.TargetManager.Target = Service.ObjectTable.CreateObjectReference((nint)obj);
-            }
+            var obj = GetObjectToInteractWith(targetOID);
+            if (obj != null)
+                Service.TargetManager.Target = Service.ObjectTable.CreateObjectReference((nint)obj);
         }
 
         DoEmote(emoteAgent, emoteID, 0, true, true);
@@ -144,12 +149,9 @@ public class QuestsHelper
     {
         if (targetOID != 0)
         {
-            unsafe
-            {
-                var obj = GetObjectToInteractWith(targetOID);
-                if (obj != null)
-                    Service.TargetManager.Target = Service.ObjectTable.CreateObjectReference((nint)obj);
-            }
+            var obj = GetObjectToInteractWith(targetOID);
+            if (obj != null)
+                Service.TargetManager.Target = Service.ObjectTable.CreateObjectReference((nint)obj);
         }
         try
         {
@@ -197,21 +199,44 @@ public class QuestsHelper
         return null;
     }
 
-    public unsafe void AutoEquip(uint? jobId, bool updateGearset = false)
+    public static unsafe void AutoEquip(bool updateGearset = false)
     {
-        if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InCombat]) return;
-        if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas]) return;
+        if (Svc.Condition[ConditionFlag.InCombat]) return;
+        if (Svc.Condition[ConditionFlag.BetweenAreas]) return;
         var mod = RecommendEquipModule.Instance();
-        tm.DelayNext("EquipMod", 500);
-        tm.Enqueue(() => mod->SetupRecommendedGear(), 500);
-        tm.Enqueue(mod->EquipRecommendedGear, 500);
+        P.TaskManager.DelayNext("EquipMod", 500);
+        P.TaskManager.Enqueue(() => mod->SetupRecommendedGear(), 500);
+        P.TaskManager.Enqueue(mod->EquipRecommendedGear, 500);
 
         if (updateGearset)
         {
             var id = RaptureGearsetModule.Instance()->CurrentGearsetIndex;
-            tm.DelayNext("UpdatingGS", 1000);
-            tm.Enqueue(() => RaptureGearsetModule.Instance()->UpdateGearset(id));
+            P.TaskManager.DelayNext("UpdatingGS", 1000);
+            P.TaskManager.Enqueue(() => RaptureGearsetModule.Instance()->UpdateGearset(id));
         }
+    }
+
+    public static unsafe void Grind(string mobName)
+    {
+        if (mobName.IsNullOrEmpty()) return;
+        var mob = Svc.Objects.FirstOrDefault(o => o.IsTargetable && !o.IsDead && o.Name.TextValue.EqualsIgnoreCase(mobName));
+        if (mob != null)
+        {
+            Svc.Log.Info($"found {mobName} @ {mob.Position}");
+            GetTo(Svc.ClientState.TerritoryType, mob.Position, mob.HitboxRadius);
+            P.TaskManager.Enqueue(() => Svc.Targets.Target = mob);
+            //P.TaskManager.Enqueue(() => BossModIPC.InitiateCombat?.InvokeAction());
+            P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.InCombat]);
+        }
+        else
+            Svc.Log.Info($"Failed to find {mobName} nearby");
+    }
+
+    public static unsafe bool HasItem(int itemID, int quantity = 1) => InventoryManager.Instance()->GetInventoryItemCount((uint)itemID, true) >= quantity;
+
+    public static unsafe void BuyItem(int itemID, int quantity, int npcID)
+    {
+        return;
     }
 }
 

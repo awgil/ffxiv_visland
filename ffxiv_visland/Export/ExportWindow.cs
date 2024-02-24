@@ -93,11 +93,11 @@ unsafe class ExportWindow : UIAttachedWindow
             return;
         var agent = AgentMJIDisposeShop.Instance();
         var data = agent->Data;
-        List<AtkValue> args = new()
-        {
+        List<AtkValue> args =
+        [
             new() { Type = AtkValueType.UInt },
             new() { Type = AtkValueType.UInt, Int = limit }
-        };
+        ];
         int numItems = 0;
         foreach (var item in data->PerCategoryItemsSpan[category].Span)
         {

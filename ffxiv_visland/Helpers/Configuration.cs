@@ -52,7 +52,7 @@ public class Configuration
     private const int _version = 2;
 
     public event EventHandler? Modified;
-    private Dictionary<Type, Node> _nodes = new();
+    private Dictionary<Type, Node> _nodes = [];
 
     public IEnumerable<Node> Nodes => _nodes.Values;
 
@@ -60,8 +60,7 @@ public class Configuration
     {
         foreach (var t in Utils.GetDerivedTypes<Node>(Assembly.GetExecutingAssembly()).Where(t => !t.IsAbstract))
         {
-            var inst = Activator.CreateInstance(t) as Node;
-            if (inst == null)
+            if (Activator.CreateInstance(t) is not Node inst)
             {
                 Service.Log.Error($"[Config] Failed to create an instance of {t}");
                 continue;
@@ -81,8 +80,7 @@ public class Configuration
             var contents = File.ReadAllText(file.FullName);
             var json = JObject.Parse(contents);
             var version = (int?)json["Version"] ?? 0;
-            var payload = json["Payload"] as JObject;
-            if (payload != null)
+            if (json["Payload"] is JObject payload)
             {
                 payload = ConvertConfig(payload, version);
                 var ser = BuildSerializer();
@@ -90,8 +88,7 @@ public class Configuration
                 {
                     var type = Type.GetType(t);
                     var node = type != null ? _nodes.GetValueOrDefault(type) : null;
-                    var jObj = j as JObject;
-                    if (node != null && jObj != null)
+                    if (node != null && j is JObject jObj)
                     {
                         node.Deserialize(jObj, ser);
                     }
@@ -109,7 +106,7 @@ public class Configuration
         try
         {
             var ser = BuildSerializer();
-            JObject payload = new();
+            JObject payload = [];
             foreach (var (t, n) in _nodes)
             {
                 var jNode = n.Serialize(ser);

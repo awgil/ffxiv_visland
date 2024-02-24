@@ -153,7 +153,7 @@ unsafe class GranaryWindow : UIAttachedWindow
         var agent = AgentMJIGatheringHouse.Instance();
         if (_config.Reassign is GranaryConfig.UpdateStrategy.BestDifferent or GranaryConfig.UpdateStrategy.BestSame)
         {
-            List<(byte id, int count)> destinations = new();
+            List<(byte id, int count)> destinations = [];
             for (var e = agent->Data->Expeditions.First; e != agent->Data->Expeditions.Last; ++e)
                 if (agent->IsExpeditionUnlocked(e))
                     destinations.Add((e->ExpeditionId, Utils.NumItems(e->RareItemId)));

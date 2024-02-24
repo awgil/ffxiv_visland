@@ -8,7 +8,7 @@ namespace visland.Workshop;
 
 public class WorkshopManual
 {
-    private List<uint> _recents = new();
+    private List<uint> _recents = [];
     private string _filter = "";
 
     public void Draw()

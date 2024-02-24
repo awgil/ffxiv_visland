@@ -22,7 +22,7 @@ namespace visland.Gathering;
 public class GatherWindow : Window, IDisposable
 {
     private readonly UITree _tree = new();
-    private readonly List<System.Action> _postDraw = new();
+    private readonly List<System.Action> _postDraw = [];
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
@@ -39,7 +39,7 @@ public class GatherWindow : Window, IDisposable
     //private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Select(x => (int)x.RowId).ToList()!;
 
     private string searchString = string.Empty;
-    private readonly List<Route> FilteredRoutes = new();
+    private readonly List<Route> FilteredRoutes = [];
     private bool hornybonk;
 
     public GatherWindow() : base("Gathering Automation", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
@@ -100,7 +100,7 @@ public class GatherWindow : Window, IDisposable
         {
             if (ImGuiComponents.IconButton(FontAwesomeIcon.Plus))
             {
-                RouteDB.Routes.Add(new() { Name = "Unnamed Route"});
+                RouteDB.Routes.Add(new() { Name = "Unnamed Route" });
                 RouteDB.NotifyModified();
             }
 
@@ -139,8 +139,6 @@ public class GatherWindow : Window, IDisposable
                     }
                 }
             }
-
-            // eyJOYW1lIjoidGVzdCByb3V0ZSIsIldheXBvaW50cyI6W3siUG9zaXRpb24iOnsiWCI6MC40MTA2LCJZIjowLjAsIloiOjUuMTYzMjk5Nn0sIlpvbmVJRCI6MCwiUmFkaXVzIjozLjAsIk1vdmVtZW50IjowLCJJbnRlcmFjdFdpdGhPSUQiOjAsIkludGVyYWN0V2l0aE5hbWUiOiIiLCJzaG93SW50ZXJhY3Rpb25zIjp0cnVlLCJJbnRlcmFjdGlvbiI6MywiRW1vdGVJRCI6MCwiSXRlbUlEIjoyNTksIkFjdGlvbklEIjowLCJRdWVzdElEIjowLCJzaG93V2FpdHMiOmZhbHNlLCJXYWl0Rm9yQ29uZGl0aW9uIjowLCJXYWl0VGltZU1zIjowfSx7IlBvc2l0aW9uIjp7IlgiOjIuNTczODQ4LCJZIjowLjAzMDAyNDE3LCJaIjotMS45MDE0NDM4fSwiWm9uZUlEIjowLCJSYWRpdXMiOjMuMCwiTW92ZW1lbnQiOjAsIkludGVyYWN0V2l0aE9JRCI6MCwiSW50ZXJhY3RXaXRoTmFtZSI6IiIsInNob3dJbnRlcmFjdGlvbnMiOmZhbHNlLCJJbnRlcmFjdGlvbiI6MSwiRW1vdGVJRCI6MCwiSXRlbUlEIjowLCJBY3Rpb25JRCI6MCwiUXVlc3RJRCI6MCwic2hvd1dhaXRzIjp0cnVlLCJXYWl0Rm9yQ29uZGl0aW9uIjo1LCJXYWl0VGltZU1zIjoxODgzN30seyJQb3NpdGlvbiI6eyJYIjotMC41MzMxNDg1LCJZIjowLjAzMDAyNDEyOCwiWiI6MC43MTc0NTg1NX0sIlpvbmVJRCI6MCwiUmFkaXVzIjozLjAsIk1vdmVtZW50IjowLCJJbnRlcmFjdFdpdGhPSUQiOjAsIkludGVyYWN0V2l0aE5hbWUiOiIiLCJzaG93SW50ZXJhY3Rpb25zIjp0cnVlLCJJbnRlcmFjdGlvbiI6NCwiRW1vdGVJRCI6MCwiSXRlbUlEIjowLCJBY3Rpb25JRCI6NzM5MiwiUXVlc3RJRCI6MCwic2hvd1dhaXRzIjpmYWxzZSwiV2FpdEZvckNvbmRpdGlvbiI6MCwiV2FpdFRpbWVNcyI6MH1dfQ==
 
             ImGui.SameLine();
             if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
@@ -182,7 +180,7 @@ public class GatherWindow : Window, IDisposable
 
             using (ImRaii.Child("routes"))
             {
-                for (int i = 0; i < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); i++)
+                for (var i = 0; i < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); i++)
                 {
                     var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
                     var route = routeSource[i];
@@ -213,6 +211,7 @@ public class GatherWindow : Window, IDisposable
         if (selectedRouteIndex == -1) return;
 
         var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
+        if (routeSource.Count == 0) return;
         var route = selectedRouteIndex >= routeSource.Count ? routeSource.Last() : routeSource[selectedRouteIndex];
 
         using (ImRaii.Child("Editor", size))
@@ -305,7 +304,7 @@ public class GatherWindow : Window, IDisposable
 
             using (ImRaii.Child("waypoints"))
             {
-                for (int i = 0; i < route.Waypoints.Count; ++i)
+                for (var i = 0; i < route.Waypoints.Count; ++i)
                 {
                     var wp = route.Waypoints[i];
                     foreach (var wn in _tree.Node($"#{i + 1}: [x: {wp.Position.X:f0}, y: {wp.Position.Y:f0}, z: {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
@@ -338,6 +337,22 @@ public class GatherWindow : Window, IDisposable
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
 
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
+        {
+            if (wp.InteractWithOID == default)
+            {
+                var target = Service.TargetManager.Target;
+                if (target != null)
+                {
+                    wp.InteractWithOID = target.DataId;
+                    RouteDB.NotifyModified();
+                }
+            }
+            else
+                wp.InteractWithOID = default;
+        }
+        if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add/Remove target from waypoint");
+        ImGui.SameLine();
         if (ImGuiEx.IconButton(FontAwesomeIcon.CommentDots))
         {
             wp.showInteractions ^= true;
@@ -405,6 +420,15 @@ public class GatherWindow : Window, IDisposable
 
         var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
         var target = Service.TargetManager.Target;
+
+        if (ImGui.MenuItem($"Swap to {(r.Waypoints[i].InteractWithOID != default ? "normal waypoint" : "interact waypoint")}"))
+        {
+            _postDraw.Add(() =>
+            {
+                r.Waypoints[i].InteractWithOID = r.Waypoints[i].InteractWithOID != default ? default : target?.DataId ?? default;
+                RouteDB.NotifyModified();
+            });
+        }
 
         if (ImGui.MenuItem("Insert step above"))
         {

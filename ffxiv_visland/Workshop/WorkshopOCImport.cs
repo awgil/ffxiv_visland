@@ -25,7 +25,7 @@ public unsafe class WorkshopOCImport
     private WorkshopConfig _config;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
-    private List<Func<bool>> _pendingActions = new();
+    private List<Func<bool>> _pendingActions = [];
     private bool IgnoreFourthWorkshop;
 
     public WorkshopOCImport()
@@ -422,7 +422,7 @@ public unsafe class WorkshopOCImport
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
     {
         var mji = MJIManager.Instance();
-        if (mji->IsPlayerInSanctuary == 0) return new();
+        if (mji->IsPlayerInSanctuary == 0) return [];
         var state = new WorkshopSolver.FavorState();
         var offset = nextWeek ? 6 : 3;
         for (int i = 0; i < 3; ++i)
@@ -443,16 +443,17 @@ public unsafe class WorkshopOCImport
         {
             ReportError(ex.Message);
             Service.Log.Error($"Current favors: {state.CraftObjectIds[0]} #{state.CompletedCounts[0]}, {state.CraftObjectIds[1]} #{state.CompletedCounts[1]}, {state.CraftObjectIds[2]} #{state.CompletedCounts[2]}");
-            return new();
+            return [];
         }
     }
 
     public static string OfficialNameToBotName(string name)
     {
+        // why do they keep fucking changing this!?
         if (name.StartsWith("Isleworks "))
             return name.Remove(0, 10);
-        if (name.StartsWith("Isleberry "))
-            return name.Remove(0, 10);
+        //if (name.StartsWith("Isleberry "))
+        //    return name.Remove(0, 10);
         if (name.StartsWith("Islefish "))
             return name.Remove(0, 9);
         if (name.StartsWith("Island "))
