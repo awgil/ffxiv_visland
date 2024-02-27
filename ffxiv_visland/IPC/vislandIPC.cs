@@ -1,26 +1,45 @@
-﻿using Dalamud.Plugin;
-using Dalamud.Plugin.Ipc;
+﻿using System;
+using System.Collections.Generic;
+using visland.Gathering;
 
-namespace visland.IPC
+namespace visland.IPC;
+
+internal class VislandIPC
 {
-    internal class VislandIPC
+    private readonly List<Action> _disposeActions = [];
+
+    public VislandIPC(GatherWindow _wndGather)
     {
-        private const string IsRouteRunning = "visland.IsRouteRunning";
-        public bool Running;
+        Register("IsRouteRunning", () => _wndGather.Exec.CurrentRoute != null && !_wndGather.Exec.Paused);
+        Register("IsRoutePaused", () => _wndGather.Exec.Paused);
+        Register<bool>("SetRoutePaused", s => _wndGather.Exec.Paused = s);
+        Register("StopRoute", _wndGather.Exec.Finish);
+    }
 
-        private readonly ICallGateProvider<bool> _isRouteRunning;
+    public void Dispose()
+    {
+        foreach (var a in _disposeActions)
+            a();
+    }
 
-        public VislandIPC(DalamudPluginInterface pluginInterface)
-        {
-            _isRouteRunning = pluginInterface.GetIpcProvider<bool>(IsRouteRunning);
-            _isRouteRunning.RegisterFunc(CheckIsRouteRunning);
-        }
+    private void Register<TRet>(string name, Func<TRet> func)
+    {
+        var p = Service.PluginInterface.GetIpcProvider<TRet>($"{Plugin.Name}." + name);
+        p.RegisterFunc(func);
+        _disposeActions.Add(p.UnregisterFunc);
+    }
 
-        private bool CheckIsRouteRunning() => Running;
+    private void Register(string name, Action func)
+    {
+        var p = Service.PluginInterface.GetIpcProvider<object>($"{Plugin.Name}." + name);
+        p.RegisterAction(func);
+        _disposeActions.Add(p.UnregisterAction);
+    }
 
-        public void Dispose()
-        {
-            _isRouteRunning.UnregisterFunc();
-        }
+    private void Register<T1>(string name, Action<T1> func)
+    {
+        var p = Service.PluginInterface.GetIpcProvider<T1, object>($"{Plugin.Name}." + name);
+        p.RegisterAction(func);
+        _disposeActions.Add(p.UnregisterAction);
     }
 }

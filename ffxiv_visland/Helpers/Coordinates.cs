@@ -56,4 +56,6 @@ internal class Coordinates
 
         return aetheryte;
     }
+
+    public static bool HasAetheryteInZone(uint TerritoryType) => Svc.AetheryteList.Any(a => a.TerritoryId == TerritoryType);
 }

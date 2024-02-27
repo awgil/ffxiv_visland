@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using visland.IPC;
 using static ECommons.GenericHelpers;
 using static visland.Plugin;
 
@@ -86,8 +87,8 @@ public class QuestsHelper
         if (Svc.ClientState.TerritoryType != zoneID)
             P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
         P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
-        P.TaskManager.Enqueue(() => Chat.Instance.ExecuteCommand($"/vnavmesh moveto {pos.X} {pos.Y} {pos.Z}"));
-        //P.TaskManager.Enqueue(() => !IsNavRunning());
+        P.TaskManager.Enqueue(() => NavmeshIPC.PathMoveTo!.InvokeAction(pos));
+        P.TaskManager.Enqueue(() => !NavmeshIPC.PathIsRunning!.InvokeFunc());
     }
 
     private static unsafe GameObject* GetObjectToInteractWith(uint objID)
@@ -225,8 +226,10 @@ public class QuestsHelper
             Svc.Log.Info($"found {mobName} @ {mob.Position}");
             GetTo(Svc.ClientState.TerritoryType, mob.Position, mob.HitboxRadius);
             P.TaskManager.Enqueue(() => Svc.Targets.Target = mob);
-            //P.TaskManager.Enqueue(() => BossModIPC.InitiateCombat?.InvokeAction());
+            P.TaskManager.Enqueue(() => BossModIPC.SetAutorotationState?.InvokeAction(true));
+            P.TaskManager.Enqueue(() => BossModIPC.InitiateCombat?.InvokeAction());
             P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.InCombat]);
+            P.TaskManager.Enqueue(() => BossModIPC.SetAutorotationState?.InvokeAction(false));
         }
         else
             Svc.Log.Info($"Failed to find {mobName} nearby");
@@ -234,9 +237,17 @@ public class QuestsHelper
 
     public static unsafe bool HasItem(int itemID, int quantity = 1) => InventoryManager.Instance()->GetInventoryItemCount((uint)itemID, true) >= quantity;
 
-    public static unsafe void BuyItem(int itemID, int quantity, int npcID)
+    public static unsafe void BuyItem(uint itemID, int quantity, uint npcID)
     {
-        return;
+        var locations = ItemVendorLocation.GetVendorLocations(itemID);
+        foreach (var loc in locations)
+        {
+            if (!Coordinates.HasAetheryteInZone(loc.TerritoryType)) continue;
+            P.TaskManager.Enqueue(() => GetTo((int)loc.TerritoryType, new Vector3(loc.X, 0, loc.Y)));
+            break;
+        }
+        P.TaskManager.Enqueue(() => TalkTo(npcID));
+        // TODO: implement purchasing
     }
 }
 

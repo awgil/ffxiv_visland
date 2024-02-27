@@ -19,6 +19,7 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
+using visland.Questing;
 using visland.Workshop;
 
 namespace visland;
@@ -78,7 +79,7 @@ public sealed class Plugin : IDalamudPlugin
         FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(0, new(Path.Combine(dalamud.ConfigDirectory.FullName, $"{dalamudStartInfo.GameVersion}_cs.json")));
         FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
-        ECommonsMain.Init(dalamud, this);
+        ECommonsMain.Init(dalamud, this, ECommons.Module.DalamudReflector);
         Service.Init(dalamud);
         AutoCutsceneSkipper.Init(null);
         AutoCutsceneSkipper.Disable();
@@ -94,7 +95,6 @@ public sealed class Plugin : IDalamudPlugin
         Dalamud = dalamud;
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
-        _vislandIPC = new VislandIPC(dalamud);
 
         _wndGather = new GatherWindow();
         //_wndQuests = new QuestingWindow();
@@ -103,6 +103,10 @@ public sealed class Plugin : IDalamudPlugin
         _wndPasture = new PastureWindow();
         _wndFarm = new FarmWindow();
         _wndExports = new ExportWindow();
+
+        _vislandIPC = new(_wndGather);
+        BossModIPC.Init();
+        NavmeshIPC.Init();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -138,6 +142,8 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         _vislandIPC.Dispose();
+        BossModIPC.Dispose();
+        NavmeshIPC.Dispose();
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
