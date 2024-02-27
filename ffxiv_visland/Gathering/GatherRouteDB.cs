@@ -70,6 +70,7 @@ public class GatherRouteDB : Configuration.Node
     public bool GatherModeOnStart = true;
     public bool DisableOnErrors = false;
     public bool WasFlyingInManual = false;
+    public bool WasStandard = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {

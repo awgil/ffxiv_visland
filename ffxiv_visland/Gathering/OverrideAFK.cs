@@ -4,7 +4,7 @@ namespace visland.Gathering;
 
 public unsafe class OverrideAFK
 {
-    public void ResetTimers()
+    public static void ResetTimers()
     {
         var module = UIModule.Instance()->GetInputTimerModule();
         module->AfkTimer = 0;
