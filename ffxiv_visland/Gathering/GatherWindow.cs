@@ -3,10 +3,10 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
-using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
+using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using System;
@@ -37,17 +37,23 @@ public class GatherWindow : Window, IDisposable
 
     private readonly List<int> Emotes = Svc.Data.GetExcelSheet<Emote>()?.Select(x => (int)x.RowId).ToList()!;
     private readonly List<int> Items = Svc.Data.GetExcelSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
-    //private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Select(x => (int)x.RowId).ToList()!;
+    private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Where(x => Coordinates.HasAetheryteInZone(x.RowId)).Select(x => (int)x.RowId).ToList()!;
+    private readonly ExcelSheet<Emote> _emotes;
+    private readonly ExcelSheet<Item> _items;
+    private readonly ExcelSheet<TerritoryType> _zones;
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
-    private bool hornybonk;
 
     public GatherWindow() : base("Gathering Automation", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
         Size = new Vector2(800, 800);
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
+
+        _emotes = Svc.Data.GetExcelSheet<Emote>()!;
+        _items = Svc.Data.GetExcelSheet<Item>()!;
+        _zones = Svc.Data.GetExcelSheet<TerritoryType>()!;
     }
 
     public void Dispose() => Exec.Dispose();
@@ -81,7 +87,7 @@ public class GatherWindow : Window, IDisposable
         if (Exec.CurrentRoute != null)
             Utils.FlashText($"{(Exec.Paused ? "PAUSED" : Exec.Waiting ? "WAITING" : "RUNNING")}", new Vector4(1.0f, 1.0f, 1.0f, 1.0f), Exec.Paused ? new Vector4(1.0f, 0.0f, 0.0f, 1.0f) : new Vector4(0.0f, 1.0f, 0.0f, 1.0f), 2);
         ImGui.SameLine();
-
+        
         if (Exec.CurrentRoute == null || Exec.CurrentWaypoint >= Exec.CurrentRoute.Waypoints.Count)
         {
             ImGui.Text("Route not running");
@@ -163,15 +169,6 @@ public class GatherWindow : Window, IDisposable
             ImGuiEx.SetNextItemFullWidth();
             if (ImGui.InputText("###RouteSearch", ref searchString, 500))
             {
-                if (searchString.Equals("ERP", StringComparison.CurrentCultureIgnoreCase) && !hornybonk)
-                {
-                    hornybonk = true;
-                    Util.OpenLink("https://duckduckgo.com/?t=h_&q=grass&iax=images&ia=images");
-                }
-                else
-                {
-                    hornybonk = false;
-                }
                 FilteredRoutes.Clear();
                 if (searchString.Length > 0)
                 {
@@ -335,10 +332,8 @@ public class GatherWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        // this isn't valuable now, but would be used when navlib releases to teleport to the appropiate zone
-        //if (ImGui.DragInt("ZoneID", ref wp.ZoneID, 1, Zones.First(), Zones.Last()))
+        //if (Utils.ExcelSheetCombo("##Territory", ref wp.ZoneID, Utils.territoryComboOptions))
         //    RouteDB.NotifyModified();
-        //ImGui.Text($"{Service.DataManager.GetExcelSheet<TerritoryType>()!.GetRow((uint)wp.ZoneID)!.PlaceName.Value!.Name}");
         if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
@@ -384,12 +379,12 @@ public class GatherWindow : Window, IDisposable
                 case InteractionType.Standard: break;
                 case InteractionType.Emote:
                     ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Use Emote {(wp.EmoteID != 0 ? Svc.Data.GetExcelSheet<Emote>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.EmoteID)!.Name : "")}###{nameof(InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
+                    if (ImGui.DragInt($"Use Emote {_emotes.GetRow((uint)wp.EmoteID)?.Name}###{nameof(InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.UseItem:
                     ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Item {(wp.ItemID != 0 ? Svc.Data.GetExcelSheet<Item>(Svc.ClientState.ClientLanguage)!.GetRow((uint)wp.ItemID)!.Name : "")}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
+                    if (ImGui.DragInt($"Item {_items.GetRow((uint)wp.ItemID)?.Name}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.UseAction:

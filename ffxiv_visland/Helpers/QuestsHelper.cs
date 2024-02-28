@@ -2,6 +2,7 @@
 using ECommons;
 using ECommons.Automation;
 using ECommons.DalamudServices;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -84,7 +85,7 @@ public class QuestsHelper
 
     public static unsafe void GetTo(int zoneID, Vector3 pos, float radius = 0f)
     {
-        if (Svc.ClientState.TerritoryType != zoneID)
+        if (Player.Territory != zoneID)
             P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
         P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
         P.TaskManager.Enqueue(() => NavmeshIPC.PathMoveTo!.InvokeAction(pos));

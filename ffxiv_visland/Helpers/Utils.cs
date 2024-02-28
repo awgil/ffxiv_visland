@@ -15,6 +15,8 @@ using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
+using Dalamud.Interface.Components;
+using ECommons.ImGuiMethods;
 
 namespace visland.Helpers;
 
@@ -108,6 +110,19 @@ public static unsafe class Utils
         ImGui.EndCombo();
         return ret;
     }
+
+    private static string FormatTerritoryRow(Lumina.Excel.GeneratedSheets.TerritoryType t) => t.RowId switch
+    {
+        _ => $"[#{t.RowId}] {t.PlaceName.Value?.Name}"
+    };
+
+    private readonly static Dictionary<uint, Lumina.Excel.GeneratedSheets.TerritoryType> TerritoryTypes = Svc.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.TerritoryType>()?.Where(i => i.RowId == 0 || Coordinates.HasAetheryteInZone(i.RowId)).ToDictionary(i => i.RowId, i => i)!;
+
+    public static readonly ExcelSheetComboOptions<Lumina.Excel.GeneratedSheets.TerritoryType> territoryComboOptions = new()
+    {
+        FormatRow = FormatTerritoryRow,
+        FilteredSheet = TerritoryTypes.Select(kv => kv.Value)
+    };
 
     private static string FormatActionRow(Lumina.Excel.GeneratedSheets.Action a) => a.RowId switch
     {
@@ -234,6 +249,28 @@ public static unsafe class Utils
         using var resultStream = new MemoryStream();
         zipStream.CopyTo(resultStream);
         return Encoding.UTF8.GetString(resultStream.ToArray());
+    }
+
+    public static bool EditNumberField(string labelBefore, float fieldWidth, ref int refValue, string labelAfter = "", string helpText = "")
+    {
+        ImGuiEx.TextV(labelBefore);
+
+        ImGui.SameLine();
+
+        ImGui.PushItemWidth(fieldWidth * ImGuiHelpers.GlobalScale);
+        var clicked = ImGui.DragInt($"##{labelBefore}###", ref refValue);
+        ImGui.PopItemWidth();
+
+        if (labelAfter != string.Empty)
+        {
+            ImGui.SameLine();
+            ImGuiEx.TextV(labelAfter);
+        }
+
+        if (helpText != string.Empty)
+            ImGuiComponents.HelpMarker(helpText);
+
+        return clicked;
     }
 }
 

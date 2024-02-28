@@ -7,6 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using ImGuiNET;
 using SharpDX;
 using System;
 using System.Diagnostics;
@@ -34,9 +35,6 @@ public class GatherRouteExec : IDisposable
     private Throttle _action = new();
     private CircularBuffer<long> Errors = new(5);
 
-    private long ThrottleTime { get; set; } = Environment.TickCount64;
-    private Stopwatch waypointTimer = new();
-
     public GatherRouteExec()
     {
         RouteDB = Service.Config.Get<GatherRouteDB>();
@@ -57,7 +55,7 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
@@ -66,6 +64,12 @@ public class GatherRouteExec : IDisposable
         var toWaypoint = wp.Position - player.Position;
         var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
         bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+
+        //if (wp.ZoneID != default && Player.Territory != wp.ZoneID)
+        //{
+        //    Plugin.P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(wp.ZoneID, wp.Position), 0));
+        //    return;
+        //}
 
         if (needToGetCloser)
         {
@@ -87,7 +91,8 @@ public class GatherRouteExec : IDisposable
                 if (MJIManager.Instance()->IsPlayerInSanctuary == 1)
                     ExecuteIslandSprint();
                 else
-                    ExecuteSprint();
+                    if (ActionManager.Instance()->GetRecastTime(ActionType.GeneralAction, 4) == 0)
+                        ExecuteSprint();
             }
 
             bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];

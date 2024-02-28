@@ -19,7 +19,6 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
-using visland.Questing;
 using visland.Workshop;
 
 namespace visland;
@@ -60,7 +59,6 @@ public sealed class Plugin : IDalamudPlugin
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
-    //private QuestingWindow _wndQuests;
     private WorkshopWindow _wndWorkshop;
     private GranaryWindow _wndGranary;
     private PastureWindow _wndPasture;
@@ -97,7 +95,6 @@ public sealed class Plugin : IDalamudPlugin
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
 
         _wndGather = new GatherWindow();
-        //_wndQuests = new QuestingWindow();
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
         _wndPasture = new PastureWindow();
@@ -115,7 +112,6 @@ public sealed class Plugin : IDalamudPlugin
         else
         {
             WindowSystem.AddWindow(_wndGather);
-            //WindowSystem.AddWindow(_wndQuests);
             WindowSystem.AddWindow(_wndWorkshop);
             WindowSystem.AddWindow(_wndGranary);
             WindowSystem.AddWindow(_wndPasture);
@@ -147,7 +143,6 @@ public sealed class Plugin : IDalamudPlugin
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
-        //_wndQuests.Dispose();
         _wndWorkshop.Dispose();
         _wndGranary.Dispose();
         _wndPasture.Dispose();
@@ -196,9 +191,6 @@ public sealed class Plugin : IDalamudPlugin
                 case "exectemponce":
                     ExecuteTempRoute(args[1], true);
                     break;
-                //case "quests":
-                //    _wndQuests.IsOpen ^= true;
-                //    break;
             }
         }
     }
