@@ -3,6 +3,7 @@ using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
+using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -25,6 +26,7 @@ public class GatherRouteExec : IDisposable
     public bool Loop;
     public bool Waiting;
     public long WaitUntil;
+    public bool Pathfind;
 
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
@@ -97,7 +99,7 @@ public class GatherRouteExec : IDisposable
                 ExecuteJump();
             }
 
-            if (wp.Pathfind)
+            if (Pathfind && Utils.HasPlugin("vnavmesh"))
             {
                 if (!NavmeshIPC.NavIsReady!.InvokeFunc()) return;
                 if (wp.Movement == GatherRouteDB.Movement.MountFly)
@@ -134,7 +136,8 @@ public class GatherRouteExec : IDisposable
                 QuestsHelper.TalkTo(wp.InteractWithOID);
                 break;
             case GatherRouteDB.InteractionType.Grind:
-                QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID));
+                if (Utils.HasPlugin("BossMod"))
+                    QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID));
                 break;
         }
 
@@ -169,12 +172,13 @@ public class GatherRouteExec : IDisposable
         }
     }
 
-    public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd)
+    public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd, bool pathfind)
     {
         CurrentRoute = route;
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
         Loop = loopAtEnd;
+        Pathfind = pathfind;
         _camera.Enabled = true;
         _movement.Enabled = true;
     }

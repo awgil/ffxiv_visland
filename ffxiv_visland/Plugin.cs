@@ -200,7 +200,7 @@ public sealed class Plugin : IDalamudPlugin
         var json = Utils.FromCompressedBase64(base64);
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(json);
         if (route != null)
-            _wndGather.Exec.Start(route, 0, true, !once);
+            _wndGather.Exec.Start(route, 0, true, !once, false);
     }
 
     private void MoveToCommand(string[] args, bool relativeToPlayer)
@@ -210,13 +210,13 @@ public sealed class Plugin : IDalamudPlugin
         var offset = new Vector3(float.Parse(args[1], CultureInfo.InvariantCulture), float.Parse(args[2], CultureInfo.InvariantCulture), float.Parse(args[3], CultureInfo.InvariantCulture));
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = [] };
         route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
-        _wndGather.Exec.Start(route, 0, false, false);
+        _wndGather.Exec.Start(route, 0, false, false, false);
     }
 
     private void ExecuteCommand(string name, bool once)
     {
         var route = _wndGather.RouteDB.Routes.Find(r => r.Name == name);
         if (route != null)
-            _wndGather.Exec.Start(route, 0, true, !once);
+            _wndGather.Exec.Start(route, 0, true, !once, false);
     }
 }

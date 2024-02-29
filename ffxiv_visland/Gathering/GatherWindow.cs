@@ -5,6 +5,7 @@ using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
+using ECommons.Reflection;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
@@ -222,7 +223,7 @@ public class GatherWindow : Window, IDisposable
         {
             using (ImRaii.Disabled(Exec.CurrentRoute != null))
                 if (ImGuiComponents.IconButton(FontAwesomeIcon.Play))
-                    Exec.Start(route, 0, true, loop);
+                    Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Execute Route");
             ImGui.SameLine();
 
@@ -301,7 +302,7 @@ public class GatherWindow : Window, IDisposable
                 {
                     route.Waypoints.Add(new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
                     RouteDB.NotifyModified();
-                    Exec.Start(route, route.Waypoints.Count - 1, false, false);
+                    Exec.Start(route, route.Waypoints.Count - 1, false, false, false);
                 }
             }
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");
@@ -339,9 +340,11 @@ public class GatherWindow : Window, IDisposable
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
         ImGui.SameLine();
-        if (ImGui.Checkbox("Pathfind?", ref wp.Pathfind))
-            RouteDB.NotifyModified();
-
+        using (var noNav = ImRaii.Disabled(!Utils.HasPlugin("vnavmesh")))
+        {
+            if (ImGui.Checkbox("Pathfind?", ref wp.Pathfind))
+                RouteDB.NotifyModified();
+        }
         if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
         {
             if (wp.InteractWithOID == default)
@@ -395,8 +398,11 @@ public class GatherWindow : Window, IDisposable
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.Grind:
-                    if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
-                        RouteDB.NotifyModified();
+                    using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin("BossMod")))
+                    {
+                        if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
+                            RouteDB.NotifyModified();
+                    }
                     break;
             }
         }
@@ -414,17 +420,17 @@ public class GatherWindow : Window, IDisposable
     {
         if (ImGui.MenuItem("Execute this step only"))
         {
-            Exec.Start(r, i, false, false);
+            Exec.Start(r, i, false, false, r.Waypoints[i].Pathfind);
         }
 
         if (ImGui.MenuItem("Execute route once starting from this step"))
         {
-            Exec.Start(r, i, true, false);
+            Exec.Start(r, i, true, false, r.Waypoints[i].Pathfind);
         }
 
         if (ImGui.MenuItem("Execute route starting from this step and then loop"))
         {
-            Exec.Start(r, i, true, true);
+            Exec.Start(r, i, true, true, r.Waypoints[i].Pathfind);
         }
 
         var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;

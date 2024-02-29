@@ -18,6 +18,7 @@ using System.Text;
 using Dalamud.Interface.Components;
 using ECommons.ImGuiMethods;
 using Dalamud.Utility;
+using ECommons.Reflection;
 
 namespace visland.Helpers;
 
@@ -32,6 +33,8 @@ public static unsafe class Utils
 
         return new Vector4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
+
+    public static bool HasPlugin(string name) => DalamudReflector.TryGetDalamudPlugin(name, out var _, false, true);
 
     public record ExcelSheetOptions<T> where T : ExcelRow
     {
