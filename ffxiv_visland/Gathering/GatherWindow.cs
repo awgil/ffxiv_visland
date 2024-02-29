@@ -16,6 +16,7 @@ using System.Data;
 using System.Linq;
 using System.Numerics;
 using visland.Helpers;
+using visland.IPC;
 using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
@@ -340,13 +341,13 @@ public class GatherWindow : Window, IDisposable
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
         ImGui.SameLine();
-        using (var noNav = ImRaii.Disabled(!Utils.HasPlugin("vnavmesh")))
+        using (var noNav = ImRaii.Disabled(!Utils.HasPlugin(NavmeshIPC.Name)))
         {
             if (ImGui.Checkbox("Pathfind?", ref wp.Pathfind))
                 RouteDB.NotifyModified();
         }
-        if (!Utils.HasPlugin("vnavmesh"))
-            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("This features requires vnavmesh to be installed.");
+        if (!Utils.HasPlugin(NavmeshIPC.Name))
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip($"This features requires {NavmeshIPC.Name} to be installed.");
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
         {
@@ -401,13 +402,13 @@ public class GatherWindow : Window, IDisposable
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.Grind:
-                    using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin("BossMod")))
+                    using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
                     {
                         if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
                             RouteDB.NotifyModified();
                     }
-                    if (!Utils.HasPlugin("BossMod"))
-                        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("This features requires BossMod to be installed.");
+                    if (!Utils.HasPlugin(BossModIPC.Name))
+                        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip($"This features requires {BossModIPC.Name} to be installed.");
                     break;
             }
         }

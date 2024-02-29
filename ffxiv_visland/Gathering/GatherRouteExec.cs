@@ -56,7 +56,8 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || NavmeshIPC.PathIsRunning?.InvokeFunc() == true || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        if (Utils.HasPlugin(NavmeshIPC.Name) && NavmeshIPC.PathIsRunning!.InvokeFunc()) return;
+        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
@@ -99,7 +100,7 @@ public class GatherRouteExec : IDisposable
                 ExecuteJump();
             }
 
-            if (Pathfind && Utils.HasPlugin("vnavmesh"))
+            if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))
             {
                 if (!NavmeshIPC.NavIsReady!.InvokeFunc()) return;
                 if (wp.Movement == GatherRouteDB.Movement.MountFly || flying)
@@ -136,7 +137,7 @@ public class GatherRouteExec : IDisposable
                 QuestsHelper.TalkTo(wp.InteractWithOID);
                 break;
             case GatherRouteDB.InteractionType.Grind:
-                if (Utils.HasPlugin("BossMod"))
+                if (Utils.HasPlugin(BossModIPC.Name))
                     QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID));
                 break;
         }
@@ -193,7 +194,7 @@ public class GatherRouteExec : IDisposable
         Waiting = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
-        NavmeshIPC.PathStop!.InvokeAction();
+        if (Utils.HasPlugin(NavmeshIPC.Name)) NavmeshIPC.PathStop!.InvokeAction();
         CompatModule.RestoreChanges();
     }
 

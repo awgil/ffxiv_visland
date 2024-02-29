@@ -1,6 +1,6 @@
 ﻿using Dalamud.Plugin.Ipc;
 using ECommons.DalamudServices;
-using System;
+using visland.Helpers;
 
 namespace visland.IPC;
 class BossModIPC
@@ -14,17 +14,23 @@ class BossModIPC
 
     internal static void Init()
     {
-        IsMoving = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.IsMoving");
-        ForbiddenZonesCount = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.ForbiddenZonesCount");
-        InitiateCombat = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.InitiateCombat");
-        SetAutorotationState = Svc.PluginInterface.GetIpcSubscriber<bool, object>($"{Name}.SetAutorotationState");
+        if (Utils.HasPlugin($"{Name}"))
+        {
+            IsMoving = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.IsMoving");
+            ForbiddenZonesCount = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.ForbiddenZonesCount");
+            InitiateCombat = Svc.PluginInterface.GetIpcSubscriber<object>($"{Name}.InitiateCombat");
+            SetAutorotationState = Svc.PluginInterface.GetIpcSubscriber<bool, object>($"{Name}.SetAutorotationState");
+        }
     }
 
     internal static void Dispose()
     {
-        IsMoving = null;
-        ForbiddenZonesCount = null;
-        InitiateCombat = null;
-        SetAutorotationState = null;
+        if (Utils.HasPlugin($"{Name}"))
+        {
+            IsMoving = null;
+            ForbiddenZonesCount = null;
+            InitiateCombat = null;
+            SetAutorotationState = null;
+        }
     }
 }
