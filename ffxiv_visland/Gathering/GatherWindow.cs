@@ -345,6 +345,9 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.Checkbox("Pathfind?", ref wp.Pathfind))
                 RouteDB.NotifyModified();
         }
+        if (!Utils.HasPlugin("vnavmesh"))
+            if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("This features requires vnavmesh to be installed.");
+
         if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
         {
             if (wp.InteractWithOID == default)
@@ -403,6 +406,8 @@ public class GatherWindow : Window, IDisposable
                         if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
                             RouteDB.NotifyModified();
                     }
+                    if (!Utils.HasPlugin("BossMod"))
+                        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip("This features requires BossMod to be installed.");
                     break;
             }
         }

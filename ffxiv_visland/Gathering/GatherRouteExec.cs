@@ -56,7 +56,7 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || NavmeshIPC.PathIsRunning!.InvokeFunc() || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || NavmeshIPC.PathIsRunning?.InvokeFunc() == true || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
@@ -102,7 +102,7 @@ public class GatherRouteExec : IDisposable
             if (Pathfind && Utils.HasPlugin("vnavmesh"))
             {
                 if (!NavmeshIPC.NavIsReady!.InvokeFunc()) return;
-                if (wp.Movement == GatherRouteDB.Movement.MountFly)
+                if (wp.Movement == GatherRouteDB.Movement.MountFly || flying)
                     NavmeshIPC.PathFlyTo!.InvokeAction(wp.Position);
                 else
                     NavmeshIPC.PathMoveTo!.InvokeAction(wp.Position);
