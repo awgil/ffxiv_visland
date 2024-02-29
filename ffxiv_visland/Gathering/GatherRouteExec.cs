@@ -7,12 +7,11 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using ImGuiNET;
 using SharpDX;
 using System;
-using System.Diagnostics;
 using System.Linq;
 using visland.Helpers;
+using visland.IPC;
 
 namespace visland.Gathering;
 
@@ -55,7 +54,7 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || NavmeshIPC.PathIsRunning!.InvokeFunc() || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
@@ -80,10 +79,6 @@ public class GatherRouteExec : IDisposable
                 return;
             }
 
-            _movement.DesiredPosition = wp.Position;
-            _camera.SpeedH = _camera.SpeedV = 360.Degrees();
-            _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
-
             var sprint = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
             var sprintRemaining = sprint?.RemainingTime ?? 0;
             if (sprintRemaining < 5 && !mounted)
@@ -100,6 +95,21 @@ public class GatherRouteExec : IDisposable
             {
                 // TODO: improve, jump is not the best really...
                 ExecuteJump();
+            }
+
+            if (wp.Pathfind)
+            {
+                if (!NavmeshIPC.NavIsReady!.InvokeFunc()) return;
+                if (wp.Movement == GatherRouteDB.Movement.MountFly)
+                    NavmeshIPC.PathFlyTo!.InvokeAction(wp.Position);
+                else
+                    NavmeshIPC.PathMoveTo!.InvokeAction(wp.Position);
+            }
+            else
+            {
+                _movement.DesiredPosition = wp.Position;
+                _camera.SpeedH = _camera.SpeedV = 360.Degrees();
+                _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
             }
 
             return;
@@ -122,6 +132,9 @@ public class GatherRouteExec : IDisposable
                 break;
             case GatherRouteDB.InteractionType.QuestTalk:
                 QuestsHelper.TalkTo(wp.InteractWithOID);
+                break;
+            case GatherRouteDB.InteractionType.Grind:
+                QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID));
                 break;
         }
 
@@ -176,6 +189,7 @@ public class GatherRouteExec : IDisposable
         Waiting = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
+        NavmeshIPC.PathStop!.InvokeAction();
         CompatModule.RestoreChanges();
     }
 

@@ -338,6 +338,9 @@ public class GatherWindow : Window, IDisposable
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
+        ImGui.SameLine();
+        if (ImGui.Checkbox("Pathfind?", ref wp.Pathfind))
+            RouteDB.NotifyModified();
 
         if (ImGuiComponents.IconButton(FontAwesomeIcon.UserPlus))
         {
@@ -389,6 +392,10 @@ public class GatherWindow : Window, IDisposable
                     break;
                 case InteractionType.UseAction:
                     if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
+                        RouteDB.NotifyModified();
+                    break;
+                case InteractionType.Grind:
+                    if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
                         RouteDB.NotifyModified();
                     break;
             }

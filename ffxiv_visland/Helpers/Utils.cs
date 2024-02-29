@@ -17,6 +17,7 @@ using System.Reflection;
 using System.Text;
 using Dalamud.Interface.Components;
 using ECommons.ImGuiMethods;
+using Dalamud.Utility;
 
 namespace visland.Helpers;
 
@@ -135,6 +136,19 @@ public static unsafe class Utils
     {
         FormatRow = FormatActionRow,
         FilteredSheet = Actions.Select(kv => kv.Value)
+    };
+
+    private static string FormatActionRow(Lumina.Excel.GeneratedSheets.BNpcName m) => m.RowId switch
+    {
+        _ => $"[#{m.RowId}] {m.Singular}"
+    };
+
+    private readonly static Dictionary<uint, Lumina.Excel.GeneratedSheets.BNpcName> Mobs = Svc.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.BNpcName>()?.Where(i => !i.Singular.RawString.IsNullOrEmpty()).ToDictionary(i => i.RowId, i => i)!;
+
+    public static readonly ExcelSheetComboOptions<Lumina.Excel.GeneratedSheets.BNpcName> mobComboOptions = new()
+    {
+        FormatRow = FormatActionRow,
+        FilteredSheet = Mobs.Select(kv => kv.Value)
     };
 
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion

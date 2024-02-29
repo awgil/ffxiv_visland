@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using visland.Helpers;
 
@@ -24,17 +25,7 @@ public class GatherRouteDB : Configuration.Node
         UseItem = 3,
         UseAction = 4,
         QuestTalk = 5,
-
-        // probably a better idea to just have TextAdvance integration rather than reinventing the wheel
-        //TalkTo = 5,
-        //PickupQuest = 6,
-        //TurnInQuest = 7,
-        //HandOver = 8,
-
-        // bit out of scope for this
-        //Maim = 9,
-        //Kill = 10,
-        //Heal = 11,
+        Grind = 6,
     }
 
     public class Waypoint
@@ -43,6 +34,7 @@ public class GatherRouteDB : Configuration.Node
         public int ZoneID;
         public float Radius;
         public Movement Movement;
+        public bool Pathfind = true;
         public uint InteractWithOID = 0;
         public string InteractWithName = "";
 
@@ -52,6 +44,7 @@ public class GatherRouteDB : Configuration.Node
         public int ItemID;
         public int ActionID;
         public int QuestID;
+        public int MobID;
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;
@@ -114,7 +107,26 @@ public class GatherRouteDB : Configuration.Node
     {
         JArray jw = [];
         foreach (var wp in waypoints)
-            jw.Add(new JArray() { wp.Position.X, wp.Position.Y, wp.Position.Z, wp.Radius, wp.InteractWithName, wp.Movement, wp.InteractWithOID, wp.showInteractions, wp.Interaction, wp.EmoteID, wp.ActionID, wp.ItemID, wp.showWaits, wp.WaitTimeMs, wp.WaitForCondition });
+            jw.Add(new JArray()
+            {
+                wp.Position.X,
+                wp.Position.Y,
+                wp.Position.Z,
+                wp.Radius,
+                wp.InteractWithName,
+                wp.Movement,
+                wp.InteractWithOID,
+                wp.showInteractions,
+                wp.Interaction,
+                wp.EmoteID,
+                wp.ActionID,
+                wp.ItemID,
+                wp.showWaits,
+                wp.WaitTimeMs,
+                wp.WaitForCondition,
+                wp.Pathfind,
+                wp.MobID,
+            });
         return jw;
     }
 
@@ -143,6 +155,8 @@ public class GatherRouteDB : Configuration.Node
                 showWaits = jwea[12].Value<bool>(),
                 WaitTimeMs = jwea[13].Value<int>(),
                 WaitForCondition = jwea.Count > 14 ? (ConditionFlag)jwea[14].Value<int>() : ConditionFlag.None,
+                Pathfind = jwea.ElementAtOrDefault(15)?.Value<bool>() ?? false,
+                MobID = jwea.ElementAtOrDefault(16)?.Value<int>() ?? default,
             });
         }
         return res;
