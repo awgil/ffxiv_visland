@@ -201,8 +201,9 @@ public class GatherRouteExec : IDisposable
         Waiting = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
-        NavmeshIPC.PathStop();
         CompatModule.RestoreChanges();
+        if (Pathfind && NavmeshIPC.PathIsRunning())
+            NavmeshIPC.PathStop();
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
