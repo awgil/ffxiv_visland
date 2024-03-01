@@ -53,6 +53,9 @@ public class GatherRouteExec : IDisposable
         var player = Service.ClientState.LocalPlayer;
         _camera.SpeedH = _camera.SpeedV = default;
         _movement.DesiredPosition = player?.Position ?? new();
+
+        if (Paused && NavmeshIPC.PathIsRunning())
+            NavmeshIPC.PathStop();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
         if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
@@ -116,6 +119,9 @@ public class GatherRouteExec : IDisposable
 
             return;
         }
+
+        // force stop at destination to avoid a bug wherein you interact with the object and keep moving for a period of time
+        NavmeshIPC.PathStop();
 
         switch (wp.Interaction)
         {

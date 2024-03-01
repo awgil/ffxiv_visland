@@ -31,7 +31,7 @@ internal class NavmeshIPC
 
     internal static void Init()
     {
-        if (Utils.HasPlugin($"{Name}"))
+        if (Utils.HasPlugin(Name))
         {
             _navIsReady = Service.PluginInterface.GetIpcSubscriber<bool>($"{Name}.Nav.IsReady");
             _navBuildProgress = Service.PluginInterface.GetIpcSubscriber<float>($"{Name}.Nav.BuildProgress");
@@ -58,11 +58,12 @@ internal class NavmeshIPC
 
     internal static T? Execute<T>(Func<T> func)
     {
-        if (Utils.HasPlugin($"{Name}"))
+        if (Utils.HasPlugin(Name))
         {
             try
             {
-                return func();
+                if (func != null)
+                    return func();
             }
             catch (Exception ex) { ex.Log(); }
         }
@@ -71,11 +72,11 @@ internal class NavmeshIPC
 
     internal static void Execute<T>(Action<T> action, T param)
     {
-        if (Utils.HasPlugin($"{Name}"))
+        if (Utils.HasPlugin(Name))
         {
             try
             {
-                action(param);
+                action?.Invoke(param);
             }
             catch (Exception ex) { ex.Log(); }
         }
@@ -83,21 +84,34 @@ internal class NavmeshIPC
 
     internal static void Execute(Action action)
     {
-        if (Utils.HasPlugin($"{Name}"))
+        if (Utils.HasPlugin(Name))
         {
             try
             {
-                action();
+                action?.Invoke();
             }
             catch (Exception ex) { ex.Log(); }
         }
     }
 
     internal static bool NavIsReady() => Execute(() => _navIsReady!.InvokeFunc());
+    internal static float NavBuildProgress() => Execute(() => _navBuildProgress!.InvokeFunc());
+    internal static void NavReload() => Execute(_navReload!.InvokeAction);
+    internal static void NavRebuild() => Execute(_navRebuild!.InvokeAction);
+    internal static bool NavIsAutoLoad() => Execute(() => _navIsAutoLoad!.InvokeFunc());
+    internal static void NavSetAutoLoad(bool value) => Execute(_navSetAutoLoad!.InvokeAction, value);
+
+    internal static Vector3? QueryMeshNearestPoint(Vector3 pos, float maxDistance) => Execute(() => _queryMeshNearestPoint!.InvokeFunc(pos, maxDistance));
+
     internal static void PathMoveTo(Vector3 pos) => Execute(_pathMoveTo!.InvokeAction, pos);
     internal static void PathFlyTo(Vector3 pos) => Execute(_pathFlyTo!.InvokeAction, pos);
     internal static void PathStop() => Execute(_pathStop!.InvokeAction);
     internal static bool PathIsRunning() => Execute(() => _pathIsRunning!.InvokeFunc());
+    internal static int PathNumWaypoints() => Execute(() => _pathNumWaypoints!.InvokeFunc());
+    internal static bool PathGetMovementAllowed() => Execute(() => _pathGetMovementAllowed!.InvokeFunc());
+    internal static void PathSetMovementAllowed(bool value) => Execute(_pathSetMovementAllowed!.InvokeAction, value);
+    internal static bool PathGetAlignCamera() => Execute(() => _pathGetAlignCamera!.InvokeFunc());
+    internal static void PathSetAlignCamera(bool value) => Execute(_pathSetAlignCamera!.InvokeAction, value);
     internal static float PathGetTolerance() => Execute(() => _pathGetTolerance!.InvokeFunc());
     internal static void PathSetTolerance(float tolerance) => Execute(_pathSetTolerance!.InvokeAction, tolerance);
 }
