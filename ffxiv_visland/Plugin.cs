@@ -138,8 +138,6 @@ public sealed class Plugin : IDalamudPlugin
     public void Dispose()
     {
         _vislandIPC.Dispose();
-        BossModIPC.Dispose();
-        NavmeshIPC.Dispose();
         WindowSystem.RemoveAllWindows();
         Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();

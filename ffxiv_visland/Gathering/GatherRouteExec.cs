@@ -3,7 +3,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
-using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -56,7 +55,6 @@ public class GatherRouteExec : IDisposable
         _movement.DesiredPosition = player?.Position ?? new();
         
         bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (Utils.HasPlugin(NavmeshIPC.Name) && NavmeshIPC.PathIsRunning!.InvokeFunc()) return;
         if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
@@ -75,6 +73,7 @@ public class GatherRouteExec : IDisposable
 
         if (needToGetCloser)
         {
+            if (NavmeshIPC.PathIsRunning()) return;
             bool mounted = Service.Condition[ConditionFlag.Mounted];
             if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted)
             {
@@ -102,11 +101,11 @@ public class GatherRouteExec : IDisposable
 
             if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))
             {
-                if (!NavmeshIPC.NavIsReady!.InvokeFunc()) return;
+                if (!NavmeshIPC.NavIsReady()) return;
                 if (wp.Movement == GatherRouteDB.Movement.MountFly || flying)
-                    NavmeshIPC.PathFlyTo!.InvokeAction(wp.Position);
+                    NavmeshIPC.PathFlyTo(wp.Position);
                 else
-                    NavmeshIPC.PathMoveTo!.InvokeAction(wp.Position);
+                    NavmeshIPC.PathMoveTo(wp.Position);
             }
             else
             {
@@ -194,7 +193,7 @@ public class GatherRouteExec : IDisposable
         Waiting = false;
         _camera.Enabled = false;
         _movement.Enabled = false;
-        if (Utils.HasPlugin(NavmeshIPC.Name)) NavmeshIPC.PathStop!.InvokeAction();
+        NavmeshIPC.PathStop();
         CompatModule.RestoreChanges();
     }
 

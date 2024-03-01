@@ -3,11 +3,6 @@ using ECommons.DalamudServices;
 using ECommons;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace visland.Gathering;
 internal class CompatModule

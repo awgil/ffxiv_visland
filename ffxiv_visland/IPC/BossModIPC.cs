@@ -22,15 +22,4 @@ class BossModIPC
             SetAutorotationState = Svc.PluginInterface.GetIpcSubscriber<bool, object>($"{Name}.SetAutorotationState");
         }
     }
-
-    internal static void Dispose()
-    {
-        if (Utils.HasPlugin($"{Name}"))
-        {
-            IsMoving = null;
-            ForbiddenZonesCount = null;
-            InitiateCombat = null;
-            SetAutorotationState = null;
-        }
-    }
 }
