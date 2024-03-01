@@ -67,6 +67,7 @@ public class GatherRouteExec : IDisposable
         var toWaypoint = wp.Position - player.Position;
         var toWaypointXZ = new Vector3(toWaypoint.X, 0, toWaypoint.Z);
         bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+        Pathfind = wp.Pathfind;
 
         //if (wp.ZoneID != default && Player.Territory != wp.ZoneID)
         //{
@@ -121,7 +122,8 @@ public class GatherRouteExec : IDisposable
         }
 
         // force stop at destination to avoid a bug wherein you interact with the object and keep moving for a period of time
-        NavmeshIPC.PathStop();
+        if (Pathfind && NavmeshIPC.PathIsRunning())
+            NavmeshIPC.PathStop();
 
         switch (wp.Interaction)
         {
