@@ -88,7 +88,7 @@ public class QuestsHelper
         if (Player.Territory != zoneID)
             P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
         P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
-        P.TaskManager.Enqueue(() => NavmeshIPC.PathMoveTo(pos));
+        P.TaskManager.Enqueue(() => NavmeshIPC.PathMoveTo([pos], false));
         P.TaskManager.Enqueue(() => !NavmeshIPC.PathIsRunning());
     }
 

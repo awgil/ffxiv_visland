@@ -96,7 +96,7 @@ public static unsafe class Utils
 
         var ret = false;
         var drawSelectable = options.DrawSelectable ?? ((row, selected) => ImGui.Selectable(options.FormatRow(row), selected));
-        for (var i = 0; i < filteredSearchSheet.Length; i++)
+        for (var i = 0; i < filteredSearchSheet!.Length; i++)
         {
             var row = (T)filteredSearchSheet[i];
             ImGui.PushID(i);

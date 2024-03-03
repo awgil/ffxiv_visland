@@ -24,21 +24,21 @@ internal class VislandIPC
 
     private void Register<TRet>(string name, Func<TRet> func)
     {
-        var p = Service.PluginInterface.GetIpcProvider<TRet>($"{Plugin.Name}." + name);
+        var p = Service.Interface.GetIpcProvider<TRet>($"{Plugin.Name}." + name);
         p.RegisterFunc(func);
         _disposeActions.Add(p.UnregisterFunc);
     }
 
     private void Register(string name, Action func)
     {
-        var p = Service.PluginInterface.GetIpcProvider<object>($"{Plugin.Name}." + name);
+        var p = Service.Interface.GetIpcProvider<object>($"{Plugin.Name}." + name);
         p.RegisterAction(func);
         _disposeActions.Add(p.UnregisterAction);
     }
 
     private void Register<T1>(string name, Action<T1> func)
     {
-        var p = Service.PluginInterface.GetIpcProvider<T1, object>($"{Plugin.Name}." + name);
+        var p = Service.Interface.GetIpcProvider<T1, object>($"{Plugin.Name}." + name);
         p.RegisterAction(func);
         _disposeActions.Add(p.UnregisterAction);
     }
