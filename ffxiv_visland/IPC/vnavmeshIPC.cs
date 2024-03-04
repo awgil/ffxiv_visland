@@ -32,7 +32,7 @@ internal class NavmeshIPC
     private static ICallGateSubscriber<float>? _pathGetTolerance;
     private static ICallGateSubscriber<float, object>? _pathSetTolerance;
 
-    private static ICallGateSubscriber<Vector3, bool, object>? _pathfindAndMoveTo;
+    private static ICallGateSubscriber<Vector3, bool, bool>? _pathfindAndMoveTo;
     private static ICallGateSubscriber<bool>? _pathfindInProgress;
 
     internal static void Init()
@@ -63,7 +63,7 @@ internal class NavmeshIPC
                 _pathGetTolerance = Service.Interface.GetIpcSubscriber<float>($"{Name}.Path.GetTolerance");
                 _pathSetTolerance = Service.Interface.GetIpcSubscriber<float, object>($"{Name}.Path.SetTolerance");
 
-                _pathfindAndMoveTo = Service.Interface.GetIpcSubscriber<Vector3, bool, object>($"{Name}.SimpleMove.PathfindAndMoveTo");
+                _pathfindAndMoveTo = Service.Interface.GetIpcSubscriber<Vector3, bool, bool>($"{Name}.SimpleMove.PathfindAndMoveTo");
                 _pathfindInProgress = Service.Interface.GetIpcSubscriber<bool>($"{Name}.SimpleMove.PathfindInProgress");
             }
             catch (Exception ex) { ex.Log(); }
@@ -123,8 +123,8 @@ internal class NavmeshIPC
 
     internal static bool NavIsReady() => Execute(() => _navIsReady!.InvokeFunc());
     internal static float NavBuildProgress() => Execute(() => _navBuildProgress!.InvokeFunc());
-    internal static void NavReload() => Execute(_navReload!.InvokeAction);
-    internal static void NavRebuild() => Execute(_navRebuild!.InvokeAction);
+    internal static void NavReload() => Execute(() => _navReload!.InvokeFunc());
+    internal static void NavRebuild() => Execute(() => _navRebuild!.InvokeFunc());
     internal static Task<List<Vector3>>? NavPathfind(Vector3 from, Vector3 to, bool fly = false) => Execute(() => _navPathfind!.InvokeFunc(from, to, fly));
     internal static bool NavIsAutoLoad() => Execute(() => _navIsAutoLoad!.InvokeFunc());
     internal static void NavSetAutoLoad(bool value) => Execute(_navSetAutoLoad!.InvokeAction, value);
@@ -143,6 +143,6 @@ internal class NavmeshIPC
     internal static float PathGetTolerance() => Execute(() => _pathGetTolerance!.InvokeFunc());
     internal static void PathSetTolerance(float tolerance) => Execute(_pathSetTolerance!.InvokeAction, tolerance);
 
-    internal static void PathfindAndMoveTo(Vector3 pos, bool fly) => Execute(_pathfindAndMoveTo!.InvokeAction, pos, fly);
+    internal static void PathfindAndMoveTo(Vector3 pos, bool fly) => Execute(() => _pathfindAndMoveTo!.InvokeFunc(pos, fly));
     internal static bool PathfindInProgress() => Execute(() => _pathfindInProgress!.InvokeFunc());
 }

@@ -9,6 +9,7 @@ internal class CompatModule
 {
     public static unsafe void EnsureCompatibility(GatherRouteDB RouteDB)
     {
+        // set flight activation to single jump for ease of flight activation
         if (Svc.GameConfig.UiControl.GetUInt("FlyingControlType") == 1)
         {
             Service.Config.Get<GatherRouteDB>().WasFlyingInManual = true;
