@@ -106,7 +106,7 @@ public class GatherRouteExec : IDisposable
             if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))
             {
                 if (!NavmeshIPC.NavIsReady()) return;
-                NavmeshIPC.PathMoveTo([wp.Position], wp.Movement == GatherRouteDB.Movement.MountFly || flying);
+                NavmeshIPC.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || flying);
             }
             else
             {
