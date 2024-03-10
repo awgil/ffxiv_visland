@@ -128,6 +128,19 @@ public static unsafe class Utils
         FilteredSheet = TerritoryTypes.Select(kv => kv.Value)
     };
 
+    private static string FormatTerritoryRow(Lumina.Excel.GeneratedSheets.Quest q) => q.RowId switch
+    {
+        _ => $"[#{q.RowId}] {q.Name}"
+    };
+
+    private readonly static Dictionary<uint, Lumina.Excel.GeneratedSheets.Quest> Quests = Svc.Data.GetExcelSheet<Lumina.Excel.GeneratedSheets.Quest>()?.Where(q => q.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i)!;
+
+    public static readonly ExcelSheetComboOptions<Lumina.Excel.GeneratedSheets.Quest> questComboOptions = new()
+    {
+        FormatRow = FormatTerritoryRow,
+        FilteredSheet = Quests.Select(kv => kv.Value)
+    };
+
     private static string FormatActionRow(Lumina.Excel.GeneratedSheets.Action a) => a.RowId switch
     {
         _ => $"[#{a.RowId} {a.ClassJob.Value?.Abbreviation}{(a.IsPvP ? " PVP" : string.Empty)}] {a.Name}"

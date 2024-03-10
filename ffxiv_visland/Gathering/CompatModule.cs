@@ -16,15 +16,6 @@ internal class CompatModule
             Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 0);
         }
 
-        if (Svc.GameConfig.UiControl.TryGetUInt("MoveMode", out var value))
-        {
-            if (value == 0)
-            {
-                Service.Config.Get<GatherRouteDB>().WasStandard = true;
-                Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.MoveMode, 1);
-            }
-        }
-
         if (RouteDB.GatherModeOnStart)
         {
             if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && MJIManager.Instance()->CurrentMode != 1)
@@ -47,7 +38,5 @@ internal class CompatModule
     {
         if (Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
             Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 1);
-        if (Service.Config.Get<GatherRouteDB>().WasStandard)
-            Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.MoveMode, 0);
     }
 }

@@ -71,4 +71,23 @@ public static class UICombo
         v = val != 0;
         return true;
     }
+
+    public static bool String(string label, string[] values, ref string v)
+    {
+        bool res = false;
+        ImGui.SetNextItemWidth(200);
+        if (ImGui.BeginCombo(label, v.ToString()))
+        {
+            for (int i = 0; i < values.Length; ++i)
+            {
+                if (ImGui.Selectable(values[i], v == values[i]))
+                {
+                    v = values[i];
+                    res = true;
+                }
+            }
+            ImGui.EndCombo();
+        }
+        return res;
+    }
 }

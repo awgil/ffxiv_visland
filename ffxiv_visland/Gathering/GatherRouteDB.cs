@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using visland.Helpers;
+using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
 
@@ -26,6 +27,18 @@ public class GatherRouteDB : Configuration.Node
         UseAction = 4,
         QuestTalk = 5,
         Grind = 6,
+        //PickupQuest = 7,
+        //TurninQuest = 8,
+        //StartRoute = 9,
+        //AutoEquipGear = 10,
+    }
+
+    public enum GrindStopConditions
+    {
+        None = 0,
+        Kills = 1,
+        QuestSequence = 2,
+        QuestComplete = 3,
     }
 
     public class Waypoint
@@ -44,7 +57,11 @@ public class GatherRouteDB : Configuration.Node
         public int ItemID;
         public int ActionID;
         public int QuestID;
+        public int QuestSeq;
         public int MobID;
+        public GrindStopConditions StopCondition;
+        public int KillCount;
+        public string RouteName = "";
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;
@@ -63,7 +80,6 @@ public class GatherRouteDB : Configuration.Node
     public bool GatherModeOnStart = true;
     public bool DisableOnErrors = false;
     public bool WasFlyingInManual = false;
-    public bool WasStandard = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {
@@ -126,6 +142,8 @@ public class GatherRouteDB : Configuration.Node
                 wp.WaitForCondition,
                 wp.Pathfind,
                 wp.MobID,
+                wp.QuestID,
+                wp.RouteName,
             });
         return jw;
     }
@@ -157,8 +175,31 @@ public class GatherRouteDB : Configuration.Node
                 WaitForCondition = jwea.Count > 14 ? (ConditionFlag)jwea[14].Value<int>() : ConditionFlag.None,
                 Pathfind = jwea.ElementAtOrDefault(15)?.Value<bool>() ?? false,
                 MobID = jwea.ElementAtOrDefault(16)?.Value<int>() ?? default,
+                QuestID = jwea.ElementAtOrDefault(17)?.Value<int>() ?? default,
+                RouteName = jwea.ElementAtOrDefault(18)?.Value<string>() ?? "",
+                QuestSeq = jwea.ElementAtOrDefault(19)?.Value<int>() ?? 0,
+                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0),
+                KillCount = jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0,
             });
         }
         return res;
+    }
+}
+
+public static class WaypointExtensions
+{
+    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, out Waypoint? nextWaypoint)
+    {
+        int index = route.Waypoints.IndexOf(waypoint);
+        if (index >= 0 && index < route.Waypoints.Count - 1)
+        {
+            nextWaypoint = route.Waypoints[index + 1];
+            return true;
+        }
+        else
+        {
+            nextWaypoint = route.Waypoints.First();
+            return false;
+        }
     }
 }

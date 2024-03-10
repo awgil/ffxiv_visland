@@ -27,6 +27,7 @@ public class GatherWindow : Window, IDisposable
 
     public GatherRouteDB RouteDB;
     public GatherRouteExec Exec = new();
+    public GatherDebug _debug;
 
     private int selectedRouteIndex = -1;
     public static bool loop;
@@ -52,6 +53,7 @@ public class GatherWindow : Window, IDisposable
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
+        _debug = new(Exec);
         _emotes = Svc.Data.GetExcelSheet<Emote>()!;
         _items = Svc.Data.GetExcelSheet<Item>()!;
         _zones = Svc.Data.GetExcelSheet<TerritoryType>()!;
@@ -63,21 +65,32 @@ public class GatherWindow : Window, IDisposable
 
     public override void Draw()
     {
-        DrawExecution();
-        ImGui.Separator();
-        ImGui.Spacing();
+        using var tabs = ImRaii.TabBar("Tabs");
+        if (tabs)
+        {
+            using (var tab = ImRaii.TabItem("Routes"))
+                if (tab)
+                {
+                    DrawExecution();
+                    ImGui.Separator();
+                    ImGui.Spacing();
 
-        var cra = ImGui.GetContentRegionAvail();
-        var sidebar = cra with { X = cra.X * 0.40f };
-        var editor = cra with { X = cra.X * 0.60f };
+                    var cra = ImGui.GetContentRegionAvail();
+                    var sidebar = cra with { X = cra.X * 0.40f };
+                    var editor = cra with { X = cra.X * 0.60f };
 
-        DrawSidebar(sidebar);
-        ImGui.SameLine();
-        DrawEditor(editor);
+                    DrawSidebar(sidebar);
+                    ImGui.SameLine();
+                    DrawEditor(editor);
 
-        foreach (var a in _postDraw)
-            a();
-        _postDraw.Clear();
+                    foreach (var a in _postDraw)
+                        a();
+                    _postDraw.Clear();
+                }
+            using (var tab = ImRaii.TabItem("Debug"))
+                if (tab)
+                    _debug.Draw();
+        }
     }
 
     private void DrawExecution()
@@ -302,7 +315,7 @@ public class GatherWindow : Window, IDisposable
                 {
                     route.Waypoints.Add(new() { Position = target.Position, Radius = RouteDB.DefaultInteractionRadius, ZoneID = Service.ClientState.TerritoryType, Movement = movementType, InteractWithOID = target.DataId, InteractWithName = target.Name.ToString().ToLower() });
                     RouteDB.NotifyModified();
-                    Exec.Start(route, route.Waypoints.Count - 1, false, false, false);
+                    Exec.Start(route, route.Waypoints.Count - 1, false, false);
                 }
             }
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");
@@ -400,6 +413,14 @@ public class GatherWindow : Window, IDisposable
                     if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
                         RouteDB.NotifyModified();
                     break;
+                //case InteractionType.PickupQuest:
+                //    if (Utils.ExcelSheetCombo("##PickupQuest", ref wp.QuestID, Utils.questComboOptions))
+                //        RouteDB.NotifyModified();
+                //    break;
+                //case InteractionType.TurninQuest:
+                //    if (Utils.ExcelSheetCombo("##TurninQuest", ref wp.QuestID, Utils.questComboOptions))
+                //        RouteDB.NotifyModified();
+                //    break;
                 case InteractionType.Grind:
                     using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
                     {
@@ -408,7 +429,38 @@ public class GatherWindow : Window, IDisposable
                     }
                     if (!Utils.HasPlugin(BossModIPC.Name))
                         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip($"This features requires {BossModIPC.Name} to be installed.");
+
+                    if (wp.MobID != default)
+                    {
+                        if (UICombo.Enum("Grind Condition", ref wp.StopCondition))
+                            RouteDB.NotifyModified();
+                        switch (wp.StopCondition)
+                        {
+                            case GrindStopConditions.None: break;
+                            case GrindStopConditions.Kills:
+                                ImGui.PushItemWidth(100);
+                                if (Utils.EditNumberField($"Kill", 25, ref wp.KillCount, " times"))
+                                    RouteDB.NotifyModified();
+                                break;
+                            case GrindStopConditions.QuestSequence:
+                                if (Utils.ExcelSheetCombo("##QuestSequence", ref wp.QuestID, Utils.questComboOptions))
+                                    RouteDB.NotifyModified();
+                                ImGui.SameLine();
+                                if (Utils.EditNumberField($"Sequence = ", 25, ref wp.QuestSeq))
+                                    RouteDB.NotifyModified();
+                                break;
+                            case GrindStopConditions.QuestComplete:
+                                if (Utils.ExcelSheetCombo("##QuestComplete", ref wp.QuestID, Utils.questComboOptions))
+                                    RouteDB.NotifyModified();
+                                break;
+                        }
+                    }
                     break;
+                //case InteractionType.StartRoute:
+                //    if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
+                //    if (ImGui.InputTextWithHint("##StartRoute", "Route Name", ref wp.RouteName, 128))
+                //        RouteDB.NotifyModified();
+                //    break;
             }
         }
 

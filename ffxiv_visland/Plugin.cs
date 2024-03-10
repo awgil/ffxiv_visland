@@ -19,6 +19,7 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
+using visland.Questing;
 using visland.Workshop;
 
 namespace visland;
@@ -58,6 +59,7 @@ public sealed class Plugin : IDalamudPlugin
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     private VislandIPC _vislandIPC;
     internal TaskManager TaskManager;
+    internal Memory Memory;
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
@@ -80,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin
         FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
         ECommonsMain.Init(dalamud, this, ECommons.Module.DalamudReflector);
+        DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);
         Service.Init(dalamud);
         AutoCutsceneSkipper.Init(null);
         AutoCutsceneSkipper.Disable();
@@ -95,6 +98,7 @@ public sealed class Plugin : IDalamudPlugin
         Dalamud = dalamud;
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
+        Memory  = new();
 
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();
@@ -104,8 +108,6 @@ public sealed class Plugin : IDalamudPlugin
         _wndExports = new ExportWindow();
 
         _vislandIPC = new(_wndGather);
-        BossModIPC.Init();
-        NavmeshIPC.Init();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -200,7 +202,7 @@ public sealed class Plugin : IDalamudPlugin
         var json = Utils.FromCompressedBase64(base64);
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(json);
         if (route != null)
-            _wndGather.Exec.Start(route, 0, true, !once, false);
+            _wndGather.Exec.Start(route, 0, true, !once);
     }
 
     private void MoveToCommand(string[] args, bool relativeToPlayer)
@@ -210,13 +212,21 @@ public sealed class Plugin : IDalamudPlugin
         var offset = new Vector3(float.Parse(args[1], CultureInfo.InvariantCulture), float.Parse(args[2], CultureInfo.InvariantCulture), float.Parse(args[3], CultureInfo.InvariantCulture));
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = [] };
         route.Waypoints.Add(new() { Position = origin + offset, Radius = 0.5f, InteractWithName = "", InteractWithOID = 0 });
-        _wndGather.Exec.Start(route, 0, false, false, false);
+        _wndGather.Exec.Start(route, 0, false, false);
     }
 
     private void ExecuteCommand(string name, bool once)
     {
         var route = _wndGather.RouteDB.Routes.Find(r => r.Name == name);
         if (route != null)
-            _wndGather.Exec.Start(route, 0, true, !once, false);
+            _wndGather.Exec.Start(route, 0, true, !once);
+    }
+
+    private void CheckIPC()
+    {
+        if (Utils.HasPlugin(BossModIPC.Name))
+            BossModIPC.Init();
+        if (Utils.HasPlugin(NavmeshIPC.Name))
+            NavmeshIPC.Init();
     }
 }

@@ -15,9 +15,11 @@ public struct Angle
 
     public Angle(float radians = 0) { Rad = radians; }
 
-    public static Angle FromDirection(Vector2 dir) => FromDirection(dir.X, dir.Y);
+    public static Angle FromDirection(Vector2 dir) => new(MathF.Atan2(dir.X, dir.Y));
     public static Angle FromDirection(float x, float z) => new(MathF.Atan2(x, z));
+    public static Angle FromDirectionXZ(Vector3 dir) => new(MathF.Atan2(dir.X, dir.Z));
     public Vector2 ToDirection() => new(Sin(), Cos());
+    public Vector3 ToDirectionXZ() => new(Sin(), 0, Cos());
 
     public static Angle operator +(Angle a, Angle b) => new(a.Rad + b.Rad);
     public static Angle operator -(Angle a, Angle b) => new(a.Rad - b.Rad);
@@ -42,11 +44,7 @@ public struct Angle
         return new(r);
     }
 
-    public bool AlmostEqual(Angle other, float epsRad)
-    {
-        var delta = Math.Abs(Rad - other.Rad);
-        return delta <= epsRad || delta >= 2 * MathF.PI - epsRad;
-    }
+    public bool AlmostEqual(Angle other, float epsRad) => Math.Abs((this - other).Normalized().Rad) <= epsRad;
 
     public static bool operator ==(Angle l, Angle r) => l.Rad == r.Rad;
     public static bool operator !=(Angle l, Angle r) => l.Rad != r.Rad;

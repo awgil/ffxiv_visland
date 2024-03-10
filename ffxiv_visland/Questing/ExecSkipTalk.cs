@@ -3,6 +3,7 @@ using Dalamud.Game.Addon.Lifecycle;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using ECommons.Automation;
+using System;
 
 namespace visland.Questing;
 internal unsafe static class ExecSkipTalk
@@ -22,6 +23,8 @@ internal unsafe static class ExecSkipTalk
         Svc.AddonLifecycle.UnregisterListener(AddonEvent.PostUpdate, "Talk", Click);
         IsEnabled = false;
     }
+
+    internal static void Toggle() => (IsEnabled ? new Action(Shutdown) : Init)();
 
     private static void Click(AddonEvent type, AddonArgs args)
     {
