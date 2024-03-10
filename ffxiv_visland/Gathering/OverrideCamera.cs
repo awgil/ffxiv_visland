@@ -1,5 +1,4 @@
-﻿using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
+﻿using ECommons.EzHookManager;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using System;
 using System.Runtime.InteropServices;
@@ -20,17 +19,17 @@ public unsafe struct CameraEx
     [FieldOffset(0x14C)] public float DirVMax; // +45deg by default
 }
 
-public unsafe class OverrideCamera : IDisposable
+public unsafe class OverrideCamera
 {
     public bool Enabled
     {
-        get => _rmiCameraHook.IsEnabled;
+        get => RMICameraHook.IsEnabled;
         set
         {
             if (value)
-                _rmiCameraHook.Enable();
+                RMICameraHook.Enable();
             else
-                _rmiCameraHook.Disable();
+                RMICameraHook.Disable();
         }
     }
 
@@ -41,23 +40,19 @@ public unsafe class OverrideCamera : IDisposable
     public Angle SpeedV = 360.Degrees(); // per second
 
     private delegate void RMICameraDelegate(CameraEx* self, int inputMode, float speedH, float speedV);
-    [Signature("40 53 48 83 EC 70 44 0F 29 44 24 ?? 48 8B D9")]
-    private Hook<RMICameraDelegate> _rmiCameraHook = null!;
+    [EzHook("40 53 48 83 EC 70 44 0F 29 44 24 ?? 48 8B D9", false)]
+    private EzHook<RMICameraDelegate> RMICameraHook = null!;
 
     public OverrideCamera()
     {
+        EzSignatureHelper.Initialize(this);
         Service.Hook.InitializeFromAttributes(this);
-        Service.Log.Information($"RMICamera address: 0x{_rmiCameraHook.Address:X}");
-    }
-
-    public void Dispose()
-    {
-        _rmiCameraHook.Dispose();
+        Service.Log.Information($"RMICamera address: 0x{RMICameraHook.Address:X}");
     }
 
     private void RMICameraDetour(CameraEx* self, int inputMode, float speedH, float speedV)
     {
-        _rmiCameraHook.Original(self, inputMode, speedH, speedV);
+        RMICameraHook.Original(self, inputMode, speedH, speedV);
         if (IgnoreUserInput || inputMode == 0) // let user override...
         {
             var dt = Framework.Instance()->FrameDeltaTime;

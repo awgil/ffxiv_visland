@@ -1,8 +1,6 @@
 ﻿using Dalamud.Game.Config;
-using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
+using ECommons.EzHookManager;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using visland.Helpers;
@@ -21,22 +19,22 @@ public unsafe struct PlayerMoveControllerFlyInput
     [FieldOffset(0x15)] public byte HaveBackwardOrStrafe;
 }
 
-public unsafe class OverrideMovement : IDisposable
+public unsafe class OverrideMovement
 {
     public bool Enabled
     {
-        get => _rmiWalkHook.IsEnabled;
+        get => RMIWalkHook.IsEnabled;
         set
         {
             if (value)
             {
-                _rmiWalkHook.Enable();
-                _rmiFlyHook.Enable();
+                RMIWalkHook.Enable();
+                RMIFlyHook.Enable();
             }
             else
             {
-                _rmiWalkHook.Disable();
-                _rmiFlyHook.Disable();
+                RMIWalkHook.Disable();
+                RMIFlyHook.Disable();
             }
         }
     }
@@ -48,18 +46,18 @@ public unsafe class OverrideMovement : IDisposable
     private bool _legacyMode;
 
     private delegate void RMIWalkDelegate(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk);
-    [Signature("E8 ?? ?? ?? ?? 80 7B 3E 00 48 8D 3D")]
-    private Hook<RMIWalkDelegate> _rmiWalkHook = null!;
+    [EzHook("E8 ?? ?? ?? ?? 80 7B 3E 00 48 8D 3D", false)]
+    private EzHook<RMIWalkDelegate> RMIWalkHook = null!;
 
     private delegate void RMIFlyDelegate(void* self, PlayerMoveControllerFlyInput* result);
-    [Signature("E8 ?? ?? ?? ?? 0F B6 0D ?? ?? ?? ?? B8")]
-    private Hook<RMIFlyDelegate> _rmiFlyHook = null!;
+    [EzHook("E8 ?? ?? ?? ?? 0F B6 0D ?? ?? ?? ?? B8", false)]
+    private EzHook<RMIFlyDelegate> RMIFlyHook = null!;
 
     public OverrideMovement()
     {
-        Service.Hook.InitializeFromAttributes(this);
-        Service.Log.Information($"RMIWalk address: 0x{_rmiWalkHook.Address:X}");
-        Service.Log.Information($"RMIFly address: 0x{_rmiFlyHook.Address:X}");
+        EzSignatureHelper.Initialize(this);
+        Service.Log.Information($"RMIWalk address: 0x{RMIWalkHook.Address:X}");
+        Service.Log.Information($"RMIFly address: 0x{RMIFlyHook.Address:X}");
         Service.GameConfig.UiControlChanged += OnConfigChanged;
         UpdateLegacyMode();
     }
@@ -67,13 +65,11 @@ public unsafe class OverrideMovement : IDisposable
     public void Dispose()
     {
         Service.GameConfig.UiControlChanged -= OnConfigChanged;
-        _rmiWalkHook.Dispose();
-        _rmiFlyHook.Dispose();
     }
 
     private void RMIWalkDetour(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk)
     {
-        _rmiWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
+        RMIWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
         bool movementAllowed = bAdditiveUnk == 0 && !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BeingMoved];
         if (movementAllowed && (IgnoreUserInput || *sumLeft == 0 && *sumForward == 0) && DirectionToDestination(false) is var relDir && relDir != null)
@@ -86,7 +82,7 @@ public unsafe class OverrideMovement : IDisposable
 
     private void RMIFlyDetour(void* self, PlayerMoveControllerFlyInput* result)
     {
-        _rmiFlyHook.Original(self, result);
+        RMIFlyHook.Original(self, result);
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
         if ((IgnoreUserInput || result->Forward == 0 && result->Left == 0 && result->Up == 0) && DirectionToDestination(true) is var relDir && relDir != null)
         {

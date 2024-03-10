@@ -44,8 +44,6 @@ public class GatherRouteExec : IDisposable
 
     public void Dispose()
     {
-        _camera.Dispose();
-        _movement.Dispose();
         Svc.Toasts.ErrorToast -= CheckToDisable;
     }
 

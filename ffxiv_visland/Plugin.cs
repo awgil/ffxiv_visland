@@ -150,6 +150,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
+        ECommonsMain.Dispose();
     }
 
     private void OnCommand(string command, string arguments)
