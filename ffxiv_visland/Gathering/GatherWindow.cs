@@ -410,21 +410,21 @@ public class GatherWindow : Window, IDisposable
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.UseAction:
-                    if (Utils.ExcelSheetCombo("##Action", ref wp.ActionID, Utils.actionComboOptions))
+                    if (UICombo.ExcelSheetCombo("##Action", ref wp.ActionID, UICombo.actionComboOptions))
                         RouteDB.NotifyModified();
                     break;
                 //case InteractionType.PickupQuest:
-                //    if (Utils.ExcelSheetCombo("##PickupQuest", ref wp.QuestID, Utils.questComboOptions))
+                //    if (UICombo.ExcelSheetCombo("##PickupQuest", ref wp.QuestID, UICombo.questComboOptions))
                 //        RouteDB.NotifyModified();
                 //    break;
                 //case InteractionType.TurninQuest:
-                //    if (Utils.ExcelSheetCombo("##TurninQuest", ref wp.QuestID, Utils.questComboOptions))
+                //    if (UICombo.ExcelSheetCombo("##TurninQuest", ref wp.QuestID, UICombo.questComboOptions))
                 //        RouteDB.NotifyModified();
                 //    break;
                 case InteractionType.Grind:
                     using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
                     {
-                        if (Utils.ExcelSheetCombo("##Mob", ref wp.MobID, Utils.mobComboOptions))
+                        if (UICombo.ExcelSheetCombo("##Mob", ref wp.MobID, UICombo.mobComboOptions))
                             RouteDB.NotifyModified();
                     }
                     if (!Utils.HasPlugin(BossModIPC.Name))
@@ -443,14 +443,14 @@ public class GatherWindow : Window, IDisposable
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestSequence:
-                                if (Utils.ExcelSheetCombo("##QuestSequence", ref wp.QuestID, Utils.questComboOptions))
+                                if (UICombo.ExcelSheetCombo("##QuestSequence", ref wp.QuestID, UICombo.questComboOptions))
                                     RouteDB.NotifyModified();
                                 ImGui.SameLine();
                                 if (Utils.EditNumberField($"Sequence = ", 25, ref wp.QuestSeq))
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestComplete:
-                                if (Utils.ExcelSheetCombo("##QuestComplete", ref wp.QuestID, Utils.questComboOptions))
+                                if (UICombo.ExcelSheetCombo("##QuestComplete", ref wp.QuestID, UICombo.questComboOptions))
                                     RouteDB.NotifyModified();
                                 break;
                         }

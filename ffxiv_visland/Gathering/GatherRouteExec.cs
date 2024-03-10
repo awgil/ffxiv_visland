@@ -6,10 +6,10 @@ using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using System;
 using System.Linq;
+using System.Numerics;
 using visland.Helpers;
 using visland.IPC;
 using visland.Questing;
@@ -49,21 +49,19 @@ public class GatherRouteExec : IDisposable
 
     public unsafe void Update()
     {
-        var player = Service.ClientState.LocalPlayer;
         _camera.SpeedH = _camera.SpeedV = default;
-        _movement.DesiredPosition = player?.Position ?? new();
+        _movement.DesiredPosition = Player.Object?.Position ?? new();
 
         if (Paused && NavmeshIPC.PathIsRunning())
             NavmeshIPC.PathStop();
-        
-        bool aboutToBeMounted = Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-        if (player == null || player.IsCasting || GenericHelpers.IsOccupied() || aboutToBeMounted || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+
+        if (!Player.Available || Player.Object!.IsCasting || GenericHelpers.IsOccupied() || Player.Mounting || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
 
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
-        var toWaypoint = wp.Position - player.Position;
+        var toWaypoint = wp.Position - Player.Object.Position;
         bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
         Pathfind = wp.Pathfind;
 
@@ -76,26 +74,19 @@ public class GatherRouteExec : IDisposable
         if (needToGetCloser)
         {
             if (NavmeshIPC.PathIsRunning()) return;
-            bool mounted = Service.Condition[ConditionFlag.Mounted];
-            if (wp.Movement != GatherRouteDB.Movement.Normal && !mounted)
+            if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted)
             {
                 ExecuteMount();
                 return;
             }
 
-            var sprint = player.StatusList.FirstOrDefault(s => s.StatusId == 50);
-            var sprintRemaining = sprint?.RemainingTime ?? 0;
-            if (sprintRemaining < 5 && !mounted)
-            {
-                if (MJIManager.Instance()->IsPlayerInSanctuary == 1)
-                    ExecuteIslandSprint();
-                else
-                    if (ActionManager.Instance()->GetRecastTime(ActionType.GeneralAction, 4) == 0)
-                        ExecuteSprint();
-            }
+            if (Player.OnIsland && !Player.Mounted && Player.SprintCD > 5)
+                ExecuteIslandSprint();
+            
+            if (!Player.OnIsland && !Player.Mounted && Player.SprintCD == 0)
+                ExecuteSprint();
 
-            bool flying = Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
-            if (wp.Movement == GatherRouteDB.Movement.MountFly && mounted && !flying && !Service.Condition[ConditionFlag.Jumping])
+            if (wp.Movement == GatherRouteDB.Movement.MountFly && Player.Mounted && !Player.InclusiveFlying && !Service.Condition[ConditionFlag.Jumping])
             {
                 // TODO: improve, jump is not the best really...
                 ExecuteJump();
@@ -104,7 +95,7 @@ public class GatherRouteExec : IDisposable
             if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))
             {
                 if (!NavmeshIPC.NavIsReady()) return;
-                NavmeshIPC.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || flying);
+                NavmeshIPC.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || Player.InclusiveFlying);
             }
             else
             {
@@ -120,15 +111,15 @@ public class GatherRouteExec : IDisposable
         if (Pathfind && NavmeshIPC.PathIsRunning())
             NavmeshIPC.PathStop();
 
-        if (!Service.Condition[ConditionFlag.NormalConditions] && wp.Movement == GatherRouteDB.Movement.Normal)
+        if (!Player.Normal && wp.Movement == GatherRouteDB.Movement.Normal)
         {
             ExecuteDismount();
             return;
         }
 
-        if (Service.Condition[ConditionFlag.InFlight] && wp.Movement == GatherRouteDB.Movement.MountNoFly)
+        if (Player.ExclusiveFlying && wp.Movement == GatherRouteDB.Movement.MountNoFly)
         {
-            ExecuteDismount();
+            _movement.DesiredPosition = new Vector3(Player.Object.Position.X, wp.Position.Y, Player.Object.Position.Z);
             return;
         }
 
@@ -173,14 +164,14 @@ public class GatherRouteExec : IDisposable
                             break;
                     }
                 break;
-            //case GatherRouteDB.InteractionType.AutoEquipGear:
-            //    QuestsHelper.AutoEquip(true);
-            //    break;
-            //case GatherRouteDB.InteractionType.StartRoute:
-            //    var route = RouteDB.Routes.FirstOrDefault(r => r.Name == wp.RouteName);
-            //    if (route != null)
-            //        Start(route, 0, false, false);
-            //    break;
+                //case GatherRouteDB.InteractionType.AutoEquipGear:
+                //    QuestsHelper.AutoEquip(true);
+                //    break;
+                //case GatherRouteDB.InteractionType.StartRoute:
+                //    var route = RouteDB.Routes.FirstOrDefault(r => r.Name == wp.RouteName);
+                //    if (route != null)
+                //        Start(route, 0, false, false);
+                //    break;
         }
 
         if (Plugin.P.TaskManager.IsBusy) return; // let any interactions play out first
