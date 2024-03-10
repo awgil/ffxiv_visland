@@ -164,14 +164,18 @@ public class GatherRouteExec : IDisposable
                             break;
                     }
                 break;
-                //case GatherRouteDB.InteractionType.AutoEquipGear:
-                //    QuestsHelper.AutoEquip(true);
-                //    break;
-                //case GatherRouteDB.InteractionType.StartRoute:
-                //    var route = RouteDB.Routes.FirstOrDefault(r => r.Name == wp.RouteName);
-                //    if (route != null)
-                //        Start(route, 0, false, false);
-                //    break;
+            //case GatherRouteDB.InteractionType.AutoEquipGear:
+            //    QuestsHelper.AutoEquip(true);
+            //    break;
+            case GatherRouteDB.InteractionType.StartRoute:
+                var route = RouteDB.Routes.Find(r => r.Name == wp.RouteName);
+                if (route != null)
+                {
+                    Finish();
+                    Start(route, 0, true, false, route.Waypoints[0].Pathfind);
+                    return;
+                }
+                break;
         }
 
         if (Plugin.P.TaskManager.IsBusy) return; // let any interactions play out first

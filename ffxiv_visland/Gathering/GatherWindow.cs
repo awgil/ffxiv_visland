@@ -456,11 +456,10 @@ public class GatherWindow : Window, IDisposable
                         }
                     }
                     break;
-                //case InteractionType.StartRoute:
-                //    if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
-                //    if (ImGui.InputTextWithHint("##StartRoute", "Route Name", ref wp.RouteName, 128))
-                //        RouteDB.NotifyModified();
-                //    break;
+                case InteractionType.StartRoute:
+                    if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
+                        RouteDB.NotifyModified();
+                    break;
             }
         }
 
