@@ -78,8 +78,6 @@ public sealed class Plugin : IDalamudPlugin
                 GetType("Dalamud.Service`1", true)!.MakeGenericType(dalamud.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).
                 GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, Array.Empty<object>(), null);
         var dalamudStartInfo = dalamudRoot.GetFoP<DalamudStartInfo>("StartInfo");
-        FFXIVClientStructs.Interop.Resolver.GetInstance.SetupSearchSpace(0, new(Path.Combine(dalamud.ConfigDirectory.FullName, $"{dalamudStartInfo.GameVersion}_cs.json")));
-        FFXIVClientStructs.Interop.Resolver.GetInstance.Resolve();
 
         ECommonsMain.Init(dalamud, this, ECommons.Module.DalamudReflector);
         DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);

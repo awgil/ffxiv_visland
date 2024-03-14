@@ -1,9 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Memory;
+using Dalamud.Plugin.Services;
 using ECommons;
 using ECommons.Automation;
 using ECommons.DalamudServices;
-using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -40,29 +40,26 @@ public class QuestsHelper
 
     private static Throttle _interact = new();
 
-    public QuestsHelper()
+    public unsafe QuestsHelper()
     {
-        unsafe
+        try
         {
+            var agentModule = Framework.Instance()->GetUiModule()->GetAgentModule();
             try
             {
-                var agentModule = Framework.Instance()->GetUiModule()->GetAgentModule();
-                try
-                {
-                    DoEmote = Marshal.GetDelegateForFunctionPointer<DoEmoteDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? B8 0A 00 00 00"));
-                    emoteAgent = (nint)agentModule->GetAgentByInternalId(AgentId.Emote);
-                }
-                catch { Service.Log.Error($"Failed to load {nameof(emoteAgent)}"); }
-
-                try
-                {
-                    UseItem = Marshal.GetDelegateForFunctionPointer<UseItemDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 7C 24 38"));
-                    itemContextMenuAgent = (nint)agentModule->GetAgentByInternalId(AgentId.InventoryContext);
-                }
-                catch { Service.Log.Error($"Failed to load {nameof(itemContextMenuAgent)}"); }
+                DoEmote = Marshal.GetDelegateForFunctionPointer<DoEmoteDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? B8 0A 00 00 00"));
+                emoteAgent = (nint)agentModule->GetAgentByInternalId(AgentId.Emote);
             }
-            catch { Service.Log.Error($"Failed to load agentModule"); }
+            catch { Service.Log.Error($"Failed to load {nameof(emoteAgent)}"); }
+
+            try
+            {
+                UseItem = Marshal.GetDelegateForFunctionPointer<UseItemDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 7C 24 38"));
+                itemContextMenuAgent = (nint)agentModule->GetAgentByInternalId(AgentId.InventoryContext);
+            }
+            catch { Service.Log.Error($"Failed to load {nameof(itemContextMenuAgent)}"); }
         }
+        catch { Service.Log.Error($"Failed to load agentModule"); }
     }
 
     public static string GetMobName(uint npcID) => Svc.Data.GetExcelSheet<BNpcName>()?.GetRow(npcID)?.Singular.RawString ?? "";
@@ -230,21 +227,50 @@ public class QuestsHelper
         return null;
     }
 
-    public static unsafe void AutoEquip(bool updateGearset = false)
+    private static unsafe RecommendEquipModule* Module => Framework.Instance()->GetUiModule()->GetRecommendEquipModule();
+    public static unsafe void EquipRecommendedGear()
     {
-        if (Svc.Condition[ConditionFlag.InCombat]) return;
-        if (Svc.Condition[ConditionFlag.BetweenAreas]) return;
-        var mod = RecommendEquipModule.Instance();
-        P.TaskManager.DelayNext("EquipMod", 500);
-        P.TaskManager.Enqueue(() => mod->SetupRecommendedGear(), 500);
-        P.TaskManager.Enqueue(mod->EquipRecommendedGear, 500);
+        if (Module == null || Svc.Condition[ConditionFlag.InCombat] || IsOccupied()) return;
 
-        if (updateGearset)
+        Module->SetupFromPlayerState();
+        Svc.Framework.Update += DoEquip;
+    }
+
+    private static unsafe void DoEquip(IFramework framework)
+    {
+        if (Module == null || Module->EquippedMainHand == null || GetEquippedItems() == GetRecommendedItems())
         {
-            var id = RaptureGearsetModule.Instance()->CurrentGearsetIndex;
-            P.TaskManager.DelayNext("UpdatingGS", 1000);
-            P.TaskManager.Enqueue(() => RaptureGearsetModule.Instance()->UpdateGearset(id));
+            Svc.Framework.Update -= DoEquip;
+            return;
         }
+        Module->EquipRecommendedGear();
+        var id = RaptureGearsetModule.Instance()->CurrentGearsetIndex;
+        P.TaskManager.DelayNext("UpdatingGS", 1000);
+        P.TaskManager.Enqueue(() => RaptureGearsetModule.Instance()->UpdateGearset(id));
+    }
+
+    private static unsafe List<uint> GetEquippedItems()
+    {
+        var inv = InventoryManager.Instance();
+        var items = new List<uint>();
+        for (var i = 0; i < inv->GetInventoryContainer(InventoryType.EquippedItems)->Size; i++)
+        {
+            var slot = inv->GetInventoryContainer(InventoryType.EquippedItems)->GetInventorySlot(i);
+            if (slot->ItemID != 0)
+                items.Add(slot->ItemID);
+        }
+        return items;
+    }
+
+    private static unsafe List<uint> GetRecommendedItems()
+    {
+        var items = new List<uint>();
+        for (var i = 0; i < Module->RecommendedItemsSpan.Length; i++)
+        {
+            if (Module->RecommendedItemsSpan[i].Value != null)
+                items.Add(Module->RecommendedItemsSpan[i].Value->ItemID);
+        }
+        return items;
     }
 
     public static unsafe void Grind(string mobName, Func<bool> stopCondition)

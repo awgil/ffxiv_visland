@@ -30,7 +30,7 @@ public class GatherRouteDB : Configuration.Node
         //PickupQuest = 7,
         //TurninQuest = 8,
         StartRoute = 9,
-        //AutoEquipGear = 10,
+        EquipRecommendedGear = 10,
     }
 
     public enum GrindStopConditions

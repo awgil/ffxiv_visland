@@ -3,13 +3,13 @@ using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
+using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -20,7 +20,7 @@ using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
 
-public class GatherWindow : Window, IDisposable
+public class GatherWindow : Window, System.IDisposable
 {
     private readonly UITree _tree = new();
     private readonly List<System.Action> _postDraw = [];
@@ -37,12 +37,8 @@ public class GatherWindow : Window, IDisposable
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
 
-    private readonly List<int> Emotes = Svc.Data.GetExcelSheet<Emote>()?.Select(x => (int)x.RowId).ToList()!;
     private readonly List<int> Items = Svc.Data.GetExcelSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
-    private readonly List<int> Zones = Svc.Data.GetExcelSheet<TerritoryType>()?.Where(x => Coordinates.HasAetheryteInZone(x.RowId)).Select(x => (int)x.RowId).ToList()!;
-    private readonly ExcelSheet<Emote> _emotes;
     private readonly ExcelSheet<Item> _items;
-    private readonly ExcelSheet<TerritoryType> _zones;
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
@@ -54,9 +50,7 @@ public class GatherWindow : Window, IDisposable
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
         _debug = new(Exec);
-        _emotes = Svc.Data.GetExcelSheet<Emote>()!;
         _items = Svc.Data.GetExcelSheet<Item>()!;
-        _zones = Svc.Data.GetExcelSheet<TerritoryType>()!;
     }
 
     public void Dispose() => Exec.Dispose();
@@ -116,7 +110,7 @@ public class GatherWindow : Window, IDisposable
             if (Exec.Waiting)
             {
                 ImGui.SameLine();
-                ImGui.Text($"waiting {Exec.WaitUntil - Environment.TickCount64}ms");
+                ImGui.Text($"waiting {Exec.WaitUntil - System.Environment.TickCount64}ms");
             }
         }
     }
@@ -188,7 +182,7 @@ public class GatherWindow : Window, IDisposable
                 {
                     foreach (var route in RouteDB.Routes)
                     {
-                        if (route.Name.Contains(searchString, StringComparison.CurrentCultureIgnoreCase))
+                        if (route.Name.Contains(searchString, System.StringComparison.CurrentCultureIgnoreCase))
                             FilteredRoutes.Add(route);
                     }
                 }
@@ -346,8 +340,11 @@ public class GatherWindow : Window, IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        //if (Utils.ExcelSheetCombo("##Territory", ref wp.ZoneID, Utils.territoryComboOptions))
-        //    RouteDB.NotifyModified();
+        if (UICombo.ExcelSheetCombo("##Territory", out TerritoryType? territory, _ => $"{wp.ZoneID}", x => x.PlaceName.Value!.Name, x => Coordinates.HasAetheryteInZone(x.RowId)))
+        {
+            wp.ZoneID = (int)territory.RowId;
+            RouteDB.NotifyModified();
+        }
         if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))
             RouteDB.NotifyModified();
         if (UICombo.Enum("Movement mode", ref wp.Movement))
@@ -400,9 +397,11 @@ public class GatherWindow : Window, IDisposable
                 case InteractionType.None: break;
                 case InteractionType.Standard: break;
                 case InteractionType.Emote:
-                    ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Use Emote {_emotes.GetRow((uint)wp.EmoteID)?.Name}###{nameof(InteractionType.Emote)}", ref wp.EmoteID, 1, Emotes.First(), Emotes.Last()))
+                    if (UICombo.ExcelSheetCombo("##Emote", out Emote? emote, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Name}", x => !x.Name.RawString.IsNullOrEmpty()))
+                    {
+                        wp.EmoteID = (int)emote.RowId;
                         RouteDB.NotifyModified();
+                    }
                     break;
                 case InteractionType.UseItem:
                     ImGui.PushItemWidth(100);
@@ -410,8 +409,11 @@ public class GatherWindow : Window, IDisposable
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.UseAction:
-                    if (UICombo.ExcelSheetCombo("##Action", ref wp.ActionID, UICombo.actionComboOptions))
+                    if (UICombo.ExcelSheetCombo("##Action", out Action? action, _ => $"{wp.ActionID}", x => $"[{x.RowId}] {x.Name}", x => x.ClassJobCategory.Row > 0 && x.ActionCategory.Row <= 4 && x.RowId > 8))
+                    {
+                        wp.ActionID = (int)action.RowId;
                         RouteDB.NotifyModified();
+                    }
                     break;
                 //case InteractionType.PickupQuest:
                 //    if (UICombo.ExcelSheetCombo("##PickupQuest", ref wp.QuestID, UICombo.questComboOptions))
@@ -424,8 +426,11 @@ public class GatherWindow : Window, IDisposable
                 case InteractionType.Grind:
                     using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
                     {
-                        if (UICombo.ExcelSheetCombo("##Mob", ref wp.MobID, UICombo.mobComboOptions))
+                        if (UICombo.ExcelSheetCombo("##Mob", out BNpcName? mob, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Singular}", x => !x.Singular.RawString.IsNullOrEmpty()))
+                        {
+                            wp.MobID = (int)mob.RowId;
                             RouteDB.NotifyModified();
+                        }
                     }
                     if (!Utils.HasPlugin(BossModIPC.Name))
                         if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip($"This features requires {BossModIPC.Name} to be installed.");
@@ -443,19 +448,26 @@ public class GatherWindow : Window, IDisposable
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestSequence:
-                                if (UICombo.ExcelSheetCombo("##QuestSequence", ref wp.QuestID, UICombo.questComboOptions))
+                                if (UICombo.ExcelSheetCombo("##QuestSequence", out Quest? qs, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.RawString.Length > 0))
+                                {
+                                    wp.QuestID = (int)qs.RowId;
                                     RouteDB.NotifyModified();
+                                }
                                 ImGui.SameLine();
                                 if (Utils.EditNumberField($"Sequence = ", 25, ref wp.QuestSeq))
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestComplete:
-                                if (UICombo.ExcelSheetCombo("##QuestComplete", ref wp.QuestID, UICombo.questComboOptions))
+                                if (UICombo.ExcelSheetCombo("##QuestComplete", out Quest? qc, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.RawString.Length > 0))
+                                {
+                                    wp.QuestID = (int)qc.RowId;
                                     RouteDB.NotifyModified();
+                                }
                                 break;
                         }
                     }
                     break;
+                case InteractionType.EquipRecommendedGear: break;
                 case InteractionType.StartRoute:
                     if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
                         RouteDB.NotifyModified();

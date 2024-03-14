@@ -164,9 +164,9 @@ public class GatherRouteExec : IDisposable
                             break;
                     }
                 break;
-            //case GatherRouteDB.InteractionType.AutoEquipGear:
-            //    QuestsHelper.AutoEquip(true);
-            //    break;
+            case GatherRouteDB.InteractionType.EquipRecommendedGear:
+                QuestsHelper.EquipRecommendedGear();
+                break;
             case GatherRouteDB.InteractionType.StartRoute:
                 var route = RouteDB.Routes.Find(r => r.Name == wp.RouteName);
                 if (route != null)
