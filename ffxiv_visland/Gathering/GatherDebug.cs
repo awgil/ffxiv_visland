@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
+using System.Collections.Generic;
 using System.Linq;
 using visland.Helpers;
 using visland.Questing;
@@ -11,6 +12,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
 {
     private readonly UITree _tree = new();
     private GatherRouteExec exec = exec;
+    private List<List<string>> _pluginlists = new();
 
     public void Draw()
     {
@@ -48,5 +50,33 @@ public unsafe class GatherDebug(GatherRouteExec exec)
 
         if (ImGui.Button("Get Loaded Plugins"))
             ImGui.SetClipboardText($"LOADED PLUGINS\n================\n{string.Join("\n", Service.Interface.InstalledPlugins.Where(p => p.IsLoaded).Select(p => p.Name).OrderBy(name => name))}");
+        ImGui.SameLine();
+        if (ImGui.Button("Add Plugin List"))
+        {
+            var clip = ImGui.GetClipboardText();
+            if (clip != null)
+            {
+                _pluginlists.Add([.. clip.Split("\n")]);
+            }
+        }
+        ImGui.SameLine();
+        if (ImGui.Button("clear"))
+            _pluginlists.Clear();
+
+        // find common elements across _pluginlists
+        if (_pluginlists.Count > 1)
+        {
+            var common = _pluginlists
+                .Skip(1)
+                .Aggregate(new HashSet<string>(_pluginlists.First()), (h, e) =>
+                {
+                    h.IntersectWith(e);
+                    return h;
+                });
+            if (ImGui.Button("Export"))
+                ImGui.SetClipboardText(string.Join("\n", common));
+            ImGui.TextUnformatted($"Lists checking: {_pluginlists.Count}");
+            ImGui.TextUnformatted($"{string.Join("\n", common)}");
+        }
     }
 }
