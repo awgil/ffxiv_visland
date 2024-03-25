@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0-windows7.0": {
+    "net8.0-windows7.0": {
       "DalamudPackager": {
         "type": "Direct",
         "requested": "[2.1.12, )",
@@ -195,11 +195,6 @@
         "type": "Transitive",
         "resolved": "4.3.0",
         "contentHash": "VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg=="
-      },
-      "Serilog": {
-        "type": "Transitive",
-        "resolved": "2.11.0",
-        "contentHash": "ysv+hBzTul6Dp+Hvm10FlhJO3yMQcFKSAleus+LpiIzvNstpeV4Z7gGuIZ1OPNfIMulSHOjmLuGAEDKzpnV8ZQ=="
       },
       "SharpDX": {
         "type": "Transitive",
@@ -930,15 +925,6 @@
         }
       },
       "ecommons": {
-        "type": "Project"
-      },
-      "ffxivclientstructs": {
-        "type": "Project",
-        "dependencies": {
-          "Serilog": "[2.11.0, )"
-        }
-      },
-      "ffxivclientstructs.interopsourcegenerators": {
         "type": "Project"
       }
     }
