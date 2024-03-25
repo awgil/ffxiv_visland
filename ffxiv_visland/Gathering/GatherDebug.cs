@@ -1,5 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
+using System.Linq;
 using visland.Helpers;
 using visland.Questing;
 using visland.Questing.Presets;
@@ -45,6 +46,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
 
         _tree.LeafNode($"{nameof(Gridania1_15)}", select: () => Gridania1_15.Run(exec));
 
-        if (ImGui.Button("test")) QuestsHelper.PickUpQuest(67094, 1006950);
+        if (ImGui.Button("Get Loaded Plugins"))
+            ImGui.SetClipboardText($"LOADED PLUGINS\n================\n{string.Join("\n", Service.Interface.InstalledPlugins.Where(p => p.IsLoaded).Select(p => p.Name).OrderBy(name => name))}");
     }
 }
