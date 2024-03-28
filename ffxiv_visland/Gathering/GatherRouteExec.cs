@@ -213,6 +213,7 @@ public class GatherRouteExec : IDisposable
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
         Loop = loopAtEnd;
+        route.Waypoints[waypoint].Pathfind = pathfind;
         Pathfind = pathfind;
         _camera.Enabled = true;
         _movement.Enabled = true;
