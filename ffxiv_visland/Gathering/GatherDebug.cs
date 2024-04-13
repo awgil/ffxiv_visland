@@ -1,4 +1,5 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game;
+﻿using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using ImGuiNET;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
             }
         }
 
+        _tree.LeafNode($"FlyingControlType: {Svc.GameConfig.UiControl.GetUInt("FlyingControlType")}");
         _tree.LeafNode($"{nameof(ExecKillHowTos)}: {ExecKillHowTos.IsEnabled}", select: ExecKillHowTos.Toggle);
         _tree.LeafNode($"{nameof(ExecSkipTalk)}: {ExecSkipTalk.IsEnabled}", select: ExecSkipTalk.Toggle);
         _tree.LeafNode($"{nameof(ExecSelectYes)}: {ExecSelectYes.IsEnabled}", select: ExecSelectYes.Toggle);

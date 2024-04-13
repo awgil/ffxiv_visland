@@ -86,10 +86,11 @@ public class GatherRouteExec : IDisposable
             if (!Player.OnIsland && !Player.Mounted && Player.SprintCD == 0)
                 ExecuteSprint();
 
-            if (wp.Movement == GatherRouteDB.Movement.MountFly && Player.Mounted && !Player.InclusiveFlying && !Service.Condition[ConditionFlag.Jumping])
+            if (wp.Movement == GatherRouteDB.Movement.MountFly && Player.Mounted && !Player.InclusiveFlying)
             {
                 // TODO: improve, jump is not the best really...
                 ExecuteJump();
+                return;
             }
 
             if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))

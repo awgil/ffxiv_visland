@@ -1,24 +1,24 @@
-﻿using ECommons.Automation;
-using ECommons.DalamudServices;
-using ECommons;
+﻿using ECommons;
+using ECommons.Automation;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using visland.Helpers;
 
 namespace visland.Gathering;
 internal class CompatModule
 {
     public static unsafe void EnsureCompatibility(GatherRouteDB RouteDB)
     {
-        // set flight activation to single jump for ease of flight activation
-        if (Svc.GameConfig.UiControl.GetUInt("FlyingControlType") == 1)
+        // set flight activation to double jump to prevent flying when running off cliffs
+        if (Player.FlyingControlType == 0)
         {
-            Service.Config.Get<GatherRouteDB>().WasFlyingInManual = true;
-            Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 0);
+            Service.Config.Get<GatherRouteDB>().WasFlyingInManual = false;
+            Player.FlyingControlType = 1;
         }
 
         if (RouteDB.GatherModeOnStart)
         {
-            if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && MJIManager.Instance()->CurrentMode != 1)
+            if (Player.OnIsland && MJIManager.Instance()->CurrentMode != 1)
             {
                 // you can't just change the CurrentMode in MJIManager
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
@@ -26,7 +26,7 @@ internal class CompatModule
             }
 
             // the context menu doesn't respect the updateState for some reason
-            if (MJIManager.Instance()->IsPlayerInSanctuary == 1 && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
+            if (Player.OnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
         }
 
@@ -36,7 +36,7 @@ internal class CompatModule
 
     public static void RestoreChanges()
     {
-        if (Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
-            Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, 1);
+        if (!Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
+            Player.FlyingControlType = 0;
     }
 }
