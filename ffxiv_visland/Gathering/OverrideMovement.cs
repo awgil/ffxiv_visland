@@ -45,6 +45,10 @@ public unsafe class OverrideMovement
 
     private bool _legacyMode;
 
+    private delegate bool RMIWalkIsInputEnabled(void* self);
+    private RMIWalkIsInputEnabled _rmiWalkIsInputEnabled1;
+    private RMIWalkIsInputEnabled _rmiWalkIsInputEnabled2;
+
     private delegate void RMIWalkDelegate(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk);
     [EzHook("E8 ?? ?? ?? ?? 80 7B 3E 00 48 8D 3D", false)]
     private EzHook<RMIWalkDelegate> RMIWalkHook = null!;
@@ -58,6 +62,14 @@ public unsafe class OverrideMovement
         EzSignatureHelper.Initialize(this);
         Service.Log.Information($"RMIWalk address: 0x{RMIWalkHook.Address:X}");
         Service.Log.Information($"RMIFly address: 0x{RMIFlyHook.Address:X}");
+
+        var rmiWalkIsInputEnabled1Addr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 75 10 38 43 3C");
+        var rmiWalkIsInputEnabled2Addr = Service.SigScanner.ScanText("E8 ?? ?? ?? ?? 84 C0 75 03 88 47 3F");
+        Service.Log.Information($"RMIWalkIsInputEnabled1 address: 0x{rmiWalkIsInputEnabled1Addr:X}");
+        Service.Log.Information($"RMIWalkIsInputEnabled2 address: 0x{rmiWalkIsInputEnabled2Addr:X}");
+        _rmiWalkIsInputEnabled1 = Marshal.GetDelegateForFunctionPointer<RMIWalkIsInputEnabled>(rmiWalkIsInputEnabled1Addr);
+        _rmiWalkIsInputEnabled2 = Marshal.GetDelegateForFunctionPointer<RMIWalkIsInputEnabled>(rmiWalkIsInputEnabled2Addr);
+
         Service.GameConfig.UiControlChanged += OnConfigChanged;
         UpdateLegacyMode();
     }
@@ -71,7 +83,7 @@ public unsafe class OverrideMovement
     {
         RMIWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
-        bool movementAllowed = bAdditiveUnk == 0 && !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BeingMoved];
+        bool movementAllowed = bAdditiveUnk == 0 && _rmiWalkIsInputEnabled1(self) && _rmiWalkIsInputEnabled2(self); //&& !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BeingMoved];
         if (movementAllowed && (IgnoreUserInput || *sumLeft == 0 && *sumForward == 0) && DirectionToDestination(false) is var relDir && relDir != null)
         {
             var dir = relDir.Value.h.ToDirection();
