@@ -365,6 +365,7 @@ public class GatherWindow : Window, System.IDisposable
                 var target = Service.TargetManager.Target;
                 if (target != null)
                 {
+                    wp.InteractWithName = target.Name.ToString().ToLower();
                     wp.InteractWithOID = target.DataId;
                     RouteDB.NotifyModified();
                 }
