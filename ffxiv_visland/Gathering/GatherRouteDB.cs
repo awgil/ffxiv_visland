@@ -71,6 +71,7 @@ public class GatherRouteDB : Configuration.Node
     public class Route
     {
         public string Name = "";
+        public string Group = "";
         public List<Waypoint> Waypoints = [];
     }
 
@@ -89,8 +90,14 @@ public class GatherRouteDB : Configuration.Node
             foreach (var jr in ja)
             {
                 var jn = jr["Name"]?.Value<string>();
+                var jg = jr["Group"]?.Value<string>();
                 if (jn != null && jr["Waypoints"] is JArray jw)
-                    Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
+                {
+                    if (jg != null)
+                        Routes.Add(new Route() { Name = jn, Group = jg, Waypoints = LoadFromJSONWaypoints(jw) });
+                    else
+                        Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
+                }
             }
         }
         DisableOnErrors = (bool?)j["DisableOnErrors"] ?? false;
@@ -107,6 +114,7 @@ public class GatherRouteDB : Configuration.Node
             res.Add(new JObject()
             {
                 { "Name", r.Name },
+                { "Group", r.Group },
                 { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
             });
         }
