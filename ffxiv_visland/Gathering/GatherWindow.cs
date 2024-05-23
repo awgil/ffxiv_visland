@@ -10,7 +10,6 @@ using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -18,7 +17,6 @@ using System.Numerics;
 using visland.Helpers;
 using visland.IPC;
 using static visland.Gathering.GatherRouteDB;
-using Action = Lumina.Excel.GeneratedSheets.Action; //Ambigious with System
 
 namespace visland.Gathering;
 
@@ -97,7 +95,7 @@ public class GatherWindow : Window, System.IDisposable
         if (Exec.CurrentRoute != null)
             Utils.FlashText($"{(Exec.Paused ? "PAUSED" : Exec.Waiting ? "WAITING" : "RUNNING")}", new Vector4(1.0f, 1.0f, 1.0f, 1.0f), Exec.Paused ? new Vector4(1.0f, 0.0f, 0.0f, 1.0f) : new Vector4(0.0f, 1.0f, 0.0f, 1.0f), 2);
         ImGui.SameLine();
-        
+
         if (Exec.CurrentRoute == null || Exec.CurrentWaypoint >= Exec.CurrentRoute.Waypoints.Count)
         {
             ImGui.Text("Route not running");
@@ -184,7 +182,7 @@ public class GatherWindow : Window, System.IDisposable
                 {
                     foreach (var route in RouteDB.Routes)
                     {
-                        if (route.Name.Contains(searchString, System.StringComparison.CurrentCultureIgnoreCase)||route.Group.Contains(searchString, System.StringComparison.CurrentCultureIgnoreCase))
+                        if (route.Name.Contains(searchString, System.StringComparison.CurrentCultureIgnoreCase) || route.Group.Contains(searchString, System.StringComparison.CurrentCultureIgnoreCase))
                             FilteredRoutes.Add(route);
                     }
                 }
@@ -198,11 +196,11 @@ public class GatherWindow : Window, System.IDisposable
                 for (var g = 0; g < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); g++)
                 {
                     var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
-                    if (String.IsNullOrEmpty(routeSource[g].Group))
+                    if (string.IsNullOrEmpty(routeSource[g].Group))
                     {
                         routeSource[g].Group = "None";
                     }
-                    if(!groups.Contains(routeSource[g].Group))
+                    if (!groups.Contains(routeSource[g].Group))
                     {
                         groups.Add(routeSource[g].Group);
                     }
@@ -216,8 +214,9 @@ public class GatherWindow : Window, System.IDisposable
                         {
                             var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
                             var route = routeSource[i];
-                            var routeGroup = String.IsNullOrEmpty(route.Group) ? "None" : route.Group;
-                            if (routeGroup == group){
+                            var routeGroup = string.IsNullOrEmpty(route.Group) ? "None" : route.Group;
+                            if (routeGroup == group)
+                            {
                                 var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
                                 if (selectedRoute)
                                     selectedRouteIndex = i;
@@ -339,7 +338,7 @@ public class GatherWindow : Window, System.IDisposable
                 }
             }
             if (ImGui.IsItemHovered()) ImGui.SetTooltip("Add Waypoint: Interact with Target");
-            
+
             ImGuiEx.TextV("Group: ");
             ImGui.SameLine();
             if (ImGui.InputText("##group", ref group, 256))
