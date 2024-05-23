@@ -205,14 +205,14 @@ public class GatherWindow : Window, System.IDisposable
                         groups.Add(routeSource[g].Group);
                     }
                 }
-                groups = groups.OrderBy(i => i == "None").ThenBy(i => i).ToList(); //Sort with None at the End
+                groups = [.. groups.OrderBy(i => i == "None").ThenBy(i => i)]; //Sort with None at the End
                 foreach (var group in groups)
                 {
-                    if (ImGui.CollapsingHeader(group))
+                    foreach (var wn in _tree.Node($"{group}###{groups.IndexOf(group)}"))
                     {
-                        for (var i = 0; i < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); i++)
+                        var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
+                        for (var i = 0; i < routeSource.Count; i++)
                         {
-                            var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
                             var route = routeSource[i];
                             var routeGroup = string.IsNullOrEmpty(route.Group) ? "None" : route.Group;
                             if (routeGroup == group)
