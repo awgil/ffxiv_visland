@@ -213,6 +213,12 @@ public class QuestsHelper
         return true;
     }
 
+    public static unsafe void UseCommand(string chatCommand)
+    {
+        Chat chat = new();
+        chat.SendMessage($"{chatCommand}");
+    }
+
     private static unsafe byte? GetGearsetForClassJob(uint cjId)
     {
         var gearsetModule = RaptureGearsetModule.Instance();
