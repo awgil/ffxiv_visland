@@ -506,6 +506,12 @@ public class GatherWindow : Window, System.IDisposable
                     if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
                         RouteDB.NotifyModified();
                     break;
+                case InteractionType.ChatCommand:
+                    ImGuiEx.TextV("Chat Command: ");
+                    ImGui.SameLine();
+                    if (ImGui.InputText("##chatCommand", ref wp.ChatCommand, 256))
+                        RouteDB.NotifyModified();
+                    break;
             }
         }
 

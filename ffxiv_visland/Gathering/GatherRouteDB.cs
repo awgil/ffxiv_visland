@@ -31,6 +31,7 @@ public class GatherRouteDB : Configuration.Node
         //TurninQuest = 8,
         StartRoute = 9,
         EquipRecommendedGear = 10,
+        ChatCommand = 11,
     }
 
     public enum GrindStopConditions
@@ -62,6 +63,7 @@ public class GatherRouteDB : Configuration.Node
         public GrindStopConditions StopCondition;
         public int KillCount;
         public string RouteName = "";
+        public string ChatCommand= "";
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;
@@ -152,6 +154,7 @@ public class GatherRouteDB : Configuration.Node
                 wp.MobID,
                 wp.QuestID,
                 wp.RouteName,
+                wp.ChatCommand,
             });
         return jw;
     }
@@ -185,9 +188,10 @@ public class GatherRouteDB : Configuration.Node
                 MobID = jwea.ElementAtOrDefault(16)?.Value<int>() ?? default,
                 QuestID = jwea.ElementAtOrDefault(17)?.Value<int>() ?? default,
                 RouteName = jwea.ElementAtOrDefault(18)?.Value<string>() ?? "",
-                QuestSeq = jwea.ElementAtOrDefault(19)?.Value<int>() ?? 0,
-                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0),
-                KillCount = jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0,
+                ChatCommand = jwea.ElementAtOrDefault(19)?.Value<string>() ?? "",
+                QuestSeq = jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0,
+                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0),
+                KillCount = jwea.ElementAtOrDefault(22)?.Value<int>() ?? 0,
             });
         }
         return res;
