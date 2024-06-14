@@ -218,7 +218,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         var route = _wndGather.RouteDB.Routes.Find(r => r.Name == name);
         if (route != null)
-            _wndGather.Exec.Start(route, 0, true, !once);
+            _wndGather.Exec.Start(route, 0, true, !once, route.Waypoints.ElementAt(0).Pathfind);
     }
 
     private void CheckIPC()
