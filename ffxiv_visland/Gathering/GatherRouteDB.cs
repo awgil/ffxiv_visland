@@ -192,6 +192,28 @@ public class GatherRouteDB : Configuration.Node
         }
         return res;
     }
+
+    public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort=false)
+    {
+        List<string> groups = ["Ungrouped"];
+        for (var g = 0; g < (gatherRouteDB.Routes.Count); g++)
+        {
+            var routeSource = gatherRouteDB.Routes;
+            if (string.IsNullOrEmpty(routeSource[g].Group))
+            {
+                routeSource[g].Group = "Ungrouped";
+            }
+            if (!groups.Contains(routeSource[g].Group))
+            {
+                groups.Add(routeSource[g].Group);
+            }
+        }
+        if (sort)
+        {
+            groups = [.. groups.OrderBy(i => i == "Ungrouped").ThenBy(i => i)]; //Sort with None at the End
+        }
+        return groups;
+    }
 }
 
 public static class WaypointExtensions
