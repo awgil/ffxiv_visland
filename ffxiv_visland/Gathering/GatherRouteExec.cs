@@ -259,7 +259,7 @@ public class GatherRouteExec : IDisposable
             ExecKillHowTos.Init();
             ExecSkipTalk.Init();
             ExecSelectYes.Init();
-            ExecQuestJournalEvent.Init();
+            //ExecQuestJournalEvent.Init();
             AutoCutsceneSkipper.Enable();
             if (wp!.Interaction == GatherRouteDB.InteractionType.Grind)
                 ExecKillCounter.Init([QuestsHelper.GetMobName((uint)wp!.MobID)]);
@@ -269,7 +269,7 @@ public class GatherRouteExec : IDisposable
             ExecKillHowTos.Shutdown();
             ExecSkipTalk.Shutdown();
             ExecSelectYes.Shutdown();
-            ExecQuestJournalEvent.Shutdown();
+            //ExecQuestJournalEvent.Shutdown();
             AutoCutsceneSkipper.Disable();
             ExecKillCounter.Dispose();
         }

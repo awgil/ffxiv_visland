@@ -18,9 +18,9 @@ public unsafe class GatherDebug(GatherRouteExec exec)
     public void Draw()
     {
         var qm = QuestManager.Instance();
-        foreach (var _ in _tree.Node("Quests", qm->NormalQuestsSpan.Length == 0))
+        foreach (var _ in _tree.Node("Quests", qm->NormalQuests.Length == 0))
         {
-            foreach (var q in qm->NormalQuestsSpan)
+            foreach (var q in qm->NormalQuests)
             {
                 if (q.QuestId is 0) continue;
                 foreach (var __ in _tree.Node($"[{q.QuestId}] {QuestsHelper.GetNameOfQuest(q.QuestId)}"))
@@ -46,7 +46,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
         _tree.LeafNode($"{nameof(ExecKillHowTos)}: {ExecKillHowTos.IsEnabled}", select: ExecKillHowTos.Toggle);
         _tree.LeafNode($"{nameof(ExecSkipTalk)}: {ExecSkipTalk.IsEnabled}", select: ExecSkipTalk.Toggle);
         _tree.LeafNode($"{nameof(ExecSelectYes)}: {ExecSelectYes.IsEnabled}", select: ExecSelectYes.Toggle);
-        _tree.LeafNode($"{nameof(ExecQuestJournalEvent)}: {ExecQuestJournalEvent.IsEnabled}", select: ExecQuestJournalEvent.Toggle);
+        //_tree.LeafNode($"{nameof(ExecQuestJournalEvent)}: {ExecQuestJournalEvent.IsEnabled}", select: ExecQuestJournalEvent.Toggle);
 
         _tree.LeafNode($"{nameof(Gridania1_15)}", select: () => Gridania1_15.Run(exec));
 

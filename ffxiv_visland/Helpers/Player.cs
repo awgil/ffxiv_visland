@@ -11,7 +11,7 @@ using System.Linq;
 namespace visland.Helpers;
 public unsafe static class Player
 {
-    public static PlayerCharacter Object => Service.ClientState.LocalPlayer;
+    public static IPlayerCharacter Object => Service.ClientState.LocalPlayer;
     public static bool Available => Service.ClientState.LocalPlayer != null;
     public static bool Interactable => Available && Object.IsTargetable;
     public static ulong CID => Service.ClientState.LocalContentId;

@@ -44,7 +44,7 @@ public class QuestsHelper
     {
         try
         {
-            var agentModule = Framework.Instance()->GetUiModule()->GetAgentModule();
+            var agentModule = Framework.Instance()->GetUIModule()->GetAgentModule();
             try
             {
                 DoEmote = Marshal.GetDelegateForFunctionPointer<DoEmoteDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? B8 0A 00 00 00"));
@@ -67,7 +67,7 @@ public class QuestsHelper
     public static bool IsQuestAccepted(int questID) => new QuestManager().IsQuestAccepted(((uint)questID).ToInternalID());
     public static bool IsQuestCompleted(int questID) => QuestManager.IsQuestComplete(((uint)questID).ToInternalID());
     public static byte GetQuestStep(int questID) => QuestManager.GetQuestSequence(((uint)questID).ToInternalID());
-    public static unsafe bool HasQuest(int questID) => QuestManager.Instance()->NormalQuestsSpan.ToArray().ToList().Any(q => (q.QuestId ^ 65536) == questID);
+    public static unsafe bool HasQuest(int questID) => QuestManager.Instance()->NormalQuests.ToArray().ToList().Any(q => (q.QuestId ^ 65536) == questID);
 
     public static bool IsTodoChecked(int questID, int questStep, int objectiveIndex) => true; // TODO: might need to reverse the agent or something. Doing this by addon does not seem like a good idea
 
@@ -221,18 +221,18 @@ public class QuestsHelper
             var gearset = gearsetModule->GetGearset(i);
             if (gearset == null) continue;
             if (!gearset->Flags.HasFlag(RaptureGearsetModule.GearsetFlag.Exists)) continue;
-            if (gearset->ID != i) continue;
-            if (gearset->ClassJob == cjId) return gearset->ID;
+            if (gearset->Id != i) continue;
+            if (gearset->ClassJob == cjId) return gearset->Id;
         }
         return null;
     }
 
-    private static unsafe RecommendEquipModule* Module => Framework.Instance()->GetUiModule()->GetRecommendEquipModule();
+    private static unsafe RecommendEquipModule* Module => Framework.Instance()->GetUIModule()->GetRecommendEquipModule();
     public static unsafe void EquipRecommendedGear()
     {
         if (Module == null || Svc.Condition[ConditionFlag.InCombat] || IsOccupied()) return;
 
-        Module->SetupFromPlayerState();
+        Module->SetupForClassJob((byte)Svc.ClientState.LocalPlayer!.ClassJob.Id);
         Svc.Framework.Update += DoEquip;
     }
 
@@ -256,8 +256,8 @@ public class QuestsHelper
         for (var i = 0; i < inv->GetInventoryContainer(InventoryType.EquippedItems)->Size; i++)
         {
             var slot = inv->GetInventoryContainer(InventoryType.EquippedItems)->GetInventorySlot(i);
-            if (slot->ItemID != 0)
-                items.Add(slot->ItemID);
+            if (slot->ItemId != 0)
+                items.Add(slot->ItemId);
         }
         return items;
     }
@@ -265,10 +265,10 @@ public class QuestsHelper
     private static unsafe List<uint> GetRecommendedItems()
     {
         var items = new List<uint>();
-        for (var i = 0; i < Module->RecommendedItemsSpan.Length; i++)
+        for (var i = 0; i < Module->RecommendedItems.Length; i++)
         {
-            if (Module->RecommendedItemsSpan[i].Value != null)
-                items.Add(Module->RecommendedItemsSpan[i].Value->ItemID);
+            if (Module->RecommendedItems[i].Value != null)
+                items.Add(Module->RecommendedItems[i].Value->ItemId);
         }
         return items;
     }

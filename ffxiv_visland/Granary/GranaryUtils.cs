@@ -17,7 +17,7 @@ public static unsafe class GranaryUtils
     public static MJIGranaryState* GetGranaryState(int index)
     {
         var state = State();
-        return state != null ? (MJIGranaryState*)Unsafe.AsPointer(ref state->GranarySpan[index]) : null;
+        return state != null ? (MJIGranaryState*)Unsafe.AsPointer(ref state->Granary[index]) : null;
     }
 
     public static void Collect(int index)
@@ -71,7 +71,7 @@ public static unsafe class GranaryUtils
         bool haveAnything = gstate->RareResourceCount > 0;
         bool overcapSome = haveAnything && WillOvercap(gstate->RareResourcePouchId, gstate->RareResourceCount);
         bool overcapAll = !haveAnything || overcapSome;
-        for (int i = 0; i < MJIGranaryState.MaxNormalResources; ++i)
+        for (int i = 0; i < gstate->NormalResourceCounts.Length; ++i)
         {
             if (gstate->NormalResourceCounts[i] > 0)
             {

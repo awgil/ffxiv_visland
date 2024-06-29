@@ -17,8 +17,8 @@ public unsafe class GranaryDebug
         {
             if (granary != null)
             {
-                DrawGranaryState(1, ref granary->GranarySpan[0]);
-                DrawGranaryState(2, ref granary->GranarySpan[1]);
+                DrawGranaryState(1, ref granary->Granary[0]);
+                DrawGranaryState(2, ref granary->Granary[1]);
             }
         }
 
@@ -29,7 +29,7 @@ public unsafe class GranaryDebug
             {
                 _tree.LeafNode($"Granaries state: {(nint)agent->GranariesState:X}");
                 _tree.LeafNode($"Confirm: addon={agent->ConfirmAddonHandle} #{agent->ConfirmType} '{agent->Strings.ConfirmText}'");
-                _tree.LeafNode($"Select: addon={agent->SelectExpeditionAddonHandle}, return='{agent->Strings.FinishTimeTextSpan[0]}'/'{agent->Strings.FinishTimeTextSpan[1]}'");
+                _tree.LeafNode($"Select: addon={agent->SelectExpeditionAddonHandle}, return='{agent->Strings.FinishTimeText[0]}'/'{agent->Strings.FinishTimeText[1]}'");
                 _tree.LeafNode($"Selected granary={agent->CurGranaryIndex}");
                 _tree.LeafNode($"Selected expedition={agent->CurActiveExpeditionId} {agent->CurExpeditionName}, hover={agent->CurHoveredExpeditionId}, proposed={agent->CurSelectedExpeditionId}");
                 _tree.LeafNode($"Selected days={agent->CurActiveDays} -> {agent->CurSelectedDays}");

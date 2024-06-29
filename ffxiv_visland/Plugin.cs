@@ -4,6 +4,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
 using ECommons.Automation;
+using ECommons.Automation.LegacyTaskManager;
 using ECommons.Reflection;
 using ImGuiNET;
 using System;
@@ -57,7 +58,7 @@ public sealed class Plugin : IDalamudPlugin
     internal static Plugin P;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     internal TaskManager TaskManager;
-    internal Memory Memory;
+    //internal Memory Memory;
 
     private VislandIPC _vislandIPC;
 
@@ -96,7 +97,7 @@ public sealed class Plugin : IDalamudPlugin
         Dalamud = dalamud;
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
-        Memory  = new();
+        //Memory  = new();
 
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();

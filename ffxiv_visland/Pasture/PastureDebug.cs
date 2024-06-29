@@ -36,7 +36,7 @@ public unsafe class PastureDebug
             {
                 var sheetAnimals = Service.LuminaGameData.GetExcelSheet<MJIAnimals>()!; // AnimalType is row here
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
-                foreach (ref var a in mgr->PastureHandler->MJIAnimalsSpan)
+                foreach (ref var a in mgr->PastureHandler->MJIAnimals)
                 {
                     var baseName = sheetName.GetRow(a.BNPCNameId)?.Singular;
                     var pa = (byte*)Unsafe.AsPointer(ref a);
@@ -44,7 +44,7 @@ public unsafe class PastureDebug
                     {
                         var food = sheetItem.GetRow(a.AutoFoodItemId);
                         _tree.LeafNode($"Nickname: '{MemoryHelper.ReadString((nint)pa + 1, 24)}'");
-                        _tree.LeafNode($"ObjectID: {a.ObjectId:X}");
+                        _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"MJIAnimal row id: {a.AnimalType}");
                         _tree.LeafNode($"Mood={a.Mood}, food={a.FoodLevel} hours");
                         _tree.LeafNode($"Have leavings: {a.ManualLeavingsAvailable}");
@@ -59,11 +59,11 @@ public unsafe class PastureDebug
         var agent = AgentMJIAnimalManagement.Instance();
         foreach (var n1 in _tree.Node($"Agent: {(nint)agent:X}", agent == null))
         {
-            _tree.LeafNode($"OpHandler: {(nint)agent->OpHandler:X}, vtable=+{(nint)agent->OpHandler->vtbl - Service.SigScanner.Module.BaseAddress:X}, f10={*(nint*)((nint)agent->OpHandler + 0x10):X}");
+            _tree.LeafNode($"OpHandler: {(nint)agent->OpHandler:X}, vtable=+{(nint)agent->OpHandler->VirtualTable - Service.SigScanner.Module.BaseAddress:X}, f10={*(nint*)((nint)agent->OpHandler + 0x10):X}");
             _tree.LeafNode($"Dirtyness: data-ready={agent->DataInitialized}, need-update={agent->UpdateNeeded}");
             _tree.LeafNode($"Num pasture slots: {agent->NumPastureSlots}");
             _tree.LeafNode($"Cur ctx menu row: {agent->CurContextMenuRow}");
-            _tree.LeafNode($"Pending release: {agent->PendingReleaseObjectId:X}");
+            _tree.LeafNode($"Pending release: {agent->PendingReleaseEntityId:X}");
             _tree.LeafNode($"Proposed nickname: {agent->ProposedNickname}");
             _tree.LeafNode($"During capture: {agent->DuringCapture}");
             _tree.LeafNode($"Expected collect leavings: {agent->ExpectedCollectLeavings}");
@@ -73,7 +73,7 @@ public unsafe class PastureDebug
                 {
                     foreach (var n3 in _tree.Node($"{a.Desc.AnimalRowId} '{a.Desc.Nickname}'"))
                     {
-                        _tree.LeafNode($"ObjectID: {a.ObjectId:X}");
+                        _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"Rarity: {a.Desc.Rarity}");
                         _tree.LeafNode($"Sort: {a.Desc.Sort}");
                         _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{sheetItem.GetRow(a.Desc.Leaving1ItemId)?.Name}' / {a.Desc.Leaving2ItemId} '{sheetItem.GetRow(a.Desc.Leaving2ItemId)?.Name}'");

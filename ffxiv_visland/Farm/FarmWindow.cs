@@ -87,9 +87,9 @@ public unsafe class FarmWindow : UIAttachedWindow
             var agent = AgentMJIFarmManagement.Instance();
             for (int i = 0; i < agent->NumSlots; ++i)
             {
-                bool cared = agent->SlotsSpan[i].UnderCare;
+                bool cared = agent->Slots[i].UnderCare;
                 canDismiss |= cared;
-                canEntrust |= !cared && agent->SlotsSpan[i].SeedItemId != 0;
+                canEntrust |= !cared && agent->Slots[i].SeedItemId != 0;
             }
 
             using (ImRaii.Disabled(!canDismiss))
@@ -114,7 +114,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             var agent = AgentMJIFarmManagement.Instance();
             for (int i = 0; i < agent->NumSlots; ++i)
             {
-                ref var slot = ref agent->SlotsSpan[i];
+                ref var slot = ref agent->Slots[i];
                 var inventory = Utils.NumItems(slot.YieldItemId);
                 bool overcap = inventory + slot.YieldAvailable > 999;
                 bool full = inventory == 999;
@@ -230,7 +230,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             Service.Log.Info($"Dismissing all");
             for (int i = 0; i < 20; ++i)
             {
-                if (mji->FarmState->FarmSlotFlagsSpan[i].HasFlag(FarmSlotFlags.UnderCare))
+                if (mji->FarmState->FarmSlotFlags[i].HasFlag(FarmSlotFlags.UnderCare))
                     mji->FarmState->Dismiss((uint)i);
             }
         }
@@ -255,7 +255,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             for (int i = 0; i < 20; ++i)
             {
                 var seed = mji->FarmState->SeedType[i];
-                if (seed != 0 && !mji->FarmState->FarmSlotFlagsSpan[i].HasFlag(FarmSlotFlags.UnderCare))
+                if (seed != 0 && !mji->FarmState->FarmSlotFlags[i].HasFlag(FarmSlotFlags.UnderCare))
                 {
                     mji->FarmState->Entrust((uint)i, mji->FarmState->SeedItemIds.Span[seed]);
                 }

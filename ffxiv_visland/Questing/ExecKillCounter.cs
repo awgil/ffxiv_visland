@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.Text;
+﻿using Dalamud.Game;
+using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using ECommons.DalamudServices;
 using System.Collections.Generic;
@@ -26,7 +27,7 @@ internal class ExecKillCounter
 
     public static void Reset() => Tally.Clear();
 
-    private static void ChatGui_ChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)
+    private static void ChatGui_ChatMessage(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         if ((ushort)type is not 2874 and not 17210 and not 57) return; //2874 = you killed, 17210 = chocobo killed owo
         TryAddFromLogLine(message.ToString());
@@ -36,16 +37,16 @@ internal class ExecKillCounter
     {
         switch (Service.ClientState.ClientLanguage)
         {
-            case Dalamud.ClientLanguage.English:
+            case ClientLanguage.English:
                 RegexPattern = "(?i)(defeat|defeats) the " + string.Join("|", NamesToMatch);
                 break;
-            case Dalamud.ClientLanguage.Japanese:
+            case ClientLanguage.Japanese:
                 RegexPattern = string.Join("|", NamesToMatch) + "を倒した。";
                 break;
-            case Dalamud.ClientLanguage.German:
+            case ClientLanguage.German:
                 RegexPattern = "(?i)(hast|hat) .*" + string.Join("|", NamesToMatch);
                 break;
-            case Dalamud.ClientLanguage.French:
+            case ClientLanguage.French:
                 RegexPattern = "(?i)(a|avez) vaincu .*" + string.Join("|", NamesToMatch);
                 break;
         }

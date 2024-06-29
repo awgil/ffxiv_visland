@@ -25,7 +25,7 @@ public static unsafe class WorkshopUtils
         var agent = AgentMJICraftSchedule.Instance();
         if (agent == null || agent->Data == null)
             return false;
-        foreach (ref var w in agent->Data->WorkshopSchedulesSpan)
+        foreach (ref var w in agent->Data->WorkshopSchedules)
             if (w.NumScheduleEntries != 0)
                 return false;
         return true;

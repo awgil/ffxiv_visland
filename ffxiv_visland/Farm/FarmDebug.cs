@@ -24,7 +24,7 @@ public unsafe class FarmDebug
             {
                 for (int i = 0; i < 20; ++i)
                 {
-                    _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i])?.Name.Value?.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlagsSpan[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
+                    _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i])?.Name.Value?.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }
             foreach (var n2 in _tree.Node("Seeds"))
@@ -41,14 +41,14 @@ public unsafe class FarmDebug
         foreach (var n1 in _tree.Node($"Agent: {(nint)agent:X}", agent == null))
         {
             _tree.LeafNode($"Delay show: {agent->DelayShow}");
-            _tree.LeafNode($"OpHandler: {(nint)agent->OpHandler:X}, vtable=+{(nint)agent->OpHandler->vtbl - Service.SigScanner.Module.BaseAddress:X}");
+            _tree.LeafNode($"OpHandler: {(nint)agent->OpHandler:X}, vtable=+{(nint)agent->OpHandler->VirtualTable - Service.SigScanner.Module.BaseAddress:X}");
             _tree.LeafNode($"Cur ctx menu: row={agent->CurContextMenuRow}, op={agent->CurContextOpType}");
             _tree.LeafNode($"Total yield: avail={agent->TotalAvailableYield}, expected={agent->ExpectedTotalAvailableYield}");
             foreach (var n2 in _tree.Node($"Slots: {agent->NumSlots}", agent->NumSlots == 0))
             {
                 for (int i = 0; i < agent->NumSlots; ++i)
                 {
-                    ref var slot = ref agent->SlotsSpan[i];
+                    ref var slot = ref agent->Slots[i];
                     foreach (var n3 in _tree.Node($"{i}: {slot.YieldName}"))
                     {
                         _tree.LeafNode($"Seed: {slot.SeedItemId} '{slot.SeedName}' have={slot.SeedInventoryCount}");
