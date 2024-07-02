@@ -188,10 +188,10 @@ public class GatherRouteDB : Configuration.Node
                 MobID = jwea.ElementAtOrDefault(16)?.Value<int>() ?? default,
                 QuestID = jwea.ElementAtOrDefault(17)?.Value<int>() ?? default,
                 RouteName = jwea.ElementAtOrDefault(18)?.Value<string>() ?? "",
-                ChatCommand = jwea.ElementAtOrDefault(19)?.Value<string>() ?? "",
-                QuestSeq = jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0,
-                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0),
-                KillCount = jwea.ElementAtOrDefault(22)?.Value<int>() ?? 0,
+                QuestSeq = jwea.ElementAtOrDefault(19)?.Value<int>() ?? 0,
+                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0),
+                KillCount = jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0,
+                ChatCommand = jwea.ElementAtOrDefault(22)?.Value<string>() ?? "",
             });
         }
         return res;
