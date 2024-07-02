@@ -30,7 +30,7 @@ public unsafe class FarmDebug
             foreach (var n2 in _tree.Node("Seeds"))
             {
                 int i = 0;
-                foreach (var id in mgr->FarmState->SeedItemIds.Span)
+                foreach (var id in mgr->FarmState->SeedItemIds.AsSpan())
                 {
                     _tree.LeafNode($"{i++} = {id} '{sheetItem.GetRow(id)?.Name}'");
                 }
@@ -59,7 +59,7 @@ public unsafe class FarmDebug
             }
             foreach (var n2 in _tree.Node("Seeds"))
             {
-                foreach (ref readonly var a in agent->Seeds.Span)
+                foreach (ref readonly var a in agent->Seeds.AsSpan())
                 {
                     _tree.LeafNode($"{a.ItemId} '{a.Name}', count={a.Count}, u={a.IconId}");
                 }

@@ -36,10 +36,10 @@ public unsafe class GranaryDebug
                 if (agent->Data != null)
                 {
                     _tree.LeafNode($"Agent data inited: {agent->Data->Initialized}");
-                    foreach (var m in _tree.Node("Expeditions", agent->Data->Expeditions.Size() == 0))
+                    foreach (var m in _tree.Node("Expeditions", agent->Data->Expeditions.LongCount == 0))
                     {
                         int i = 0;
-                        foreach (var e in agent->Data->Expeditions.Span)
+                        foreach (var e in agent->Data->Expeditions.AsSpan())
                         {
                             foreach (var k in _tree.Node($"[{i++}] {e.ExpeditionId} '{e.Name}'"))
                             {
@@ -49,34 +49,34 @@ public unsafe class GranaryDebug
                             }
                         }
                     }
-                    foreach (var m in _tree.Node("Expedition Descs", agent->Data->ExpeditionDescs.Size() == 0))
+                    foreach (var m in _tree.Node("Expedition Descs", agent->Data->ExpeditionDescs.LongCount == 0))
                     {
                         int i = 0;
-                        foreach (var e in agent->Data->ExpeditionDescs.Span)
+                        foreach (var e in agent->Data->ExpeditionDescs.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.RarePouchId} {e.NameId}");
                         }
                     }
-                    foreach (var m in _tree.Node("Expedition Items", agent->Data->ExpeditionItems.Size() == 0))
+                    foreach (var m in _tree.Node("Expedition Items", agent->Data->ExpeditionItems.LongCount == 0))
                     {
                         int i = 0;
-                        foreach (var e in agent->Data->ExpeditionItems.Span)
+                        foreach (var e in agent->Data->ExpeditionItems.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.PouchId} {e.u5}");
                         }
                     }
-                    foreach (var m in _tree.Node("Resources", agent->Data->Resources.Size() == 0))
+                    foreach (var m in _tree.Node("Resources", agent->Data->Resources.LongCount == 0))
                     {
                         int i = 0;
-                        foreach (var e in agent->Data->Resources.Span)
+                        foreach (var e in agent->Data->Resources.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.PouchId} {e.ItemId} {e.IconId}");
                         }
                     }
-                    foreach (var m in _tree.Node("Pending icon updates", agent->Data->ItemsPendingIconUpdate.Size() == 0))
+                    foreach (var m in _tree.Node("Pending icon updates", agent->Data->ItemsPendingIconUpdate.LongCount == 0))
                     {
                         int i = 0;
-                        foreach (var e in agent->Data->ItemsPendingIconUpdate.Span)
+                        foreach (var e in agent->Data->ItemsPendingIconUpdate.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e}");
                         }

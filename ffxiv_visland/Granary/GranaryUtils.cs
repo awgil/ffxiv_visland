@@ -55,7 +55,7 @@ public static unsafe class GranaryUtils
                 agent->CurActiveDays = gstate->RemainingDays;
                 agent->CurHoveredExpeditionId = agent->CurSelectedExpeditionId = expeditionId;
                 agent->CurSelectedDays = numDays;
-                agent->CurExpeditionName.SetString(agent->Data->Expeditions.Get(expeditionId).Name.ToString());
+                agent->CurExpeditionName.SetString(agent->Data->Expeditions[expeditionId].Name.ToString());
                 agent->ConfirmType = confirm;
                 agent->GranariesState->SelectExpeditionCommit(granaryIndex, expeditionId, numDays);
             }

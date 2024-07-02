@@ -21,13 +21,13 @@ public unsafe class ExportDebug
             _tree.LeafNode($"Init: stage={agent->Data->InitializationState}, data-init={agent->Data->DataInitialized}, dirty={agent->Data->AddonDirty}");
             _tree.LeafNode($"Currency 0: {agent->Data->CurrencyItemIds[0]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[0])?.Name}': {agent->Data->CurrencyCounts[0]}/{agent->Data->CurrencyStackSizes[0]}");
             _tree.LeafNode($"Currency 1: {agent->Data->CurrencyItemIds[1]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[1])?.Name}': {agent->Data->CurrencyCounts[1]}/{agent->Data->CurrencyStackSizes[1]}");
-            _tree.LeafNode($"Cur category: {agent->Data->CurSelectedCategory} '{agent->Data->CategoryNames.Span[agent->Data->CurSelectedCategory]}'");
+            _tree.LeafNode($"Cur category: {agent->Data->CurSelectedCategory} '{agent->Data->CategoryNames.AsSpan()[agent->Data->CurSelectedCategory]}'");
             _tree.LeafNode($"Cur ship item: {agent->Data->CurShipItemIndex} qty={agent->Data->CurShipQuantity}");
             _tree.LeafNode($"Cur ship bulk: limit={agent->Data->CurBulkShiptLimit} stage={agent->Data->CurBulkShipCheckStage}");
 
-            foreach (var n2 in _tree.Node($"All items ({agent->Data->Items.Size()})"))
+            foreach (var n2 in _tree.Node($"All items ({agent->Data->Items.LongCount})"))
             {
-                foreach (ref readonly var a in agent->Data->Items.Span)
+                foreach (ref readonly var a in agent->Data->Items.AsSpan())
                 {
                     _tree.LeafNode($"{a.ItemIndex}: {a.ItemId} '{a.Name}', shop-row={a.ShopItemRowId}, count={a.CountInInventory}");
                 }
@@ -35,9 +35,9 @@ public unsafe class ExportDebug
 
             for (int i = 0; i < AgentMJIDisposeShop.AgentData.NumCategories; ++i)
             {
-                foreach (var n2 in _tree.Node($"Category {agent->Data->CategoryNames.Span[i]}: {agent->Data->PerCategoryItems[i].Size()} items"))
+                foreach (var n2 in _tree.Node($"Category {agent->Data->CategoryNames.AsSpan()[i]}: {agent->Data->PerCategoryItems[i].LongCount} items"))
                 {
-                    foreach (var item in agent->Data->PerCategoryItems[i].Span)
+                    foreach (var item in agent->Data->PerCategoryItems[i].AsSpan())
                     {
                         _tree.LeafNode($"{item.Value->ItemIndex}: {item.Value->ItemId} '{item.Value->Name}' count={item.Value->CountInInventory}");
                     }

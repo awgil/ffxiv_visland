@@ -69,7 +69,7 @@ public unsafe class PastureDebug
             _tree.LeafNode($"Expected collect leavings: {agent->ExpectedCollectLeavings}");
             foreach (var n2 in _tree.Node("Slots"))
             {
-                foreach (ref readonly var a in agent->Slots.Span)
+                foreach (ref readonly var a in agent->Slots.AsSpan())
                 {
                     foreach (var n3 in _tree.Node($"{a.Desc.AnimalRowId} '{a.Desc.Nickname}'"))
                     {
@@ -85,7 +85,7 @@ public unsafe class PastureDebug
             foreach (var n2 in _tree.Node("Animals"))
             {
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
-                foreach (ref readonly var a in agent->AnimalDescs.Span)
+                foreach (ref readonly var a in agent->AnimalDescs.AsSpan())
                 {
                     foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{sheetName.GetRow(a.BNpcNameId)?.Singular}"))
                     {
@@ -97,7 +97,7 @@ public unsafe class PastureDebug
             }
             foreach (var n2 in _tree.Node("Items"))
             {
-                foreach (var a in agent->ItemDescs.Span)
+                foreach (var a in agent->ItemDescs.AsSpan())
                 {
                     foreach (var n3 in _tree.Node($"{a.ItemId} '{a.Name}' cat={a.CategoryId} #{a.CountInInventory}"))
                     {
@@ -105,9 +105,9 @@ public unsafe class PastureDebug
                     }
                 }
             }
-            foreach (var n2 in _tree.Node($"Available food: {agent->EntrustAvailableFood.Size()} items", agent->EntrustAvailableFood.Size() == 0))
+            foreach (var n2 in _tree.Node($"Available food: {agent->EntrustAvailableFood.LongCount} items", agent->EntrustAvailableFood.LongCount == 0))
             {
-                foreach (ref readonly var a in agent->EntrustAvailableFood.Span)
+                foreach (ref readonly var a in agent->EntrustAvailableFood.AsSpan())
                 {
                     _tree.LeafNode($"{a.Value->ItemId} '{a.Value->Name}' cat={a.Value->CategoryId} #{a.Value->CountInInventory}");
                 }

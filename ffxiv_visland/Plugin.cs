@@ -53,7 +53,6 @@ public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "visland";
 
-    public DalamudPluginInterface Dalamud { get; init; }
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     internal static Plugin P;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -70,7 +69,7 @@ public sealed class Plugin : IDalamudPlugin
     private FarmWindow _wndFarm;
     private ExportWindow _wndExports;
 
-    public unsafe Plugin(DalamudPluginInterface dalamud)
+    public unsafe Plugin(IDalamudPluginInterface dalamud)
     {
         var dir = dalamud.ConfigDirectory;
         if (!dir.Exists)
@@ -94,7 +93,6 @@ public sealed class Plugin : IDalamudPlugin
             Service.Config.LoadFromFile(dalamud.ConfigFile);
         Service.Config.Modified += (_, _) => Service.Config.SaveToFile(dalamud.ConfigFile);
 
-        Dalamud = dalamud;
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
         //Memory  = new();
@@ -134,7 +132,7 @@ public sealed class Plugin : IDalamudPlugin
                 $"/{Name} exectemponce <base64 route> → run unsaved route once",
                 ShowInHelp = true,
             });
-            Dalamud.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
+            Service.Interface.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
         }
     }
 

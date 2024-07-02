@@ -257,7 +257,7 @@ public unsafe class FarmWindow : UIAttachedWindow
                 var seed = mji->FarmState->SeedType[i];
                 if (seed != 0 && !mji->FarmState->FarmSlotFlags[i].HasFlag(FarmSlotFlags.UnderCare))
                 {
-                    mji->FarmState->Entrust((uint)i, mji->FarmState->SeedItemIds.Span[seed]);
+                    mji->FarmState->Entrust((uint)i, mji->FarmState->SeedItemIds.AsSpan()[seed]);
                 }
             }
         }

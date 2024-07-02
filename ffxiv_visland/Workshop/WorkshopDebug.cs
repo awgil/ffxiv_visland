@@ -54,10 +54,10 @@ public unsafe class WorkshopDebug
                 DrawWorkshopSchedule(ref w, $"Workshop {i++}");
             DrawWorkshopSchedule(ref ad->CopiedSchedule, "Workshop in clipboard");
 
-            foreach (var n in _tree.Node("Raw crafts", ad->Crafts.Size() == 0))
+            foreach (var n in _tree.Node("Raw crafts", ad->Crafts.LongCount == 0))
             {
                 i = 0;
-                foreach (ref readonly var item in ad->Crafts.Span)
+                foreach (ref readonly var item in ad->Crafts.AsSpan())
                 {
                     foreach (var nn in _tree.Node($"Item {i++}: id={item.CraftObjectId} ({item.Name})"))
                     {
@@ -68,22 +68,22 @@ public unsafe class WorkshopDebug
                     }
                 }
             }
-            foreach (var n in _tree.Node("Crafts per theme", ad->ThemeNames.Size() == 0))
+            foreach (var n in _tree.Node("Crafts per theme", ad->ThemeNames.LongCount == 0))
             {
-                for (int j = 0; j < (int)ad->ThemeNames.Size(); ++j)
+                for (int j = 0; j < (int)ad->ThemeNames.LongCount; ++j)
                 {
-                    foreach (var nn in _tree.Node(ad->ThemeNames.Span[j].ToString(), ad->UnlockedObjectsPerTheme[j].Size() == 0))
+                    foreach (var nn in _tree.Node(ad->ThemeNames.AsSpan()[j].ToString(), ad->UnlockedObjectsPerTheme[j].LongCount == 0))
                     {
-                        foreach (ref readonly var item in ad->UnlockedObjectsPerTheme[j].Span)
+                        foreach (ref readonly var item in ad->UnlockedObjectsPerTheme[j].AsSpan())
                         {
                             _tree.LeafNode($"id={item.Value->CraftObjectId} ({sheet.GetRow(item.Value->CraftObjectId)?.Item.Value?.Name})");
                         }
                     }
                 }
             }
-            foreach (var n in _tree.Node("Crafts sorted by name", ad->CraftsSortedByName.Size() == 0))
+            foreach (var n in _tree.Node("Crafts sorted by name", ad->CraftsSortedByName.LongCount == 0))
             {
-                foreach (ref readonly var item in ad->CraftsSortedByName.Span)
+                foreach (ref readonly var item in ad->CraftsSortedByName.AsSpan())
                 {
                     _tree.LeafNode($"id={item.Value->CraftObjectId} ({sheet.GetRow(item.Value->CraftObjectId)?.Item.Value?.Name})");
                 }
