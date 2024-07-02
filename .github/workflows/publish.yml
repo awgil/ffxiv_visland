@@ -3,7 +3,7 @@ name: Build & Publish to Dynamis
 on:
   push:
     tags:
-      - "v*.*"
+      - "v*.*.*.*"
 
 jobs:
   Build:
@@ -33,7 +33,7 @@ jobs:
         run: dotnet restore
 
       - name: Build Project
-        run: dotnet build --configuration Release ffxiv_visland/visland.csproj -p:AssemblyVersion=0.0.0.${{ env.tag }}
+        run: dotnet build --configuration Release ffxiv_visland/visland.csproj -p:AssemblyVersion=${{ env.tag }}
 
       - name: Publish Version
         uses: PunishXIV/dynamis-action@v1
