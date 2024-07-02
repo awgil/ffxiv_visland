@@ -307,6 +307,12 @@ public class QuestsHelper
         P.TaskManager.Enqueue(() => TalkTo(npcID), $"{nameof(TalkTo)}: {npcID}");
         // TODO: implement purchasing
     }
+
+        public static unsafe void UseCommand(string chatCommand)
+    {
+        Chat chat = new();
+        chat.SendMessage($"{chatCommand}");
+    }
 }
 
 public static class StringExtensions

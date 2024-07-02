@@ -175,6 +175,9 @@ public class GatherRouteExec : IDisposable
                     return;
                 }
                 break;
+            case GatherRouteDB.InteractionType.ChatCommand:
+                QuestsHelper.UseCommand(wp.ChatCommand);
+                break;
         }
 
         if (Plugin.P.TaskManager.IsBusy) return; // let any interactions play out first
