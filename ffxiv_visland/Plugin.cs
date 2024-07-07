@@ -56,7 +56,6 @@ public sealed class Plugin : IDalamudPlugin
     internal TaskManager TaskManager;
 
     private VislandIPC _vislandIPC;
-    private NavmeshIPC _navmeshIPC;
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
@@ -101,7 +100,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndExports = new ExportWindow();
 
         _vislandIPC = new(_wndGather);
-        _navmeshIPC = new();
+        NavmeshIPC.Init();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -231,6 +230,6 @@ public sealed class Plugin : IDalamudPlugin
         if (Utils.HasPlugin(BossModIPC.Name))
             BossModIPC.Init();
         if (Utils.HasPlugin(NavmeshIPC.Name))
-            _navmeshIPC = new NavmeshIPC();
+            NavmeshIPC.Init();
     }
 }

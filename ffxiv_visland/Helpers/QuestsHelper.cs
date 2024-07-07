@@ -33,7 +33,7 @@ public class QuestsHelper
     public static DoEmoteDelegate DoEmote = null!;
 
     private static Throttle _interact = new();
-    private static NavmeshIPC _navmesh = new();
+    private static NavmeshIPC NavmeshIPC = new();
 
     public unsafe QuestsHelper()
     {
@@ -64,8 +64,8 @@ public class QuestsHelper
         if (Player.Territory != zoneID)
             P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
         P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
-        P.TaskManager.Enqueue(() => _navmesh.PathfindAndMoveTo(pos, false));
-        P.TaskManager.Enqueue(() => !_navmesh.IsRunning());
+        P.TaskManager.Enqueue(() => NavmeshIPC.PathfindAndMoveTo(pos, false));
+        P.TaskManager.Enqueue(() => !NavmeshIPC.IsRunning());
     }
 
     private static unsafe GameObject* FindObjectToInteractWith(uint InteractWithOID)

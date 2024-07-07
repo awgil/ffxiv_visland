@@ -29,7 +29,6 @@ public class GatherRouteExec : IDisposable
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
     private QuestsHelper _qh = new();
-    private NavmeshIPC _navmesh = new();
 
     private Throttle _interact = new();
     private Throttle _action = new();
@@ -51,8 +50,8 @@ public class GatherRouteExec : IDisposable
         _camera.SpeedH = _camera.SpeedV = default;
         _movement.DesiredPosition = Player.Object?.Position ?? new();
 
-        if (Paused && _navmesh.IsRunning())
-            _navmesh.Stop();
+        if (Paused && NavmeshIPC.IsRunning())
+            NavmeshIPC.Stop();
 
         if (!Player.Available || Player.Object!.IsCasting || GenericHelpers.IsOccupied() || Player.Mounting || Paused || CurrentRoute == null || P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
@@ -72,7 +71,7 @@ public class GatherRouteExec : IDisposable
 
         if (needToGetCloser)
         {
-            if (_navmesh.IsRunning()) return;
+            if (NavmeshIPC.IsRunning()) return;
             if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted)
             {
                 ExecuteMount();
@@ -94,8 +93,8 @@ public class GatherRouteExec : IDisposable
 
             if (Pathfind && NavmeshIPC.IsEnabled)
             {
-                if (!_navmesh.IsReady()) return;
-                _navmesh.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || Player.InclusiveFlying);
+                if (!NavmeshIPC.IsReady()) return;
+                NavmeshIPC.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || Player.InclusiveFlying);
             }
             else
             {
@@ -108,8 +107,8 @@ public class GatherRouteExec : IDisposable
         }
 
         // force stop at destination to avoid a bug wherein you interact with the object and keep moving for a period of time
-        if (Pathfind && _navmesh.IsRunning())
-            _navmesh.Stop();
+        if (Pathfind && NavmeshIPC.IsRunning())
+            NavmeshIPC.Stop();
 
         if (!Player.Normal && wp.Movement == GatherRouteDB.Movement.Normal)
         {
@@ -242,8 +241,8 @@ public class GatherRouteExec : IDisposable
         _camera.Enabled = false;
         _movement.Enabled = false;
         CompatModule.RestoreChanges();
-        if (Pathfind && _navmesh.IsRunning())
-            _navmesh.Stop();
+        if (Pathfind && NavmeshIPC.IsRunning())
+            NavmeshIPC.Stop();
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
