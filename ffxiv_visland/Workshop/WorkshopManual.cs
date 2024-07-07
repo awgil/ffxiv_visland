@@ -59,7 +59,7 @@ public class WorkshopManual
 
     private void AddToSchedule(MJICraftworksObject row, int workshopIndices)
     {
-        for (int i = 0; i < 4; ++i)
+        for (var i = 0; i < 4; ++i)
             if ((workshopIndices & 1 << i) != 0)
                 AddToScheduleSingle(row, i);
         WorkshopUtils.ResetCurrentCycleToRefreshUI();
@@ -71,8 +71,8 @@ public class WorkshopManual
     {
         var agentData = AgentMJICraftSchedule.Instance()->Data;
         var slotMask = (1u << row.CraftingTime) - 1;
-        int startingCycle = 0;
-        int maxCycle = 24 - row.CraftingTime;
+        var startingCycle = 0;
+        var maxCycle = 24 - row.CraftingTime;
         var usedMask = agentData->WorkshopSchedules[workshopIndex].UsedTimeSlots;
         while ((usedMask & slotMask << startingCycle) != 0 && startingCycle <= maxCycle)
             ++startingCycle;

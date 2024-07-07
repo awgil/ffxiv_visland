@@ -98,7 +98,7 @@ unsafe class ExportWindow : UIAttachedWindow
             new() { Type = AtkValueType.UInt },
             new() { Type = AtkValueType.UInt, Int = limit }
         ];
-        int numItems = 0;
+        var numItems = 0;
         foreach (var item in data->PerCategoryItems[category].AsSpan())
         {
             var count = Utils.NumItems(item.Value->ItemId);

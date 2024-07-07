@@ -98,9 +98,9 @@ unsafe class PastureWindow : UIAttachedWindow
         if (mji == null || mji->PastureHandler == null)
             return CollectResult.NothingToCollect;
 
-        bool haveNone = true;
-        bool anyOvercap = false;
-        bool allFull = true;
+        var haveNone = true;
+        var anyOvercap = false;
+        var allFull = true;
         foreach (var (itemId, count) in mji->PastureHandler->AvailableMammetLeavings)
         {
             if (count <= 0)

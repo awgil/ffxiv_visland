@@ -1,5 +1,4 @@
-﻿using Dalamud;
-using Dalamud.Game;
+﻿using Dalamud.Game;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
@@ -155,19 +154,19 @@ public unsafe class WorkshopOCImport
                 {
                     var numDuplicates = 1 + maxWorkshops - r.Workshops.Count;
                     ImGui.TableSetupColumn($"Workshops 1-{numDuplicates}");
-                    for (int i = 1; i < workshopLimit; ++i)
+                    for (var i = 1; i < workshopLimit; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + numDuplicates}");
                 }
                 else
                 {
                     // favors
-                    for (int i = 0; i < workshopLimit; ++i)
+                    for (var i = 0; i < workshopLimit; ++i)
                         ImGui.TableSetupColumn($"Workshop {i + 1}");
                 }
                 ImGui.TableHeadersRow();
 
                 ImGui.TableNextRow();
-                for (int i = 0; i < workshopLimit; ++i)
+                for (var i = 0; i < workshopLimit; ++i)
                 {
                     ImGui.TableNextColumn();
                     using var innerTable = ImRaii.Table($"table_{c}_{i}", 2, tableFlags);
@@ -205,13 +204,13 @@ public unsafe class WorkshopOCImport
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         var res = "/favors";
         var offset = nextWeek ? 6 : 3;
-        for (int i = 0; i < 3; ++i)
+        for (var i = 0; i < 3; ++i)
         {
             var id = state->CraftObjectIds[offset + i];
             // the bot doesn't like names with apostrophes because it "breaks their formulas"
             var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
             if (name != null)
-                res += $" favor{i + 1}:{_botNames[(int)id].Replace("\'", "")}";
+                res += $" favor{i + 1}:{_botNames[id].Replace("\'", "")}";
         }
         return res;
     }
@@ -280,7 +279,7 @@ public unsafe class WorkshopOCImport
 
     private void OverrideSideRecsAsap(List<WorkshopSolver.WorkshopRec> overrides)
     {
-        int nextOverride = 0;
+        var nextOverride = 0;
         foreach (var r in Recommendations.Schedules)
         {
             var batchSize = Math.Min(4, overrides.Count - nextOverride);
@@ -305,8 +304,8 @@ public unsafe class WorkshopOCImport
         var result = new WorkshopSolver.Recs();
 
         var curRec = new WorkshopSolver.DayRec();
-        int nextSlot = 24;
-        int curCycle = 0;
+        var nextSlot = 24;
+        var curCycle = 0;
         foreach (var l in str.Split('\n', '\r'))
         {
             if (TryParseCycleStart(l, out var cycle))
@@ -373,7 +372,7 @@ public unsafe class WorkshopOCImport
         var matchingRows = _botNames.Select((n, i) => (n, i)).Where(t => !string.IsNullOrEmpty(t.n) && IsMatch(line, t.n)).ToList();
         if (matchingRows.Count > 1)
         {
-            matchingRows = matchingRows.OrderByDescending(t => MatchingScore(t.n, line)).ToList();
+            matchingRows = [.. matchingRows.OrderByDescending(t => MatchingScore(t.n, line))];
             Service.Log.Info($"Row '{line}' matches {matchingRows.Count} items: {string.Join(", ", matchingRows.Select(r => r.n))}\n" +
                 "First one is most likely the correct match. Please report if this is wrong.");
         }
@@ -384,7 +383,7 @@ public unsafe class WorkshopOCImport
     private static bool IsMatch(string x, string y) => Regex.IsMatch(x, $@"\b{Regex.Escape(y)}\b");
     private static object MatchingScore(string item, string line)
     {
-        int score = 0;
+        var score = 0;
 
         // primitive matching based on how long the string matches. Enough for now but could need expanding later
         if (line.Contains(item))
@@ -396,7 +395,7 @@ public unsafe class WorkshopOCImport
     private List<WorkshopSolver.WorkshopRec> ParseRecOverrides(string str)
     {
         var result = new List<WorkshopSolver.WorkshopRec>();
-        int nextSlot = 24;
+        var nextSlot = 24;
 
         foreach (var l in str.Split('\n', '\r'))
         {
@@ -427,7 +426,7 @@ public unsafe class WorkshopOCImport
         if (mji->IsPlayerInSanctuary == 0) return [];
         var state = new WorkshopSolver.FavorState();
         var offset = nextWeek ? 6 : 3;
-        for (int i = 0; i < 3; ++i)
+        for (var i = 0; i < 3; ++i)
         {
             state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
             state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
@@ -500,7 +499,7 @@ public unsafe class WorkshopOCImport
             if (Recommendations.Schedules.Count > 5)
                 throw new Exception($"Too many days in recs: {Recommendations.Schedules.Count}");
 
-            uint forbiddenCycles = nextWeek ? 0 : (1u << (agentData->CycleInProgress + 1)) - 1;
+            var forbiddenCycles = nextWeek ? 0 : (1u << (agentData->CycleInProgress + 1)) - 1;
             if ((Recommendations.CyclesMask & forbiddenCycles) != 0)
                 throw new Exception("Some of the cycles in schedule are already in progress or are done");
 

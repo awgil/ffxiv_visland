@@ -19,7 +19,6 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
-using visland.Questing;
 using visland.Workshop;
 
 namespace visland;
@@ -53,13 +52,11 @@ public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "visland";
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    internal static Plugin P;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    internal static Plugin P = null!;
     internal TaskManager TaskManager;
-    //internal Memory Memory;
 
     private VislandIPC _vislandIPC;
+    private NavmeshIPC _navmeshIPC;
 
     public WindowSystem WindowSystem = new("visland");
     private GatherWindow _wndGather;
@@ -95,7 +92,6 @@ public sealed class Plugin : IDalamudPlugin
 
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
-        //Memory  = new();
 
         _wndGather = new GatherWindow();
         _wndWorkshop = new WorkshopWindow();
@@ -105,6 +101,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndExports = new ExportWindow();
 
         _vislandIPC = new(_wndGather);
+        _navmeshIPC = new();
 
         if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
         {
@@ -191,14 +188,23 @@ public sealed class Plugin : IDalamudPlugin
                 case "exectemponce":
                     ExecuteTempRoute(args[1], true);
                     break;
+                case "gather":
+                    if (args.Length > 2)
+                        TryGather(args);
+                    break;
             }
         }
     }
 
+    private void TryGather(string[] args)
+    {
+        throw new NotImplementedException();
+    }
+
     private void ExecuteTempRoute(string base64, bool once)
     {
-        var json = Utils.FromCompressedBase64(base64);
-        var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(json);
+        var (IsBase64, Json) = Utils.FromCompressedBase64(base64);
+        var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(Json);
         if (route != null)
             _wndGather.Exec.Start(route, 0, true, !once);
     }
@@ -225,6 +231,6 @@ public sealed class Plugin : IDalamudPlugin
         if (Utils.HasPlugin(BossModIPC.Name))
             BossModIPC.Init();
         if (Utils.HasPlugin(NavmeshIPC.Name))
-            NavmeshIPC.Init();
+            _navmeshIPC = new NavmeshIPC();
     }
 }

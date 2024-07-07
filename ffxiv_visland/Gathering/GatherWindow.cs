@@ -129,48 +129,17 @@ public class GatherWindow : Window, System.IDisposable
             ImGui.SameLine();
 
             if (ImGuiComponents.IconButton(FontAwesomeIcon.FileImport))
-            {
-                try
-                {
-                    var import = JsonConvert.DeserializeObject<Route>(ImGui.GetClipboardText());
-                    RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
-                    RouteDB.NotifyModified();
-                }
-                catch (JsonReaderException ex)
-                {
-                    Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
-                    Service.Log.Error(ex, "Failed to import route");
-                }
-            }
+                TryImport(RouteDB);
             if (ImGui.IsItemHovered())
-            {
-                ImGui.SetTooltip("Import Route from Clipboard (\uE052 Base64)");
-                if (ImGui.IsMouseClicked(ImGuiMouseButton.Right))
-                {
-                    try
-                    {
-                        var import = JsonConvert.DeserializeObject<Route>(Utils.FromCompressedBase64(ImGui.GetClipboardText()));
-                        RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
-                        RouteDB.NotifyModified();
-                    }
-                    catch (JsonReaderException ex)
-                    {
-                        Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
-                        Service.Log.Error(ex, "Failed to import route");
-                    }
-                }
-            }
+                ImGui.SetTooltip("Import Route from Clipboard");
 
             ImGui.SameLine();
             if (ImGuiComponents.IconButton(FontAwesomeIcon.Cog))
-            {
                 ImGui.OpenPopup("Advanced Options");
-            }
             DrawRouteSettingsPopup();
+
             ImGui.SameLine();
-            if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
-                RouteDB.NotifyModified();
-            ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+            RapidImport();
 
             ImGuiEx.TextV("Search: ");
             ImGui.SameLine();
@@ -192,10 +161,10 @@ public class GatherWindow : Window, System.IDisposable
 
             using (ImRaii.Child("routes"))
             {
-                List<string> groups = GetGroups(RouteDB,true);
+                var groups = GetGroups(RouteDB, true);
                 foreach (var group in groups)
                 {
-                    foreach (var wn in _tree.Node($"{group}###{groups.IndexOf(group)}"))
+                    foreach (var _ in _tree.Node($"{group}###{groups.IndexOf(group)}", contextMenu: () => ContextMenuGroup(group)))
                     {
                         var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
                         for (var i = 0; i < routeSource.Count; i++)
@@ -206,16 +175,40 @@ public class GatherWindow : Window, System.IDisposable
                             {
                                 if (ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex))
                                     selectedRouteIndex = i;
-                                if (ImGui.BeginPopupContextItem())
-                                {
-                                    selectedRouteIndex = i;
-                                    ContextMenuRoute(routeSource[i]);
-                                    ImGui.EndPopup();
-                                }
+                                //if (ImRaii.ContextPopup($"{route.Name}{i}"))
+                                //{
+                                //    selectedRouteIndex = i;
+                                //    ContextMenuRoute(routeSource[i]);
+                                //}
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+
+    internal static bool RapidImportEnabled = false;
+    private void RapidImport()
+    {
+        if (ImGui.Checkbox("Enable Rapid Import", ref RapidImportEnabled))
+            ImGui.SetClipboardText("");
+
+        ImGuiComponents.HelpMarker("Import multiple presets with ease by simply copying them. Visland will read your clipboard and attempt to import whatever you copy. Your clipboard will be cleared upon enabling.");
+        if (RapidImportEnabled)
+        {
+            try
+            {
+                var text = ImGui.GetClipboardText();
+                if (text != "")
+                {
+                    TryImport(RouteDB);
+                    ImGui.SetClipboardText("");
+                }
+            }
+            catch (System.Exception e)
+            {
+                Svc.Log.Error(e.Message, e);
             }
         }
     }
@@ -231,6 +224,15 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Auto Enable Gather Mode on Route Start", ref RouteDB.GatherModeOnStart))
                 RouteDB.NotifyModified();
+            if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
+                RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+            if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
+                RouteDB.NotifyModified();
+            if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
+                RouteDB.NotifyModified();
+            if (ImGui.SliderFloat("Repair percentage threshold", ref RouteDB.RepairPercent, 0, 100))
+                RouteDB.NotifyModified();
         }
     }
 
@@ -241,13 +243,29 @@ public class GatherWindow : Window, System.IDisposable
         var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
         if (routeSource.Count == 0) return;
         var route = selectedRouteIndex >= routeSource.Count ? routeSource.Last() : routeSource[selectedRouteIndex];
+        var hoverText = string.Empty;
 
         using (ImRaii.Child("Editor", size))
         {
-            using (ImRaii.Disabled(Exec.CurrentRoute != null))
-                if (ImGuiComponents.IconButton(FontAwesomeIcon.Play))
+            if (ImGuiComponents.IconButton(Exec.CurrentRoute != null && !Exec.Paused ? FontAwesomeIcon.Pause : FontAwesomeIcon.Play))
+            {
+                if (Exec.CurrentRoute != null && !Exec.Paused)
+                {
+                    Exec.Paused = true;
+                    hoverText = "Pause Route";
+                }
+                else if (Exec.CurrentRoute != null && Exec.Paused)
+                {
+                    Exec.Paused = false;
+                    hoverText = "Resume Route";
+                }
+                else
+                {
                     Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip("Execute Route");
+                    hoverText = "Execute Route";
+                }
+            }
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip(hoverText);
             ImGui.SameLine();
 
             ImGui.PushStyleColor(ImGuiCol.Button, loop ? greenColor : redColor);
@@ -260,11 +278,6 @@ public class GatherWindow : Window, System.IDisposable
 
             if (Exec.CurrentRoute != null)
             {
-                if (ImGuiEx.IconButton(Exec.Paused ? FontAwesomeIcon.Play : FontAwesomeIcon.Pause))
-                    Exec.Paused = !Exec.Paused;
-                if (ImGui.IsItemHovered()) ImGui.SetTooltip(Exec.Paused ? "Resume" : "Pause");
-                ImGui.SameLine();
-
                 if (ImGuiComponents.IconButton(FontAwesomeIcon.Stop))
                     Exec.Finish();
                 if (ImGui.IsItemHovered()) ImGui.SetTooltip("Stop Route");
@@ -518,6 +531,18 @@ public class GatherWindow : Window, System.IDisposable
         }
     }
 
+    private void ContextMenuGroup(string group)
+    {
+        var old = group;
+        ImGuiEx.TextV("Name: ");
+        ImGui.SameLine();
+        if (ImGui.InputText("##groupname", ref group, 256))
+        {
+            RouteDB.Routes.Where(r => r.Group == old).ToList().ForEach(r => r.Group = group);
+            RouteDB.NotifyModified();
+        }
+    }
+
     private void ContextMenuRoute(Route r)
     {
         var group = r.Group;
@@ -530,13 +555,11 @@ public class GatherWindow : Window, System.IDisposable
         }
         if (ImGui.BeginMenu("Add Route to Existing Group"))
         {
-            List<string> groupsCmr = GetGroups(RouteDB,true);
-            foreach (string groupCmr in groupsCmr)
+            var groupsCmr = GetGroups(RouteDB, true);
+            foreach (var groupCmr in groupsCmr)
             {
                 if (ImGui.MenuItem(groupCmr))
-                {
                     r.Group = groupCmr;
-                }
                 RouteDB.NotifyModified();
             }
             ImGui.EndMenu();
@@ -546,19 +569,13 @@ public class GatherWindow : Window, System.IDisposable
     private void ContextMenuWaypoint(Route r, int i)
     {
         if (ImGui.MenuItem("Execute this step only"))
-        {
             Exec.Start(r, i, false, false, r.Waypoints[i].Pathfind);
-        }
 
         if (ImGui.MenuItem("Execute route once starting from this step"))
-        {
             Exec.Start(r, i, true, false, r.Waypoints[i].Pathfind);
-        }
 
         if (ImGui.MenuItem("Execute route starting from this step and then loop"))
-        {
             Exec.Start(r, i, true, true, r.Waypoints[i].Pathfind);
-        }
 
         var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
         var target = Service.TargetManager.Target;

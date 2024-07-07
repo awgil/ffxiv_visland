@@ -1,5 +1,4 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets2;
 using visland.Helpers;
 
@@ -33,7 +32,7 @@ public unsafe class ExportDebug
                 }
             }
 
-            for (int i = 0; i < AgentMJIDisposeShop.AgentData.NumCategories; ++i)
+            for (var i = 0; i < AgentMJIDisposeShop.AgentData.NumCategories; ++i)
             {
                 foreach (var n2 in _tree.Node($"Category {agent->Data->CategoryNames.AsSpan()[i]}: {agent->Data->PerCategoryItems[i].LongCount} items"))
                 {

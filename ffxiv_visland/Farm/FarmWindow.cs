@@ -85,9 +85,9 @@ public unsafe class FarmWindow : UIAttachedWindow
         {
             bool canDismiss = false, canEntrust = false;
             var agent = AgentMJIFarmManagement.Instance();
-            for (int i = 0; i < agent->NumSlots; ++i)
+            for (var i = 0; i < agent->NumSlots; ++i)
             {
-                bool cared = agent->Slots[i].UnderCare;
+                var cared = agent->Slots[i].UnderCare;
                 canDismiss |= cared;
                 canEntrust |= !cared && agent->Slots[i].SeedItemId != 0;
             }
@@ -112,12 +112,12 @@ public unsafe class FarmWindow : UIAttachedWindow
             ImGui.TableHeadersRow();
 
             var agent = AgentMJIFarmManagement.Instance();
-            for (int i = 0; i < agent->NumSlots; ++i)
+            for (var i = 0; i < agent->NumSlots; ++i)
             {
                 ref var slot = ref agent->Slots[i];
                 var inventory = Utils.NumItems(slot.YieldItemId);
-                bool overcap = inventory + slot.YieldAvailable > 999;
-                bool full = inventory == 999;
+                var overcap = inventory + slot.YieldAvailable > 999;
+                var full = inventory == 999;
 
                 ImGui.TableNextRow();
 
@@ -165,7 +165,7 @@ public unsafe class FarmWindow : UIAttachedWindow
 
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICropSeed>()!;
         var perCropYield = new int[sheet.RowCount];
-        for (int i = 0; i < 20; ++i)
+        for (var i = 0; i < 20; ++i)
         {
             var seed = mji->FarmState->SeedType[i];
             if (seed != 0)
@@ -174,9 +174,9 @@ public unsafe class FarmWindow : UIAttachedWindow
             }
         }
 
-        bool anyOvercap = false;
-        bool allFull = true;
-        for (int i = 1; i < perCropYield.Length; ++i)
+        var anyOvercap = false;
+        var allFull = true;
+        for (var i = 1; i < perCropYield.Length; ++i)
         {
             if (perCropYield[i] == 0)
                 continue;
@@ -228,7 +228,7 @@ public unsafe class FarmWindow : UIAttachedWindow
         if (mji != null && mji->FarmState != null)
         {
             Service.Log.Info($"Dismissing all");
-            for (int i = 0; i < 20; ++i)
+            for (var i = 0; i < 20; ++i)
             {
                 if (mji->FarmState->FarmSlotFlags[i].HasFlag(FarmSlotFlags.UnderCare))
                     mji->FarmState->Dismiss((uint)i);
@@ -252,7 +252,7 @@ public unsafe class FarmWindow : UIAttachedWindow
         if (mji != null && mji->FarmState != null)
         {
             Service.Log.Info($"Entrusting all");
-            for (int i = 0; i < 20; ++i)
+            for (var i = 0; i < 20; ++i)
             {
                 var seed = mji->FarmState->SeedType[i];
                 if (seed != 0 && !mji->FarmState->FarmSlotFlags[i].HasFlag(FarmSlotFlags.UnderCare))

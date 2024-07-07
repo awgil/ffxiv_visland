@@ -19,7 +19,7 @@ public static class UICombo
 
     public static bool Enum<T>(string label, ref T v) where T : Enum
     {
-        bool res = false;
+        var res = false;
         ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo(label, EnumString(v)))
         {
@@ -38,11 +38,11 @@ public static class UICombo
 
     public static bool Int(string label, string[] values, ref int v, Func<int, bool> filter)
     {
-        bool res = false;
+        var res = false;
         ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo(label, v < values.Length ? values[v] : v.ToString()))
         {
-            for (int i = 0; i < values.Length; ++i)
+            for (var i = 0; i < values.Length; ++i)
             {
                 if (filter(i) && ImGui.Selectable(values[i], v == i))
                 {
@@ -69,7 +69,7 @@ public static class UICombo
 
     public static bool Bool(string label, string[] values, ref bool v)
     {
-        int val = v ? 1 : 0;
+        var val = v ? 1 : 0;
         if (!Int(label, values, ref val))
             return false;
         v = val != 0;
@@ -78,11 +78,11 @@ public static class UICombo
 
     public static bool String(string label, string[] values, ref string v)
     {
-        bool res = false;
+        var res = false;
         ImGui.SetNextItemWidth(200);
         if (ImGui.BeginCombo(label, v.ToString()))
         {
-            for (int i = 0; i < values.Length; ++i)
+            for (var i = 0; i < values.Length; ++i)
             {
                 if (ImGui.Selectable(values[i], v == values[i]))
                 {
@@ -164,7 +164,7 @@ public static class UICombo
     {
 
         _comboDic.TryAdd(id, (false, false));
-        (bool toggle, bool wasEnterClickedLastTime) = _comboDic[id];
+        (var toggle, var wasEnterClickedLastTime) = _comboDic[id];
         selected = default;
         if (!ImGui.BeginCombo(id + (toggle ? "##x" : ""), preview, flags)) return false;
         if (wasEnterClickedLastTime || ImGui.IsKeyPressed(ImGuiKey.Escape))
@@ -173,7 +173,7 @@ public static class UICombo
             _search = string.Empty;
             _filtered = null;
         }
-        bool enterClicked = ImGui.IsKeyPressed(ImGuiKey.Enter) || ImGui.IsKeyPressed(ImGuiKey.KeypadEnter);
+        var enterClicked = ImGui.IsKeyPressed(ImGuiKey.Enter) || ImGui.IsKeyPressed(ImGuiKey.KeypadEnter);
         wasEnterClickedLastTime = enterClicked;
         _comboDic[id] = (toggle, wasEnterClickedLastTime);
         if (ImGui.IsKeyPressed(ImGuiKey.UpArrow))
@@ -196,10 +196,10 @@ public static class UICombo
                                      .ToHashSet();
             _hoveredItem = 0;
         }
-        int i = 0;
-        foreach (T? row in _filtered.Cast<T>())
+        var i = 0;
+        foreach (var row in _filtered.Cast<T>())
         {
-            bool hovered = _hoveredItem == i;
+            var hovered = _hoveredItem == i;
             ImGui.PushID(i);
 
             if (ImGui.Selectable(toName(row), hovered) || enterClicked && hovered)

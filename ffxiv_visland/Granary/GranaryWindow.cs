@@ -44,7 +44,7 @@ unsafe class GranaryWindow : UIAttachedWindow
         if (_config.Reassign != GranaryConfig.UpdateStrategy.Manual)
         {
             uint reassignMask = 0;
-            for (int i = 0; i < 2; ++i)
+            for (var i = 0; i < 2; ++i)
                 if (TryAutoCollect(i) && GranaryUtils.GetGranaryState(i)->RemainingDays < 7)
                     reassignMask |= 1u << i;
 
@@ -80,7 +80,7 @@ unsafe class GranaryWindow : UIAttachedWindow
 
             ImGui.TableNextRow();
             ImGui.TableNextColumn();
-            for (int i = 0; i < 2; ++i)
+            for (var i = 0; i < 2; ++i)
             {
                 ImGui.TableNextColumn();
                 using (ImRaii.Disabled(collectStates[i] is CollectResult.NothingToCollect or CollectResult.EverythingCapped))
@@ -99,7 +99,7 @@ unsafe class GranaryWindow : UIAttachedWindow
                 ImGui.TableNextColumn();
                 ImGui.TextUnformatted($"{e->Name} ({Utils.NumItems(e->RareItemId)}/999)");
 
-                for (int i = 0; i < 2; ++i)
+                for (var i = 0; i < 2; ++i)
                 {
                     ImGui.TableNextColumn();
                     var curDest = GranaryUtils.GetGranaryState(i)->ActiveExpeditionId;
@@ -140,7 +140,7 @@ unsafe class GranaryWindow : UIAttachedWindow
     private void ForceReassign()
     {
         uint reassignMask = 0;
-        for (int i = 0; i < 2; ++i)
+        for (var i = 0; i < 2; ++i)
             if (GranaryUtils.CalculateGranaryCollectionState(i) == CollectResult.NothingToCollect)
                 reassignMask |= 1u << i;
         ReassignImpl(reassignMask);
@@ -169,7 +169,7 @@ unsafe class GranaryWindow : UIAttachedWindow
         }
 
         var max = GranaryUtils.MaxDays();
-        for (int i = 0; i < 2; ++i)
+        for (var i = 0; i < 2; ++i)
         {
             if ((allowedMask & (1u << i)) == 0)
                 continue; // this granary can't be reassigned

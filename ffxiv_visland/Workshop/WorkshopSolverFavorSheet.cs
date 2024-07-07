@@ -29,7 +29,7 @@ public class WorkshopSolverFavorSheet
         if (Favors.Any(o => o == null))
             throw new Exception("Invalid state");
 
-        Complete = state.CompletedCounts.ToArray();
+        Complete = [.. state.CompletedCounts];
         Links = Favors.Select(BuildLinks).ToArray();
         Recs = [];
 
@@ -46,14 +46,14 @@ public class WorkshopSolverFavorSheet
         var f8l4 = Links[2][0].FirstOrDefault()?.RowId ?? 0;
         var f8l6 = Links[2][1].FirstOrDefault()?.RowId ?? 0;
 
-        bool link46 = WorkshopSolver.IsLinked(Favors[0], Favors[1]);
-        bool link48 = WorkshopSolver.IsLinked(Favors[0], Favors[2]);
-        bool link68 = WorkshopSolver.IsLinked(Favors[1], Favors[2]);
-        bool noLinksNo48 = f6l4alt == 0 || f8l4 == 0 || f8l6 == 0; // very weird condition...
-        bool allLinks = link46 && link48 && link68;
-        bool noLinks = !link46 && !link48 && !link68;
-        bool link68No84 = link68 && f8l4 == 0;
-        bool link48No68 = link48 && f6l8 == 0; // TODO: sheet checks f6l6, i think this is a bug
+        var link46 = WorkshopSolver.IsLinked(Favors[0], Favors[1]);
+        var link48 = WorkshopSolver.IsLinked(Favors[0], Favors[2]);
+        var link68 = WorkshopSolver.IsLinked(Favors[1], Favors[2]);
+        var noLinksNo48 = f6l4alt == 0 || f8l4 == 0 || f8l6 == 0; // very weird condition...
+        var allLinks = link46 && link48 && link68;
+        var noLinks = !link46 && !link48 && !link68;
+        var link68No84 = link68 && f8l4 == 0;
+        var link48No68 = link48 && f6l8 == 0; // TODO: sheet checks f6l6, i think this is a bug
         Plan = link68No84 ? Strategy.Link68_NoF8L4  // this seems to have been added in r2
             : link48No68 ? Strategy.Link48_NoF6L8  // this seems to have been added in r3
             : noLinksNo48 ? Strategy.NoLinks_No48 // this seems to have been added in r1
@@ -138,7 +138,7 @@ public class WorkshopSolverFavorSheet
     private void AddDay(params uint[] objs)
     {
         var rec = new WorkshopSolver.WorkshopRec();
-        int hour = 0;
+        var hour = 0;
         MJICraftworksObject? prev = null;
         foreach (var obj in objs)
         {

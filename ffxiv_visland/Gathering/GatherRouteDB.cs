@@ -1,6 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons.DalamudServices;
+using ImGuiNET;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -63,7 +66,7 @@ public class GatherRouteDB : Configuration.Node
         public GrindStopConditions StopCondition;
         public int KillCount;
         public string RouteName = "";
-        public string ChatCommand= "";
+        public string ChatCommand = "";
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;
@@ -82,7 +85,13 @@ public class GatherRouteDB : Configuration.Node
     public float DefaultInteractionRadius = 2;
     public bool GatherModeOnStart = true;
     public bool DisableOnErrors = false;
+    public bool ExtractMateria = true;
+    public bool RepairGear = true;
+    public float RepairPercent = 20;
     public bool WasFlyingInManual = false;
+
+    public int LandDistance = 10;
+    public int PathFindCancellationTime = 5;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {
@@ -132,75 +141,89 @@ public class GatherRouteDB : Configuration.Node
     public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints)
     {
         JArray jw = [];
+
         foreach (var wp in waypoints)
-            jw.Add(new JArray()
+        {
+            var wpObj = new JObject
             {
-                wp.Position.X,
-                wp.Position.Y,
-                wp.Position.Z,
-                wp.Radius,
-                wp.InteractWithName,
-                wp.Movement,
-                wp.InteractWithOID,
-                wp.showInteractions,
-                wp.Interaction,
-                wp.EmoteID,
-                wp.ActionID,
-                wp.ItemID,
-                wp.showWaits,
-                wp.WaitTimeMs,
-                wp.WaitForCondition,
-                wp.Pathfind,
-                wp.MobID,
-                wp.QuestID,
-                wp.RouteName,
-                wp.ChatCommand,
-            });
+                { "X", wp.Position.X },
+                { "Y", wp.Position.Y },
+                { "Z", wp.Position.Z },
+                { "Radius", wp.Radius },
+                { "InteractWithName", wp.InteractWithName },
+                { "Movement", wp.Movement.ToString() },
+                { "InteractWithOID", wp.InteractWithOID },
+                { "showInteractions", wp.showInteractions },
+                { "Interaction", wp.Interaction.ToString() },
+                { "EmoteID", wp.EmoteID },
+                { "ActionID", wp.ActionID },
+                { "ItemID", wp.ItemID },
+                { "showWaits", wp.showWaits },
+                { "WaitTimeMs", wp.WaitTimeMs },
+                { "WaitForCondition", wp.WaitForCondition.ToString() },
+                { "Pathfind", wp.Pathfind },
+                { "MobID", wp.MobID },
+                { "QuestID", wp.QuestID },
+                { "RouteName", wp.RouteName },
+                { "ChatCommand", wp.ChatCommand }
+            };
+
+            jw.Add(wpObj);
+        }
+
         return jw;
     }
 
     public static List<Waypoint> LoadFromJSONWaypoints(JArray j)
     {
         List<Waypoint> res = [];
-        foreach (var jwe in j)
+
+        try
         {
-            if (jwe is not JArray jwea || jwea.Count < 5)
-                continue;
-            var movement = jwea.Count <= 5 ? Movement.Normal
-                : jwea[5].Type == JTokenType.Boolean ? jwea[5].Value<bool>() ? Movement.MountFly : Movement.Normal
-                : (Movement)jwea[5].Value<int>();
-            res.Add(new()
+            foreach (var jwe in j)
             {
-                Position = new(jwea[0].Value<float>(), jwea[1].Value<float>(), jwea[2].Value<float>()),
-                Radius = jwea[3].Value<float>(),
-                Movement = movement,
-                InteractWithOID = jwea.Count > 6 ? jwea[6].Value<uint>() : 2012985,
-                InteractWithName = jwea[4].Value<string>() ?? "",
-                showInteractions = jwea[7].Value<bool>(),
-                Interaction = jwea.Count > 8 ? (InteractionType)jwea[8].Value<int>() : InteractionType.Standard,
-                EmoteID = jwea[9].Value<int>(),
-                ActionID = jwea[10].Value<int>(),
-                ItemID = jwea[11].Value<int>(),
-                showWaits = jwea[12].Value<bool>(),
-                WaitTimeMs = jwea[13].Value<int>(),
-                WaitForCondition = jwea.Count > 14 ? (ConditionFlag)jwea[14].Value<int>() : ConditionFlag.None,
-                Pathfind = jwea.ElementAtOrDefault(15)?.Value<bool>() ?? false,
-                MobID = jwea.ElementAtOrDefault(16)?.Value<int>() ?? default,
-                QuestID = jwea.ElementAtOrDefault(17)?.Value<int>() ?? default,
-                RouteName = jwea.ElementAtOrDefault(18)?.Value<string>() ?? "",
-                QuestSeq = jwea.ElementAtOrDefault(19)?.Value<int>() ?? 0,
-                StopCondition = (GrindStopConditions)(jwea.ElementAtOrDefault(20)?.Value<int>() ?? 0),
-                KillCount = jwea.ElementAtOrDefault(21)?.Value<int>() ?? 0,
-                ChatCommand = jwea.ElementAtOrDefault(22)?.Value<string>() ?? "",
-            });
+                if (jwe is not JObject jweObj)
+                    continue;
+
+                res.Add(new()
+                {
+                    Position = new Vector3(
+                        jweObj["X"]?.Value<float>() ?? 0,
+                        jweObj["Y"]?.Value<float>() ?? 0,
+                        jweObj["Z"]?.Value<float>() ?? 0
+                    ),
+                    Radius = jweObj["Radius"]?.Value<float>() ?? 0,
+                    InteractWithName = jweObj["InteractWithName"]?.Value<string>() ?? "",
+                    Movement = Enum.TryParse<Movement>(jweObj["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,
+                    InteractWithOID = jweObj["InteractWithOID"]?.Value<uint>() ?? 0,
+                    showInteractions = jweObj["showInteractions"]?.Value<bool>() ?? false,
+                    Interaction = Enum.TryParse<InteractionType>(jweObj["Interaction"]?.Value<string>(), out var interaction) ? interaction : InteractionType.Standard,
+                    EmoteID = jweObj["EmoteID"]?.Value<int>() ?? 0,
+                    ActionID = jweObj["ActionID"]?.Value<int>() ?? 0,
+                    ItemID = jweObj["ItemID"]?.Value<int>() ?? 0,
+                    showWaits = jweObj["showWaits"]?.Value<bool>() ?? false,
+                    WaitTimeMs = jweObj["WaitTimeMs"]?.Value<int>() ?? 0,
+                    WaitForCondition = Enum.TryParse<ConditionFlag>(jweObj["WaitForCondition"]?.Value<string>(), out var condition) ? condition : ConditionFlag.None,
+                    Pathfind = jweObj["Pathfind"]?.Value<bool>() ?? false,
+                    MobID = jweObj["MobID"]?.Value<int>() ?? 0,
+                    QuestID = jweObj["QuestID"]?.Value<int>() ?? 0,
+                    RouteName = jweObj["RouteName"]?.Value<string>() ?? "",
+                    ChatCommand = jweObj["ChatCommand"]?.Value<string>() ?? ""
+                });
+            }
         }
+        catch (Exception)
+        {
+            Svc.Log.Error($"Failed to load waypoints from JSON.");
+        }
+
         return res;
     }
 
-    public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort=false)
+    public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort = false)
     {
         List<string> groups = ["Ungrouped"];
-        for (var g = 0; g < (gatherRouteDB.Routes.Count); g++)
+        for (var g = 0; g < gatherRouteDB.Routes.Count; g++)
         {
             var routeSource = gatherRouteDB.Routes;
             if (string.IsNullOrEmpty(routeSource[g].Group))
@@ -218,13 +241,37 @@ public class GatherRouteDB : Configuration.Node
         }
         return groups;
     }
+
+    public static void TryImport(GatherRouteDB RouteDB)
+    {
+        try
+        {
+            var data = ImGui.GetClipboardText();
+            var (IsBase64, Json) = Utils.FromCompressedBase64(data);
+            Route? import = null;
+            if (IsBase64)
+                import = JsonConvert.DeserializeObject<Route>(Json);
+            else if (Utils.IsJson(data))
+                import = JsonConvert.DeserializeObject<Route>(data);
+            if (import != null)
+            {
+                RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
+                RouteDB.NotifyModified();
+            }
+        }
+        catch (JsonReaderException ex)
+        {
+            Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
+            Service.Log.Error(ex, "Failed to import route");
+        }
+    }
 }
 
 public static class WaypointExtensions
 {
     public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, out Waypoint? nextWaypoint)
     {
-        int index = route.Waypoints.IndexOf(waypoint);
+        var index = route.Waypoints.IndexOf(waypoint);
         if (index >= 0 && index < route.Waypoints.Count - 1)
         {
             nextWaypoint = route.Waypoints[index + 1];

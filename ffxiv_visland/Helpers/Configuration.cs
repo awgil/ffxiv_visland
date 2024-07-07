@@ -49,7 +49,7 @@ public class Configuration
         }
     }
 
-    private const int _version = 2;
+    private const int _version = 3;
 
     public event EventHandler? Modified;
     private Dictionary<Type, Node> _nodes = [];
@@ -142,6 +142,58 @@ public class Configuration
         {
             var routes = payload["RouteDB"];
             payload = new() { { "visland.Gathering.GatherRouteDB", new JObject() { { "Routes", routes } } } };
+        }
+        // v3: turned waypoints into an array of jobjects
+        if (version < 3)
+        {
+            //var routes = payload["RouteDB"];
+            if (payload["visland.Gathering.GatherRouteDB"] is JObject gatherRouteDB)
+            {
+                if (gatherRouteDB["Routes"] is JArray routes)
+                {
+                    JArray newRoutes = [];
+                    foreach (var route in routes)
+                    {
+                        if (route is JObject routeObj && routeObj["Waypoints"] is JArray waypoints)
+                        {
+                            var newWaypoints = new JArray();
+                            foreach (var waypoint in waypoints)
+                            {
+                                if (waypoint is JArray oldWaypoint)
+                                {
+                                    var newWaypoint = new JObject
+                                    {
+                                        { "X", oldWaypoint.Count > 0 ? oldWaypoint[0] : 0 },
+                                        { "Y", oldWaypoint.Count > 1 ? oldWaypoint[1] : 0 },
+                                        { "Z", oldWaypoint.Count > 2 ? oldWaypoint[2] : 0 },
+                                        { "Radius", oldWaypoint.Count > 3 ? oldWaypoint[3] : 0 },
+                                        { "InteractWithName", oldWaypoint.Count > 4 ? oldWaypoint[4] : "" },
+                                        { "Movement", oldWaypoint.Count > 5 ? oldWaypoint[5] : "" },
+                                        { "InteractWithOID", oldWaypoint.Count > 6 ? oldWaypoint[6] : 0 },
+                                        { "showInteractions", oldWaypoint.Count > 7 ? oldWaypoint[7] : false },
+                                        { "Interaction", oldWaypoint.Count > 8 ? oldWaypoint[8] : "" },
+                                        { "EmoteID", oldWaypoint.Count > 9 ? oldWaypoint[9] : 0 },
+                                        { "ActionID", oldWaypoint.Count > 10 ? oldWaypoint[10] : 0 },
+                                        { "ItemID", oldWaypoint.Count > 11 ? oldWaypoint[11] : 0 },
+                                        { "showWaits", oldWaypoint.Count > 12 ? oldWaypoint[12] : false },
+                                        { "WaitTimeMs", oldWaypoint.Count > 13 ? oldWaypoint[13] : 0 },
+                                        { "WaitForCondition", oldWaypoint.Count > 14 ? oldWaypoint[14] : "" },
+                                        { "Pathfind", oldWaypoint.Count > 15 ? oldWaypoint[15] : false },
+                                        { "MobID", oldWaypoint.Count > 16 ? oldWaypoint[16] : 0 },
+                                        { "QuestID", oldWaypoint.Count > 17 ? oldWaypoint[17] : 0 },
+                                        { "RouteName", oldWaypoint.Count > 18 ? oldWaypoint[18] : "" },
+                                        { "ChatCommand", oldWaypoint.Count > 19 ? oldWaypoint[19] : "" },
+                                    };
+                                    newWaypoints.Add(newWaypoint);
+                                }
+                            }
+                            routeObj["Waypoints"] = newWaypoints;
+                            newRoutes.Add(routeObj);
+                        }
+                    }
+                    gatherRouteDB["Routes"] = newRoutes;
+                }
+            }
         }
         return payload;
     }

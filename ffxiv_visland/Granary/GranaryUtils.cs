@@ -68,10 +68,10 @@ public static unsafe class GranaryUtils
         if (gstate == null)
             return CollectResult.NothingToCollect;
 
-        bool haveAnything = gstate->RareResourceCount > 0;
-        bool overcapSome = haveAnything && WillOvercap(gstate->RareResourcePouchId, gstate->RareResourceCount);
-        bool overcapAll = !haveAnything || overcapSome;
-        for (int i = 0; i < gstate->NormalResourceCounts.Length; ++i)
+        var haveAnything = gstate->RareResourceCount > 0;
+        var overcapSome = haveAnything && WillOvercap(gstate->RareResourcePouchId, gstate->RareResourceCount);
+        var overcapAll = !haveAnything || overcapSome;
+        for (var i = 0; i < gstate->NormalResourceCounts.Length; ++i)
         {
             if (gstate->NormalResourceCounts[i] > 0)
             {

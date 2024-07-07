@@ -1,7 +1,5 @@
-﻿using Dalamud.Game.ClientState.Conditions;
-using Dalamud.Game.Text.SeStringHandling;
+﻿using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
-using ECommons.Automation;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -12,7 +10,7 @@ using System.Linq;
 using System.Numerics;
 using visland.Helpers;
 using visland.IPC;
-using visland.Questing;
+using static visland.Plugin;
 
 namespace visland.Gathering;
 
@@ -31,6 +29,7 @@ public class GatherRouteExec : IDisposable
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
     private QuestsHelper _qh = new();
+    private NavmeshIPC _navmesh = new();
 
     private Throttle _interact = new();
     private Throttle _action = new();
@@ -52,17 +51,17 @@ public class GatherRouteExec : IDisposable
         _camera.SpeedH = _camera.SpeedV = default;
         _movement.DesiredPosition = Player.Object?.Position ?? new();
 
-        if (Paused && NavmeshIPC.PathIsRunning())
-            NavmeshIPC.PathStop();
+        if (Paused && _navmesh.IsRunning())
+            _navmesh.Stop();
 
-        if (!Player.Available || Player.Object!.IsCasting || GenericHelpers.IsOccupied() || Player.Mounting || Paused || CurrentRoute == null || Plugin.P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
+        if (!Player.Available || Player.Object!.IsCasting || GenericHelpers.IsOccupied() || Player.Mounting || Paused || CurrentRoute == null || P.TaskManager.IsBusy || CurrentWaypoint >= CurrentRoute.Waypoints.Count)
             return;
 
         CompatModule.EnsureCompatibility(RouteDB);
 
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
         var toWaypoint = wp.Position - Player.Object.Position;
-        bool needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+        var needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
         Pathfind = wp.Pathfind;
 
         //if (wp.ZoneID != default && Player.Territory != wp.ZoneID)
@@ -73,7 +72,7 @@ public class GatherRouteExec : IDisposable
 
         if (needToGetCloser)
         {
-            if (NavmeshIPC.PathIsRunning()) return;
+            if (_navmesh.IsRunning()) return;
             if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted)
             {
                 ExecuteMount();
@@ -82,7 +81,7 @@ public class GatherRouteExec : IDisposable
 
             if (Player.OnIsland && !Player.Mounted && Player.SprintCD > 5)
                 ExecuteIslandSprint();
-            
+
             if (!Player.OnIsland && !Player.Mounted && Player.SprintCD == 0)
                 ExecuteSprint();
 
@@ -93,10 +92,10 @@ public class GatherRouteExec : IDisposable
                 return;
             }
 
-            if (Pathfind && Utils.HasPlugin(NavmeshIPC.Name))
+            if (Pathfind && NavmeshIPC.IsEnabled)
             {
-                if (!NavmeshIPC.NavIsReady()) return;
-                NavmeshIPC.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || Player.InclusiveFlying);
+                if (!_navmesh.IsReady()) return;
+                _navmesh.PathfindAndMoveTo(wp.Position, wp.Movement == GatherRouteDB.Movement.MountFly || Player.InclusiveFlying);
             }
             else
             {
@@ -109,8 +108,8 @@ public class GatherRouteExec : IDisposable
         }
 
         // force stop at destination to avoid a bug wherein you interact with the object and keep moving for a period of time
-        if (Pathfind && NavmeshIPC.PathIsRunning())
-            NavmeshIPC.PathStop();
+        if (Pathfind && _navmesh.IsRunning())
+            _navmesh.Stop();
 
         if (!Player.Normal && wp.Movement == GatherRouteDB.Movement.Normal)
         {
@@ -152,9 +151,6 @@ public class GatherRouteExec : IDisposable
                 if (Utils.HasPlugin(BossModIPC.Name))
                     switch (wp.StopCondition)
                     {
-                        case GatherRouteDB.GrindStopConditions.Kills:
-                            QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID), () => ExecKillCounter.Tally.FindIndex(i => i.Name == QuestsHelper.GetMobName((uint)wp.MobID)) >= wp.KillCount);
-                            break;
                         case GatherRouteDB.GrindStopConditions.QuestSequence:
                             QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID), () => QuestsHelper.GetQuestStep(wp.QuestID) == wp.QuestSeq);
                             break;
@@ -180,7 +176,19 @@ public class GatherRouteExec : IDisposable
                 break;
         }
 
-        if (Plugin.P.TaskManager.IsBusy) return; // let any interactions play out first
+        if (P.TaskManager.IsBusy) return; // let any interactions play out first
+
+        if (SpiritbondManager.IsSpiritbondReadyAny())
+        {
+            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria));
+            return;
+        }
+
+        if (RepairManager.CanRepairAny())
+        {
+            P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(Service.Config.Get<GatherRouteDB>().RepairGear));
+            return;
+        }
 
         if (!ContinueToNext)
         {
@@ -234,8 +242,8 @@ public class GatherRouteExec : IDisposable
         _camera.Enabled = false;
         _movement.Enabled = false;
         CompatModule.RestoreChanges();
-        if (Pathfind && NavmeshIPC.PathIsRunning())
-            NavmeshIPC.PathStop();
+        if (Pathfind && _navmesh.IsRunning())
+            _navmesh.Stop();
     }
 
     private unsafe GameObject* FindObjectToInteractWith(GatherRouteDB.Waypoint wp)
@@ -254,29 +262,6 @@ public class GatherRouteExec : IDisposable
     private void ExecuteDismount() => ExecuteActionSafe(ActionType.GeneralAction, 23);
     private void ExecuteJump() => ExecuteActionSafe(ActionType.GeneralAction, 2);
     private void ExecuteSprint() => ExecuteActionSafe(ActionType.GeneralAction, 4);
-
-    private static void ToggleExecutors(bool state, GatherRouteDB.Waypoint? wp = default)
-    {
-        if (state)
-        {
-            ExecKillHowTos.Init();
-            ExecSkipTalk.Init();
-            ExecSelectYes.Init();
-            //ExecQuestJournalEvent.Init();
-            AutoCutsceneSkipper.Enable();
-            if (wp!.Interaction == GatherRouteDB.InteractionType.Grind)
-                ExecKillCounter.Init([QuestsHelper.GetMobName((uint)wp!.MobID)]);
-        }
-        else
-        {
-            ExecKillHowTos.Shutdown();
-            ExecSkipTalk.Shutdown();
-            ExecSelectYes.Shutdown();
-            //ExecQuestJournalEvent.Shutdown();
-            AutoCutsceneSkipper.Disable();
-            ExecKillCounter.Dispose();
-        }
-    }
 
     private void CheckToDisable(ref SeString message, ref bool isHandled)
     {

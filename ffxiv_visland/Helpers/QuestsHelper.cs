@@ -28,17 +28,12 @@ public class QuestsHelper
 {
     private static readonly Dictionary<uint, Quest>? QuestSheet = Svc.Data?.GetExcelSheet<Quest>()?.Where(x => x.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i);
 
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-    public static nint itemContextMenuAgent = nint.Zero;
-    public delegate void UseItemDelegate(nint itemContextMenuAgent, uint itemID, uint inventoryPage, uint inventorySlot, short a5);
-    public static UseItemDelegate UseItem;
-
     public static nint emoteAgent = nint.Zero;
     public delegate void DoEmoteDelegate(nint agent, uint emoteID, long a3, bool a4, bool a5);
-    public static DoEmoteDelegate DoEmote;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+    public static DoEmoteDelegate DoEmote = null!;
 
     private static Throttle _interact = new();
+    private static NavmeshIPC _navmesh = new();
 
     public unsafe QuestsHelper()
     {
@@ -51,13 +46,6 @@ public class QuestsHelper
                 emoteAgent = (nint)agentModule->GetAgentByInternalId(AgentId.Emote);
             }
             catch { Service.Log.Error($"Failed to load {nameof(emoteAgent)}"); }
-
-            try
-            {
-                UseItem = Marshal.GetDelegateForFunctionPointer<UseItemDelegate>(Service.SigScanner.ScanText("E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 7C 24 38"));
-                itemContextMenuAgent = (nint)agentModule->GetAgentByInternalId(AgentId.InventoryContext);
-            }
-            catch { Service.Log.Error($"Failed to load {nameof(itemContextMenuAgent)}"); }
         }
         catch { Service.Log.Error($"Failed to load agentModule"); }
     }
@@ -76,8 +64,8 @@ public class QuestsHelper
         if (Player.Territory != zoneID)
             P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(zoneID, pos), 0));
         P.TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.Casting] && !IsOccupied());
-        P.TaskManager.Enqueue(() => NavmeshIPC.PathfindAndMoveTo(pos, false));
-        P.TaskManager.Enqueue(() => !NavmeshIPC.PathIsRunning());
+        P.TaskManager.Enqueue(() => _navmesh.PathfindAndMoveTo(pos, false));
+        P.TaskManager.Enqueue(() => !_navmesh.IsRunning());
     }
 
     private static unsafe GameObject* FindObjectToInteractWith(uint InteractWithOID)
@@ -147,18 +135,12 @@ public class QuestsHelper
         }, "Waiting for SelectIconString or JournalResult");
     }
 
-    public static void UseItemOn(uint itemID, uint targetOID = 0)
+    public static unsafe void UseItemOn(uint itemID, uint targetOID = 0)
     {
         if (targetOID != 0)
-        {
-            Service.ObjectTable.TryGetFirst(x => x.TargetObjectId == targetOID, out var obj);
-            if (obj != null)
-            {
+            if (Service.ObjectTable.TryGetFirst(x => x.TargetObjectId == targetOID, out var obj) && obj != null)
                 Service.TargetManager.Target = obj;
-            }
-        }
-
-        UseItem(itemContextMenuAgent, itemID, 9999, 0, 0);
+        AgentInventoryContext.Instance()->UseItem(itemID);
     }
 
     public static unsafe void EmoteAt(uint emoteID, uint targetOID = 0)

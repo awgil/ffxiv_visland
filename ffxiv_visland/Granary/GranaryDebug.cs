@@ -38,20 +38,20 @@ public unsafe class GranaryDebug
                     _tree.LeafNode($"Agent data inited: {agent->Data->Initialized}");
                     foreach (var m in _tree.Node("Expeditions", agent->Data->Expeditions.LongCount == 0))
                     {
-                        int i = 0;
+                        var i = 0;
                         foreach (var e in agent->Data->Expeditions.AsSpan())
                         {
                             foreach (var k in _tree.Node($"[{i++}] {e.ExpeditionId} '{e.Name}'"))
                             {
                                 _tree.LeafNode($"[rare] {e.RareItemId} '{Service.LuminaRow<Item>(e.RareItemId)?.Name}' {e.RareIconId}");
-                                for (int j = 0; j < e.NumNormalItems; ++j)
+                                for (var j = 0; j < e.NumNormalItems; ++j)
                                     _tree.LeafNode($"[{j}] {e.NormalItemIds[j]} '{Service.LuminaRow<Item>(e.NormalItemIds[j])?.Name}' {e.NormalIconIds[j]}");
                             }
                         }
                     }
                     foreach (var m in _tree.Node("Expedition Descs", agent->Data->ExpeditionDescs.LongCount == 0))
                     {
-                        int i = 0;
+                        var i = 0;
                         foreach (var e in agent->Data->ExpeditionDescs.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.RarePouchId} {e.NameId}");
@@ -59,7 +59,7 @@ public unsafe class GranaryDebug
                     }
                     foreach (var m in _tree.Node("Expedition Items", agent->Data->ExpeditionItems.LongCount == 0))
                     {
-                        int i = 0;
+                        var i = 0;
                         foreach (var e in agent->Data->ExpeditionItems.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.ExpeditionId} {e.PouchId} {e.u5}");
@@ -67,7 +67,7 @@ public unsafe class GranaryDebug
                     }
                     foreach (var m in _tree.Node("Resources", agent->Data->Resources.LongCount == 0))
                     {
-                        int i = 0;
+                        var i = 0;
                         foreach (var e in agent->Data->Resources.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e.PouchId} {e.ItemId} {e.IconId}");
@@ -75,7 +75,7 @@ public unsafe class GranaryDebug
                     }
                     foreach (var m in _tree.Node("Pending icon updates", agent->Data->ItemsPendingIconUpdate.LongCount == 0))
                     {
-                        int i = 0;
+                        var i = 0;
                         foreach (var e in agent->Data->ItemsPendingIconUpdate.AsSpan())
                         {
                             _tree.LeafNode($"[{i++}] {e}");
@@ -94,7 +94,7 @@ public unsafe class GranaryDebug
         foreach (var n in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}"))
         {
             DrawGranaryItem("rare", state.RareResourcePouchId, state.RareResourceCount);
-            for (int k = 0; k < 20; ++k)
+            for (var k = 0; k < 20; ++k)
                 DrawGranaryItem(k.ToString(), state.NormalResourcePouchIds[k], state.NormalResourceCounts[k]);
         }
     }

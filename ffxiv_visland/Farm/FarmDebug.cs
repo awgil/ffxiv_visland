@@ -22,14 +22,14 @@ public unsafe class FarmDebug
 
             foreach (var n2 in _tree.Node("Slots"))
             {
-                for (int i = 0; i < 20; ++i)
+                for (var i = 0; i < 20; ++i)
                 {
                     _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i])?.Name.Value?.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }
             foreach (var n2 in _tree.Node("Seeds"))
             {
-                int i = 0;
+                var i = 0;
                 foreach (var id in mgr->FarmState->SeedItemIds.AsSpan())
                 {
                     _tree.LeafNode($"{i++} = {id} '{sheetItem.GetRow(id)?.Name}'");
@@ -46,7 +46,7 @@ public unsafe class FarmDebug
             _tree.LeafNode($"Total yield: avail={agent->TotalAvailableYield}, expected={agent->ExpectedTotalAvailableYield}");
             foreach (var n2 in _tree.Node($"Slots: {agent->NumSlots}", agent->NumSlots == 0))
             {
-                for (int i = 0; i < agent->NumSlots; ++i)
+                for (var i = 0; i < agent->NumSlots; ++i)
                 {
                     ref var slot = ref agent->Slots[i];
                     foreach (var n3 in _tree.Node($"{i}: {slot.YieldName}"))

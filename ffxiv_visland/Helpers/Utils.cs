@@ -1,28 +1,27 @@
-﻿using Dalamud;
+﻿using Dalamud.Game;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
+using Dalamud.Utility;
+using ECommons.DalamudServices;
+using ECommons.ImGuiMethods;
+using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
 using Lumina.Excel;
+using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
-using Dalamud.Interface.Components;
-using ECommons.ImGuiMethods;
-using ECommons.Reflection;
-using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Dalamud.Game;
-using Dalamud.Utility;
-using Dalamud.Interface.Textures.TextureWraps;
-using Dalamud.Interface.Textures;
-using Lumina.Excel.GeneratedSheets;
 
 namespace visland.Helpers;
 
@@ -43,9 +42,9 @@ public static unsafe class Utils
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
     public static bool DangerousItem(Func<bool> item)
     {
-        bool disabled = !ImGui.IsKeyDown(ImGuiKey.ModShift);
+        var disabled = !ImGui.IsKeyDown(ImGuiKey.ModShift);
         ImGui.BeginDisabled(disabled);
-        bool res = item();
+        var res = item();
         ImGui.EndDisabled();
         if (disabled && ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled))
             ImGui.SetTooltip("Hold shift");
@@ -57,10 +56,10 @@ public static unsafe class Utils
     private static float startTime;
     public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration)
     {
-        float currentTime = (float)ImGui.GetTime();
-        float elapsedTime = currentTime - startTime;
+        var currentTime = (float)ImGui.GetTime();
+        var elapsedTime = currentTime - startTime;
 
-        float t = (float)Math.Sin(elapsedTime / duration * Math.PI * 2) * 0.5f + 0.5f;
+        var t = (float)Math.Sin(elapsedTime / duration * Math.PI * 2) * 0.5f + 0.5f;
 
         // Interpolate the color difference
         Vector4 interpolatedColor = new(
@@ -144,14 +143,34 @@ public static unsafe class Utils
         }
     }
 
-    public static string FromCompressedBase64(this string compressedBase64)
+    public static (bool IsBase64, string Json) FromCompressedBase64(this string compressedBase64)
     {
-        var data = Convert.FromBase64String(compressedBase64);
-        using var compressedStream = new MemoryStream(data);
-        using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-        using var resultStream = new MemoryStream();
-        zipStream.CopyTo(resultStream);
-        return Encoding.UTF8.GetString(resultStream.ToArray());
+        try
+        {
+            var data = Convert.FromBase64String(compressedBase64);
+            using var compressedStream = new MemoryStream(data);
+            using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+            using var resultStream = new MemoryStream();
+            zipStream.CopyTo(resultStream);
+            return (true, Encoding.UTF8.GetString(resultStream.ToArray()));
+        }
+        catch (FormatException)
+        {
+            return (false, string.Empty);
+        }
+    }
+
+    public static bool IsJson(string text)
+    {
+        try
+        {
+            JToken.Parse(text);
+            return true;
+        }
+        catch (JsonReaderException)
+        {
+            return false;
+        }
     }
 
     public static bool EditNumberField(string labelBefore, float fieldWidth, ref int refValue, string labelAfter = "", string helpText = "")
@@ -177,10 +196,25 @@ public static unsafe class Utils
     }
 }
 
-public static class LazyRowExtensions
+public static class Extensions
 {
     public static LazyRow<T> GetDifferentLanguage<T>(this LazyRow<T> row, ClientLanguage language) where T : ExcelRow
     {
         return new LazyRow<T>(Service.DataManager.GameData, row.Row, language.ToLumina());
     }
+
+    public static string GetItemName(this ILazyRow row)
+    {
+        if (Svc.Data.GetExcelSheet<Item>()!.HasRow(row.Row))
+            return (Svc.Data.GetExcelSheet<Item>()!.GetRow(row.Row)!.Name);
+        return Svc.Data.GetExcelSheet<EventItem>()!.HasRow(row.Row) ? Svc.Data.GetExcelSheet<EventItem>()!.GetRow(row.Row)!.Name : "";
+    }
+
+    public static string GetGatheringItem(this ILazyRow row)
+    {
+        if (Svc.Data.GetExcelSheet<GatheringItem>()!.HasRow(row.Row))
+            return Svc.Data.GetExcelSheet<Item>()!.GetRow((uint)Svc.Data.GetExcelSheet<GatheringItem>()!.GetRow(row.Row)!.Item)!.Name;
+        return Svc.Data.GetExcelSheet<SpearfishingItem>()!.HasRow(row.Row) ? Svc.Data.GetExcelSheet<SpearfishingItem>()!.GetRow(row.Row)!.Item.GetItemName() : row.Row.ToString();
+    }
+
 }

@@ -33,10 +33,10 @@ public class WorkshopSolver
                 yield break;
             // first schedule is duplicated if we have less schedules than workshops to fill: numDuplicates + (Count-1) == maxWorkshops
             var numDuplicates = 1 + Math.Max(0, maxWorkshops - Workshops.Count);
-            for (int i = 0; i < numDuplicates; ++i)
+            for (var i = 0; i < numDuplicates; ++i)
                 yield return (i, Workshops[0]);
             // remaining: schedule #1 maps to workshop #numDuplicates etc
-            for (int i = 1; i < Workshops.Count; ++i)
+            for (var i = 1; i < Workshops.Count; ++i)
                 yield return (numDuplicates + i - 1, Workshops[i]);
         }
     }
@@ -94,7 +94,7 @@ public class WorkshopSolver
         {
             var popRow = Service.LuminaRow<MJICraftworksPopularity>(rowId);
             _values = popRow != null ? new int[popRow.Popularity.Length] : new int[0];
-            for (int i = 0; i < _values.Length; ++i)
+            for (var i = 0; i < _values.Length; ++i)
                 _values[i] = popRow?.Popularity[i].Value?.Ratio ?? 100;
         }
     }
