@@ -183,7 +183,7 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        if (RepairManager.CanRepairAny())
+        if (RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent))
         {
             P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(Service.Config.Get<GatherRouteDB>().RepairGear));
             return;

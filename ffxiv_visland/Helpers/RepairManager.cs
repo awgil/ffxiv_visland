@@ -91,7 +91,7 @@ internal unsafe class RepairManager
         return (int)Math.Ceiling((double)ret / 300);
     }
 
-    internal static bool CanRepairAny(int repairPercent = 0)
+    internal static bool CanRepairAny(float repairPercent = 0)
     {
         var equipment = InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems);
         for (var i = 0; i < equipment->Size; i++)
