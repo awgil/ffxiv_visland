@@ -1,4 +1,5 @@
-﻿using Dalamud.Game.Text.SeStringHandling;
+﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
@@ -179,11 +180,11 @@ public class GatherRouteExec : IDisposable
 
         if (SpiritbondManager.IsSpiritbondReadyAny())
         {
-            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria));
+            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted]);
             return;
         }
 
-        if (RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent))
+        if (RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(Service.Config.Get<GatherRouteDB>().RepairGear));
             return;
