@@ -192,20 +192,7 @@ public class GatherWindow : Window, System.IDisposable
 
             using (ImRaii.Child("routes"))
             {
-                List<string> groups = [];
-                for (var g = 0; g < (FilteredRoutes.Count > 0 ? FilteredRoutes.Count : RouteDB.Routes.Count); g++)
-                {
-                    var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
-                    if (string.IsNullOrEmpty(routeSource[g].Group))
-                    {
-                        routeSource[g].Group = "None";
-                    }
-                    if (!groups.Contains(routeSource[g].Group))
-                    {
-                        groups.Add(routeSource[g].Group);
-                    }
-                }
-                groups = [.. groups.OrderBy(i => i == "None").ThenBy(i => i)]; //Sort with None at the End
+                List<string> groups = GetGroups(RouteDB,true);
                 foreach (var group in groups)
                 {
                     foreach (var wn in _tree.Node($"{group}###{groups.IndexOf(group)}"))
@@ -217,9 +204,14 @@ public class GatherWindow : Window, System.IDisposable
                             var routeGroup = string.IsNullOrEmpty(route.Group) ? "None" : route.Group;
                             if (routeGroup == group)
                             {
-                                var selectedRoute = ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex);
-                                if (selectedRoute)
+                                if (ImGui.Selectable($"{route.Name} ({route.Waypoints.Count} steps)###{i}", i == selectedRouteIndex))
                                     selectedRouteIndex = i;
+                                if (ImGui.BeginPopupContextItem())
+                                {
+                                    selectedRouteIndex = i;
+                                    ContextMenuRoute(routeSource[i]);
+                                    ImGui.EndPopup();
+                                }
                             }
                         }
                     }
@@ -523,6 +515,31 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
             if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
                 RouteDB.NotifyModified();
+        }
+    }
+
+    private void ContextMenuRoute(Route r)
+    {
+        var group = r.Group;
+        ImGuiEx.TextV("Group: ");
+        ImGui.SameLine();
+        if (ImGui.InputText("##group", ref group, 256))
+        {
+            r.Group = group;
+            RouteDB.NotifyModified();
+        }
+        if (ImGui.BeginMenu("Add Route to Existing Group"))
+        {
+            List<string> groupsCmr = GetGroups(RouteDB,true);
+            foreach (string groupCmr in groupsCmr)
+            {
+                if (ImGui.MenuItem(groupCmr))
+                {
+                    r.Group = groupCmr;
+                }
+                RouteDB.NotifyModified();
+            }
+            ImGui.EndMenu();
         }
     }
 
