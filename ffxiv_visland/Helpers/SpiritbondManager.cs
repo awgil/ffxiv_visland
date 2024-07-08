@@ -70,7 +70,7 @@ public unsafe static class SpiritbondManager
 
     private static DateTime _nextRetry;
 
-    public unsafe static bool ExtractMateriaTask(bool option)
+    public unsafe static bool ExtractMateriaTask()
     {
         if (!QuestManager.IsQuestComplete(66174)) return true; // doesn't have materia extraction unlocked
 
@@ -81,8 +81,6 @@ public unsafe static class SpiritbondManager
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
             return false;
         }
-
-        if (!option) return true;
 
         if (IsSpiritbondReadyAny())
         {

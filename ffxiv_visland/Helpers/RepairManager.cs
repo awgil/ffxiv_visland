@@ -53,29 +53,6 @@ internal unsafe class RepairManager
         return false;
     }
 
-    internal static int GetNPCRepairPrice()
-    {
-        var output = 0;
-        var equipment = InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems);
-        for (var i = 0; i < equipment->Size; i++)
-        {
-            var item = equipment->GetInventorySlot(i);
-            if (item != null && item->ItemId > 0)
-            {
-                var actualCond = Math.Round(item->Condition / (float)300, 2);
-                if (actualCond < 100)
-                {
-                    var lvl = Svc.Data.GetExcelSheet<Item>()!.GetRow(item->ItemId)!.LevelEquip;
-                    var condDif = (100 - actualCond) / 100;
-                    var price = Math.Round(Svc.Data.GetExcelSheet<ItemRepairPrice>()!.GetRow(lvl)!.Unknown0 * condDif, 0, MidpointRounding.ToPositiveInfinity);
-                    output += (int)price;
-                }
-            }
-        }
-
-        return output;
-    }
-
     internal static int GetMinEquippedPercent()
     {
         var ret = ushort.MaxValue;
@@ -140,10 +117,8 @@ internal unsafe class RepairManager
 
     private static DateTime _nextRetry;
 
-    internal static bool ProcessRepair(bool option)
+    internal static bool ProcessRepair()
     {
-        if (!option) return true;
-
         if (GetMinEquippedPercent() >= Service.Config.Get<GatherRouteDB>().RepairPercent)
         {
             if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) && r->AtkUnitBase.IsVisible)

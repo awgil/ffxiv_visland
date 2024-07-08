@@ -120,6 +120,7 @@ public class GatherRouteExec : IDisposable
         if (Player.ExclusiveFlying && wp.Movement == GatherRouteDB.Movement.MountNoFly)
         {
             _movement.DesiredPosition = new Vector3(Player.Object.Position.X, wp.Position.Y, Player.Object.Position.Z);
+            Svc.Log.Verbose($"Waypoint is MountNoFly, currently flying. Setting desired position lower.");
             return;
         }
 
@@ -176,17 +177,23 @@ public class GatherRouteExec : IDisposable
                 break;
         }
 
-        if (P.TaskManager.IsBusy) return; // let any interactions play out first
-
-        if (SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (P.TaskManager.IsBusy)
         {
-            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria));
+            Svc.Log.Verbose("Waiting for previous interactions to finish.");
             return;
         }
 
-        if (RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (Service.Config.Get<GatherRouteDB>().ExtractMateria && SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
-            P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(Service.Config.Get<GatherRouteDB>().RepairGear));
+            Svc.Log.Debug("Extract materia task queued.");
+            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(), "ExtractMateria");
+            return;
+        }
+
+        if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        {
+            Svc.Log.Debug("Repair gear task queued.");
+            P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
             return;
         }
 
