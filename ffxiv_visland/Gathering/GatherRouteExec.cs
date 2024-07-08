@@ -178,9 +178,9 @@ public class GatherRouteExec : IDisposable
 
         if (P.TaskManager.IsBusy) return; // let any interactions play out first
 
-        if (SpiritbondManager.IsSpiritbondReadyAny())
+        if (SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
-            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted]);
+            P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(Service.Config.Get<GatherRouteDB>().ExtractMateria));
             return;
         }
 
