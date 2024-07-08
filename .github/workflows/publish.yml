@@ -3,7 +3,7 @@ name: Build & Publish to Dynamis
 on:
   push:
     tags:
-      - "v*.*.*.*"
+      - 'v*.*'
 
 jobs:
   Build:
