@@ -229,10 +229,10 @@ public class GatherWindow : Window, System.IDisposable
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
             if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
                 RouteDB.NotifyModified();
-            if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
-                RouteDB.NotifyModified();
-            if (ImGui.SliderFloat("Repair percentage threshold", ref RouteDB.RepairPercent, 0, 100))
-                RouteDB.NotifyModified();
+            //if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
+            //    RouteDB.NotifyModified();
+            //if (ImGui.SliderFloat("Repair percentage threshold", ref RouteDB.RepairPercent, 0, 100))
+            //    RouteDB.NotifyModified();
         }
     }
 
