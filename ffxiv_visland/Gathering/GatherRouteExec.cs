@@ -190,12 +190,12 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
-        {
-            Svc.Log.Debug("Repair gear task queued.");
-            P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
-            return;
-        }
+        //if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        //{
+        //    Svc.Log.Debug("Repair gear task queued.");
+        //    P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
+        //    return;
+        //}
 
         if (!ContinueToNext)
         {
