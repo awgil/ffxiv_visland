@@ -6,6 +6,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
+using ECommons.SimpleGui;
 using ImGuiNET;
 using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
@@ -25,20 +26,21 @@ public class GatherWindow : Window, System.IDisposable
     private readonly UITree _tree = new();
     private readonly List<System.Action> _postDraw = [];
 
-    public GatherRouteDB RouteDB;
+    public GatherRouteDB RouteDB = null!;
     public GatherRouteExec Exec = new();
-    public GatherDebug _debug;
+    //public AutoGatherTab _autoGather;
+    public GatherDebug _debug = null!;
 
     private int selectedRouteIndex = -1;
     public static bool loop;
 
-    private readonly List<uint> Colours = Svc.Data.GetExcelSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
+    private readonly List<uint> Colours = Utils.GetSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
 
-    private readonly List<int> Items = Svc.Data.GetExcelSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
-    private readonly ExcelSheet<Item> _items;
+    private readonly List<int> Items = Utils.GetSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
+    private ExcelSheet<Item> _items = null!;
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
@@ -49,8 +51,20 @@ public class GatherWindow : Window, System.IDisposable
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
+        //_autoGather = new(Exec);
         _debug = new(Exec);
-        _items = Svc.Data.GetExcelSheet<Item>()!;
+        _items = Utils.GetSheet<Item>()!;
+    }
+
+    public void Setup()
+    {
+        EzConfigGui.Window.Size = new Vector2(800, 800);
+        EzConfigGui.Window.SizeCondition = ImGuiCond.FirstUseEver;
+        RouteDB = Service.Config.Get<GatherRouteDB>();
+
+        //_autoGather = new(Exec);
+        _debug = new(Exec);
+        _items = Utils.GetSheet<Item>()!;
     }
 
     public void Dispose() => Exec.Dispose();
@@ -81,6 +95,9 @@ public class GatherWindow : Window, System.IDisposable
                         a();
                     _postDraw.Clear();
                 }
+            //using (var tab = ImRaii.TabItem("Shopping"))
+            //    if (tab)
+            //        _autoGather.Draw();
             using (var tab = ImRaii.TabItem("Debug"))
                 if (tab)
                     _debug.Draw();
@@ -105,7 +122,7 @@ public class GatherWindow : Window, System.IDisposable
         if (Exec.CurrentRoute != null) // Finish() call could've reset it
         {
             ImGui.SameLine();
-            ImGui.Text($"{Exec.CurrentRoute.Name}: Step #{Exec.CurrentWaypoint + 1}");
+            ImGui.Text($"{Exec.CurrentRoute.Name}: Step #{Exec.CurrentWaypoint + 1} {Exec.CurrentRoute.Waypoints[Exec.CurrentWaypoint].Position}");
 
             if (Exec.Waiting)
             {
@@ -229,10 +246,12 @@ public class GatherWindow : Window, System.IDisposable
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
             if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
                 RouteDB.NotifyModified();
-            //if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
-            //    RouteDB.NotifyModified();
-            //if (ImGui.SliderFloat("Repair percentage threshold", ref RouteDB.RepairPercent, 0, 100))
-            //    RouteDB.NotifyModified();
+            if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
+                RouteDB.NotifyModified();
+            if (ImGui.SliderFloat("Repair percentage threshold", ref RouteDB.RepairPercent, 0, 100))
+                RouteDB.NotifyModified();
+            if (ImGui.Checkbox("Purify collectables during routes", ref RouteDB.PurifyCollectables))
+                RouteDB.NotifyModified();
         }
     }
 
@@ -309,6 +328,11 @@ public class GatherWindow : Window, System.IDisposable
                     ImGui.SetClipboardText(Utils.ToCompressedBase64(route));
             }
 
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButton(FontAwesomeIcon.EllipsisH))
+                ImGui.OpenPopup("##MassEditing");
+            DrawMassEditContextMenu(route);
+
             var name = route.Name;
             var group = route.Group;
             var movementType = Service.Condition[ConditionFlag.InFlight] ? Movement.MountFly : Service.Condition[ConditionFlag.Mounted] ? Movement.MountNoFly : Movement.Normal;
@@ -358,11 +382,52 @@ public class GatherWindow : Window, System.IDisposable
                 {
                     var wp = route.Waypoints[i];
                     foreach (var wn in _tree.Node($"#{i + 1}: [x: {wp.Position.X:f0}, y: {wp.Position.Y:f0}, z: {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", contextMenu: () => ContextMenuWaypoint(route, i)))
-                    {
                         DrawWaypoint(wp);
-                    }
                 }
             }
+        }
+    }
+
+
+    private bool pathfind;
+    private int zoneID;
+    private float radius;
+    private InteractionType interaction;
+    private void DrawMassEditContextMenu(Route route)
+    {
+        using var popup = ImRaii.Popup("##MassEditing");
+        if (!popup) return;
+
+        ImGui.Checkbox("Pathfind", ref pathfind);
+        ImGui.SameLine();
+        if (ImGui.Button("Apply All###Pathfind"))
+        {
+            route?.Waypoints.ForEach(x => x.Pathfind = pathfind);
+            RouteDB.NotifyModified();
+        }
+
+        ImGui.InputInt("Zone", ref zoneID);
+        ImGui.SameLine();
+        if (ImGui.Button("Apply All###Zone"))
+        {
+            route?.Waypoints.ForEach(x => x.ZoneID = zoneID);
+            RouteDB.NotifyModified();
+        }
+
+        ImGui.InputFloat("Radius", ref radius);
+        ImGui.SameLine();
+        if (ImGui.Button("Apply All###Radius"))
+        {
+            route?.Waypoints.ForEach(x => x.Radius = radius);
+            RouteDB.NotifyModified();
+        }
+
+        UICombo.Enum("Interaction type", ref interaction);
+        ImGui.SameLine();
+        if (ImGui.Button("Apply All###Interaction"))
+        {
+            route?.Waypoints.ForEach(x => x.Interaction = interaction);
+            RouteDB.NotifyModified();
         }
     }
 

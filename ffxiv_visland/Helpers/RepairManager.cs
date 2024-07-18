@@ -1,15 +1,13 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
+﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using Lumina.Excel.GeneratedSheets;
 using System;
-using System.Linq;
 using visland.Gathering;
 
 namespace visland.Helpers;
@@ -41,7 +39,7 @@ internal unsafe class RepairManager
 
     internal static bool HasDarkMatterOrBetter(uint darkMatterID)
     {
-        var repairResources = Svc.Data.Excel.GetSheet<ItemRepairResource>()!;
+        var repairResources = Utils.GetSheet<ItemRepairResource>()!;
         foreach (var dm in repairResources)
         {
             if (dm.Item.Row < darkMatterID)
@@ -87,7 +85,7 @@ internal unsafe class RepairManager
 
     internal static bool CanRepairItem(uint ItemId)
     {
-        var row = Svc.Data.GetExcelSheet<Item>()!.GetRow(ItemId)!;
+        var row = Utils.GetRow<Item>(ItemId)!;
 
         if (row.ClassJobRepair.Row > 0)
         {
@@ -105,7 +103,7 @@ internal unsafe class RepairManager
         return false;
     }
 
-    public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[Svc.Data.GetExcelSheet<ClassJob>()?.GetRow((uint)job)?.ExpArrayIndex ?? 0];
+    public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[Utils.GetRow<ClassJob>((uint)job)?.ExpArrayIndex ?? 0];
 
     internal static bool RepairWindowOpen()
     {
@@ -124,7 +122,7 @@ internal unsafe class RepairManager
             if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) && r->AtkUnitBase.IsVisible)
             {
                 if (DateTime.Now < _nextRetry) return false;
-                if (!Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied39])
+                if (!Svc.Condition[ConditionFlag.Occupied39])
                 {
                     Svc.Log.Verbose("Repair visible");
                     Svc.Log.Verbose("Closing repair window");
@@ -147,7 +145,7 @@ internal unsafe class RepairManager
                 return false;
             }
 
-            if (!Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied39])
+            if (!Svc.Condition[ConditionFlag.Occupied39])
             {
                 ConfirmYesNo();
                 Repair();

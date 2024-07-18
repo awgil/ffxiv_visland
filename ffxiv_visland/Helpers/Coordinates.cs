@@ -7,8 +7,8 @@ using System.Numerics;
 namespace visland.Helpers;
 internal class Coordinates
 {
-    public static Lumina.Excel.ExcelSheet<Aetheryte> Aetherytes = Svc.Data.GetExcelSheet<Aetheryte>(Svc.ClientState.ClientLanguage)!;
-    public static Lumina.Excel.ExcelSheet<MapMarker> AetherytesMap = Svc.Data.GetExcelSheet<MapMarker>(Svc.ClientState.ClientLanguage)!;
+    public static Lumina.Excel.ExcelSheet<Aetheryte> Aetherytes = Utils.GetSheet<Aetheryte>()!;
+    public static Lumina.Excel.ExcelSheet<MapMarker> AetherytesMap = Utils.GetSheet<MapMarker>()!;
 
     private static float ConvertMapMarkerToMapCoordinate(int pos, float scale)
     {

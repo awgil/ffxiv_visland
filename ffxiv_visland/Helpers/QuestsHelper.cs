@@ -26,7 +26,7 @@ namespace visland.Helpers;
 
 public class QuestsHelper
 {
-    private static readonly Dictionary<uint, Quest>? QuestSheet = Svc.Data?.GetExcelSheet<Quest>()?.Where(x => x.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i);
+    private static readonly Dictionary<uint, Quest>? QuestSheet = Utils.FindRows<Quest>(x => x?.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i);
 
     public static nint emoteAgent = nint.Zero;
     public delegate void DoEmoteDelegate(nint agent, uint emoteID, long a3, bool a4, bool a5);
@@ -50,7 +50,7 @@ public class QuestsHelper
         catch { Service.Log.Error($"Failed to load agentModule"); }
     }
 
-    public static string GetMobName(uint npcID) => Svc.Data.GetExcelSheet<BNpcName>()?.GetRow(npcID)?.Singular.RawString ?? "";
+    public static string GetMobName(uint npcID) => Utils.GetRow<BNpcName>(npcID)?.Singular.RawString ?? "";
 
     public static bool IsQuestAccepted(int questID) => new QuestManager().IsQuestAccepted(((uint)questID).ToInternalID());
     public static bool IsQuestCompleted(int questID) => QuestManager.IsQuestComplete(((uint)questID).ToInternalID());

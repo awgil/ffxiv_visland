@@ -96,12 +96,7 @@ public static unsafe class Utils
     public static void SortByReverse<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(r).CompareTo(proj(l)));
 
     // swap two values
-    public static void Swap<T>(ref T l, ref T r)
-    {
-        var t = l;
-        l = r;
-        r = t;
-    }
+    public static void Swap<T>(ref T l, ref T r) => (r, l) = (l, r);
 
     // get all types defined in specified assembly
     public static IEnumerable<Type?> GetAllTypes(Assembly asm)
@@ -194,27 +189,39 @@ public static unsafe class Utils
 
         return clicked;
     }
+
+    public static ExcelSheet<T> GetSheet<T>(ClientLanguage? language = null) where T : ExcelRow
+        => Svc.Data.GetExcelSheet<T>(language ?? Svc.ClientState.ClientLanguage)!;
+
+    public static uint GetRowCount<T>() where T : ExcelRow
+        => GetSheet<T>().RowCount;
+
+    public static T? GetRow<T>(uint rowId, uint subRowId = uint.MaxValue, ClientLanguage? language = null) where T : ExcelRow
+        => GetSheet<T>(language).GetRow(rowId, subRowId);
+
+    public static T? FindRow<T>(Func<T?, bool> predicate) where T : ExcelRow
+        => GetSheet<T>().FirstOrDefault(predicate, null);
+
+    public static IEnumerable<T> FindRows<T>(Func<T?, bool> predicate) where T : ExcelRow
+        => GetSheet<T>().Where(predicate);
 }
 
 public static class Extensions
 {
-    public static LazyRow<T> GetDifferentLanguage<T>(this LazyRow<T> row, ClientLanguage language) where T : ExcelRow
-    {
-        return new LazyRow<T>(Service.DataManager.GameData, row.Row, language.ToLumina());
-    }
+    public static LazyRow<T> GetDifferentLanguage<T>(this LazyRow<T> row, ClientLanguage language) where T : ExcelRow => new LazyRow<T>(Service.DataManager.GameData, row.Row, language.ToLumina());
 
     public static string GetItemName(this ILazyRow row)
     {
-        if (Svc.Data.GetExcelSheet<Item>()!.HasRow(row.Row))
-            return (Svc.Data.GetExcelSheet<Item>()!.GetRow(row.Row)!.Name);
-        return Svc.Data.GetExcelSheet<EventItem>()!.HasRow(row.Row) ? Svc.Data.GetExcelSheet<EventItem>()!.GetRow(row.Row)!.Name : "";
+        if (Utils.GetSheet<Item>()!.HasRow(row.Row))
+            return (Utils.GetRow<Item>(row.Row)!.Name);
+        return Utils.GetSheet<EventItem>()!.HasRow(row.Row) ? Utils.GetRow<EventItem>(row.Row)!.Name : "";
     }
 
     public static string GetGatheringItem(this ILazyRow row)
     {
-        if (Svc.Data.GetExcelSheet<GatheringItem>()!.HasRow(row.Row))
-            return Svc.Data.GetExcelSheet<Item>()!.GetRow((uint)Svc.Data.GetExcelSheet<GatheringItem>()!.GetRow(row.Row)!.Item)!.Name;
-        return Svc.Data.GetExcelSheet<SpearfishingItem>()!.HasRow(row.Row) ? Svc.Data.GetExcelSheet<SpearfishingItem>()!.GetRow(row.Row)!.Item.GetItemName() : row.Row.ToString();
+        if (Utils.GetSheet<GatheringItem>()!.HasRow(row.Row))
+            return Utils.GetRow<Item>((uint)Utils.GetRow<GatheringItem>(row.Row)!.Item)!.Name;
+        return Utils.GetSheet<SpearfishingItem>()!.HasRow(row.Row) ? Utils.GetRow<SpearfishingItem>(row.Row)!.Item.GetItemName() : row.Row.ToString();
     }
 
 }

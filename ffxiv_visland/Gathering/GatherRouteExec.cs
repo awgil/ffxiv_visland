@@ -1,11 +1,14 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
+using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -38,11 +41,13 @@ public class GatherRouteExec : IDisposable
     public GatherRouteExec()
     {
         RouteDB = Service.Config.Get<GatherRouteDB>();
+        Svc.Chat.CheckMessageHandled += CheckToDisable;
         Svc.Toasts.ErrorToast += CheckToDisable;
     }
 
     public void Dispose()
     {
+        Svc.Chat.CheckMessageHandled -= CheckToDisable;
         Svc.Toasts.ErrorToast -= CheckToDisable;
     }
 
@@ -79,11 +84,7 @@ public class GatherRouteExec : IDisposable
                 return;
             }
 
-            if (Player.OnIsland && !Player.Mounted && Player.SprintCD > 5)
-                ExecuteIslandSprint();
-
-            if (!Player.OnIsland && !Player.Mounted && Player.SprintCD == 0)
-                ExecuteSprint();
+            ExecuteSprint();
 
             if (wp.Movement == GatherRouteDB.Movement.MountFly && Player.Mounted && !Player.InclusiveFlying)
             {
@@ -190,12 +191,19 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        //if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
-        //{
-        //    Svc.Log.Debug("Repair gear task queued.");
-        //    P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
-        //    return;
-        //}
+        if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        {
+            Svc.Log.Debug("Repair gear task queued.");
+            P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
+            return;
+        }
+
+        if (DalamudReflector.IsOnStaging() && Service.Config.Get<GatherRouteDB>().PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        {
+            Svc.Log.Debug("Purify collectables task queued.");
+            P.TaskManager.Enqueue(() => PurificationManager.PurifyAllTask(), "PurifyCollectables");
+            return;
+        }
 
         if (!ContinueToNext)
         {
@@ -264,21 +272,37 @@ public class GatherRouteExec : IDisposable
     }
 
     private unsafe void ExecuteActionSafe(ActionType type, uint id) => _action.Exec(() => ActionManager.Instance()->UseAction(type, id));
-    private void ExecuteIslandSprint() => ExecuteActionSafe(ActionType.Action, 31314);
     private void ExecuteMount() => ExecuteActionSafe(ActionType.GeneralAction, 24); // flying mount roulette
     private void ExecuteDismount() => ExecuteActionSafe(ActionType.GeneralAction, 23);
     private void ExecuteJump() => ExecuteActionSafe(ActionType.GeneralAction, 2);
-    private void ExecuteSprint() => ExecuteActionSafe(ActionType.GeneralAction, 4);
+    private void ExecuteSprint()
+    {
+        if (Player.Mounted) return;
+
+        if (Player.OnIsland && Player.SprintCD > 5)
+            ExecuteActionSafe(ActionType.Action, 31314);
+
+        if (!Player.OnIsland && Player.SprintCD == 0)
+            ExecuteActionSafe(ActionType.GeneralAction, 4);
+    }
 
     private void CheckToDisable(ref SeString message, ref bool isHandled)
     {
-        if (Service.Config.Get<GatherRouteDB>().DisableOnErrors)
-        {
+        if (!Service.Config.Get<GatherRouteDB>().DisableOnErrors) return;
+        Errors.PushBack(Environment.TickCount64);
+        if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
+            Finish();
+    }
+
+    private static readonly uint[] logErrors = [3570, 3574, 3575, 3584, 3589]; // various unable to spearfish errors
+    private void CheckToDisable(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
+    {
+        if (!Service.Config.Get<GatherRouteDB>().DisableOnErrors) return;
+        
+        var msg = message.ExtractText();
+        if (logErrors.Any(x => msg == Utils.GetRow<LogMessage>(x)!.Text.ExtractText()))
             Errors.PushBack(Environment.TickCount64);
-            if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
-            {
-                Finish();
-            }
-        }
+        if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
+            Finish();
     }
 }

@@ -5,9 +5,12 @@ using Dalamud.Plugin;
 using ECommons;
 using ECommons.Automation;
 using ECommons.Automation.LegacyTaskManager;
+using ECommons.Configuration;
 using ECommons.Reflection;
+using ECommons.SimpleGui;
 using ImGuiNET;
 using System;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
@@ -23,37 +26,23 @@ using visland.Workshop;
 
 namespace visland;
 
-class RepoMigrateWindow : Window
-{
-    public static string OldURL = "https://raw.githubusercontent.com/awgil/ffxiv_plugin_distribution/master/pluginmaster.json";
-    public static string NewURL = "https://puni.sh/api/repository/veyn";
-
-    public RepoMigrateWindow() : base("Warning! Plugin home repository was changed")
-    {
-        IsOpen = true;
-    }
-
-    public override void Draw()
-    {
-        ImGui.TextUnformatted("The home repository of Island Sanctuary Automation (visland) plugin was recently changed.");
-        ImGui.TextUnformatted("Please update your dalamud settings to point to the new repository:");
-        if (ImGui.Button("Click here to copy new url into clipboard"))
-            ImGui.SetClipboardText(NewURL);
-        ImGui.TextUnformatted("1. Go to repo settings (esc -> dalamud settings -> experimental).");
-        ImGui.TextUnformatted($"2. Replace '{OldURL}' with '{NewURL}' (use button above and just ctrl-V).");
-        ImGui.TextUnformatted("3. Press save-and-close button.");
-        ImGui.TextUnformatted("4. Go to dalamud plugins (esc -> dalamud plugins -> installed plugins).");
-        ImGui.TextUnformatted("5. Uninstall and reinstall this plugin (you might need to restart the game before dalamud allows you to reinstall).");
-        ImGui.TextUnformatted("Don't worry, you won't lose any settings. Sorry for bother and enjoy the plugin!");
-    }
-}
-
 public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "visland";
+    internal static string HelpMessage => "Opens the Gathering Menu\n" +
+        $"/{Name} moveto <X> <Y> <Z> → move to raw coordinates\n" +
+        $"/{Name} movedir <X> <Y> <Z> → move this many units over (relative to player facing)\n" +
+        $"/{Name} stop → stop current route\n" +
+        $"/{Name} pause → pause current route\n" +
+        $"/{Name} resume → resume current route\n" +
+        $"/{Name} exec <name> → run route by name continuously\n" +
+        $"/{Name} execonce <name> → run route by name once\n" +
+        $"/{Name} exectemp <base64 route> → run unsaved route continuously\n" +
+        $"/{Name} exectemponce <base64 route> → run unsaved route once";
 
     internal static Plugin P = null!;
     internal TaskManager TaskManager;
+    internal ShoppingListDB ShoppingListsFile;
 
     private VislandIPC _vislandIPC;
 
@@ -78,11 +67,8 @@ public sealed class Plugin : IDalamudPlugin
         ECommonsMain.Init(dalamud, this, ECommons.Module.DalamudReflector);
         DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);
         Service.Init(dalamud);
-        AutoCutsceneSkipper.Init(null);
-        AutoCutsceneSkipper.Disable();
 
         dalamud.Create<Service>();
-        dalamud.UiBuilder.Draw += WindowSystem.Draw;
 
         Service.Config.Initialize();
         if (dalamud.ConfigFile.Exists)
@@ -92,7 +78,19 @@ public sealed class Plugin : IDalamudPlugin
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
 
+        EzConfig.DefaultSerializationFactory = new YamlFactory();
+        ShoppingListsFile = EzConfig.Init<ShoppingListDB>();
+        ShoppingListsFile.ShoppingLists.CollectionChanged += OnChange;
+
         _wndGather = new GatherWindow();
+        //EzConfigGui.Init(_wndGather.Draw);
+        //_wndGather.Setup();
+
+        //EzConfigGui.WindowSystem.AddWindow(new WorkshopWindow());
+        //EzConfigGui.WindowSystem.AddWindow(new GranaryWindow());
+        //EzConfigGui.WindowSystem.AddWindow(new PastureWindow());
+        //EzConfigGui.WindowSystem.AddWindow(new FarmWindow());
+        //EzConfigGui.WindowSystem.AddWindow(new ExportWindow());
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
         _wndPasture = new PastureWindow();
@@ -102,47 +100,28 @@ public sealed class Plugin : IDalamudPlugin
         _vislandIPC = new(_wndGather);
         NavmeshIPC.Init();
 
-        if (dalamud.SourceRepository == RepoMigrateWindow.OldURL)
-        {
-            WindowSystem.AddWindow(new RepoMigrateWindow());
-        }
-        else
-        {
-            WindowSystem.AddWindow(_wndGather);
-            WindowSystem.AddWindow(_wndWorkshop);
-            WindowSystem.AddWindow(_wndGranary);
-            WindowSystem.AddWindow(_wndPasture);
-            WindowSystem.AddWindow(_wndFarm);
-            WindowSystem.AddWindow(_wndExports);
-            Service.CommandManager.AddHandler("/visland", new CommandInfo(OnCommand)
-            {
-                HelpMessage = "Opens the Gathering Menu\n" +
-                $"/{Name} moveto <X> <Y> <Z> → move to raw coordinates\n" +
-                $"/{Name} movedir <X> <Y> <Z> → move this many units over (relative to player facing)\n" +
-                $"/{Name} stop → stop current route\n" +
-                $"/{Name} pause → pause current route\n" +
-                $"/{Name} resume → resume current route\n" +
-                $"/{Name} exec <name> → run route by name continuously\n" +
-                $"/{Name} execonce <name> → run route by name once\n" +
-                $"/{Name} exectemp <base64 route> → run unsaved route continuously\n" +
-                $"/{Name} exectemponce <base64 route> → run unsaved route once",
-                ShowInHelp = true,
-            });
-            Service.Interface.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
-        }
+        WindowSystem.AddWindow(_wndGather);
+        WindowSystem.AddWindow(_wndWorkshop);
+        WindowSystem.AddWindow(_wndGranary);
+        WindowSystem.AddWindow(_wndPasture);
+        WindowSystem.AddWindow(_wndFarm);
+        WindowSystem.AddWindow(_wndExports);
+        EzCmd.Add("/visland", OnCommand, HelpMessage);
+        Service.Interface.UiBuilder.Draw += WindowSystem.Draw;
+        Service.Interface.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
     }
 
     public void Dispose()
     {
         _vislandIPC.Dispose();
         WindowSystem.RemoveAllWindows();
-        Service.CommandManager.RemoveHandler("/visland");
         _wndGather.Dispose();
         _wndWorkshop.Dispose();
         _wndGranary.Dispose();
         _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
+        ShoppingListsFile.ShoppingLists.CollectionChanged -= OnChange;
         ECommonsMain.Dispose();
     }
 
@@ -150,9 +129,7 @@ public sealed class Plugin : IDalamudPlugin
     {
         Service.Log.Debug($"cmd: '{command}', args: '{arguments}'");
         if (arguments.Length == 0)
-        {
             _wndGather.IsOpen ^= true;
-        }
         else
         {
             var args = arguments.Split(' ');
@@ -232,4 +209,6 @@ public sealed class Plugin : IDalamudPlugin
         if (Utils.HasPlugin(NavmeshIPC.Name))
             NavmeshIPC.Init();
     }
+
+    public static void OnChange(object? sender, NotifyCollectionChangedEventArgs e) => EzConfig.Save();
 }

@@ -77,6 +77,8 @@ public class GatherRouteDB : Configuration.Node
     {
         public string Name = "";
         public string Group = "";
+        public int Food = 0;
+        public int Manual = 0;
         public List<Waypoint> Waypoints = [];
     }
 
@@ -85,9 +87,15 @@ public class GatherRouteDB : Configuration.Node
     public float DefaultInteractionRadius = 2;
     public bool GatherModeOnStart = true;
     public bool DisableOnErrors = false;
+
     public bool ExtractMateria = true;
     public bool RepairGear = true;
     public float RepairPercent = 20;
+    public bool PurifyCollectables = false;
+
+    public int GlobalFood = 0;
+    public int GlobalManual = 0;
+
     public bool WasFlyingInManual = false;
 
     public int LandDistance = 10;
@@ -102,6 +110,8 @@ public class GatherRouteDB : Configuration.Node
             {
                 var jn = jr["Name"]?.Value<string>();
                 var jg = jr["Group"]?.Value<string>();
+                var jf = jr["Food"]?.Value<int>();
+                var jm = jr["Manual"]?.Value<int>();
                 if (jn != null && jr["Waypoints"] is JArray jw)
                 {
                     if (jg != null)
@@ -115,6 +125,14 @@ public class GatherRouteDB : Configuration.Node
         GatherModeOnStart = (bool?)j["GatherModeOnStart"] ?? true;
         DefaultWaypointRadius = (float?)j["DefaultWaypointRadius"] ?? 3;
         DefaultInteractionRadius = (float?)j["DefaultInteractionRadius"] ?? 2;
+
+        ExtractMateria = (bool?)j["ExtractMateria"] ?? true;
+        RepairGear = (bool?)j["RepairGear"] ?? true;
+        RepairPercent = (float?)j["RepairPercent"] ?? 20;
+        PurifyCollectables = (bool?)j["Desynth"] ?? false;
+
+        GlobalFood = (int?)j["GlobalFood"] ?? 0;
+        GlobalManual = (int?)j["GlobalManual"] ?? 0;
     }
 
     public override JObject Serialize(JsonSerializer ser)
@@ -126,6 +144,8 @@ public class GatherRouteDB : Configuration.Node
             {
                 { "Name", r.Name },
                 { "Group", r.Group },
+                { "Food", r.Food },
+                { "Manual", r.Manual },
                 { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
             });
         }
@@ -134,7 +154,13 @@ public class GatherRouteDB : Configuration.Node
             { "DisableOnErrors", DisableOnErrors },
             { "GatherModeOnStart", GatherModeOnStart },
             { "DefaultWaypointRadius", DefaultWaypointRadius },
-            { "DefaultInteractionRadius", DefaultInteractionRadius }
+            { "DefaultInteractionRadius", DefaultInteractionRadius },
+            { "ExtractMateria", ExtractMateria },
+            { "RepairGear", RepairGear },
+            { "RepairPercent", RepairPercent },
+            { "Desynth", PurifyCollectables },
+            { "GlobalFood", GlobalFood },
+            { "GlobalManual", GlobalManual }
         };
     }
 
@@ -227,18 +253,13 @@ public class GatherRouteDB : Configuration.Node
         {
             var routeSource = gatherRouteDB.Routes;
             if (string.IsNullOrEmpty(routeSource[g].Group))
-            {
                 routeSource[g].Group = "Ungrouped";
-            }
             if (!groups.Contains(routeSource[g].Group))
-            {
                 groups.Add(routeSource[g].Group);
-            }
         }
         if (sort)
-        {
             groups = [.. groups.OrderBy(i => i == "Ungrouped").ThenBy(i => i)]; //Sort with None at the End
-        }
+
         return groups;
     }
 

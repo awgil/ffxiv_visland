@@ -38,4 +38,8 @@ public unsafe static class Player
         get => Svc.GameConfig.UiControl.GetUInt("FlyingControlType");
         set => Svc.GameConfig.Set(Dalamud.Game.Config.UiControlOption.FlyingControlType, value);
     }
+    public static bool HasFood => Status.Any(x => x.StatusId == 48); // Well Fed buff
+    public static float FoodCD => Status.FirstOrDefault(s => s.StatusId == 48)?.RemainingTime ?? 0;
+    public static bool HasManual => Status.Any(x => x.StatusId == 49);
+    public static float ManualCD => Status.FirstOrDefault(s => s.StatusId == 49)?.RemainingTime ?? 0;
 }
