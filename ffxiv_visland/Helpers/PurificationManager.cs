@@ -24,6 +24,7 @@ internal class PurificationManager
 
     public static unsafe bool PurifyAllTask()
     {
+        Svc.Log.Debug($"{nameof(PurifyAllTask)}: {IsResultsOpen()}:{ListenersActive}:{Svc.Condition[ConditionFlag.Occupied39]}");
         if (IsResultsOpen() || ListenersActive || Svc.Condition[ConditionFlag.Occupied39]) return false;
         return PurifyItemTask();
     }
@@ -32,19 +33,20 @@ internal class PurificationManager
     {
         var items = GetPurifyableItems();
         var agent = AgentPuryfyItemSelector.Instance();
-        if (items.Count == 0 || agent == null) return true;
+        if (items.Count == 0 || agent == null) { Svc.Log.Debug("No items to purify or the agent is null"); return true; }
 
         EnableListeners();
         agent->ReduceItem(items.First());
+        Svc.Log.Debug($"Reducing {items.First().Value->Condition}/{items.First().Value->Slot}/{items.First().Value->ItemId}");
         return true;
     }
 
-    public static unsafe bool IsResultsOpen() => GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyResult", out var results) && results->IsVisible;
+    private static unsafe bool IsResultsOpen() => GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyResult", out var results) && results->IsVisible;
 
     private static bool ListenersActive;
     private static void EnableListeners()
     {
-        Svc.Log.Verbose("Enabling PurifyResult listeners");
+        Svc.Log.Debug("Enabling PurifyResult listeners");
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
         Svc.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "PurifyResult", DisableListeners);
         ListenersActive = true;
@@ -52,7 +54,7 @@ internal class PurificationManager
 
     private static void DisableListeners(AddonEvent type, AddonArgs args)
     {
-        Svc.Log.Verbose("Disabling PurifyResult listeners");
+        Svc.Log.Debug("Disabling PurifyResult listeners");
         Svc.AddonLifecycle.UnregisterListener(ResultsSetup);
         Svc.AddonLifecycle.UnregisterListener(DisableListeners);
         ListenersActive = false;
