@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,7 +90,7 @@ internal class PurificationManager
         {
             var cont = InventoryManager.Instance()->GetInventoryContainer(inv);
             for (var i = 0; i < cont->Size; ++i)
-                if (cont->GetInventorySlot(i)->Flags == InventoryItem.ItemFlags.Collectable)
+                if (cont->GetInventorySlot(i)->Flags == InventoryItem.ItemFlags.Collectable && Utils.GetRow<Item>(cont->GetInventorySlot(i)->ItemId)?.AetherialReduce > 0)
                     items.Add(cont->GetInventorySlot(i));
         }
         return items;
