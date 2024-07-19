@@ -27,6 +27,7 @@ internal class PurificationManager
     private static DateTime _nextRetry;
     public static unsafe bool PurifyAllTask()
     {
+        if (!QuestManager.IsQuestComplete(67633)) return true; // doesn't have aetherial reduction unlocked
         if (CanPurifyAny())
         {
             if (DateTime.Now < _nextRetry) return false;

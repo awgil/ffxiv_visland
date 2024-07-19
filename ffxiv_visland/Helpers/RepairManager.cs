@@ -117,7 +117,7 @@ internal unsafe class RepairManager
 
     internal static bool ProcessRepair()
     {
-        if (GetMinEquippedPercent() >= Service.Config.Get<GatherRouteDB>().RepairPercent)
+        if (GetMinEquippedPercent() <= Service.Config.Get<GatherRouteDB>().RepairPercent)
         {
             if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) && r->AtkUnitBase.IsVisible)
             {
