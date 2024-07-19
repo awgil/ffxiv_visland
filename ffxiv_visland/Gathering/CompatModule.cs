@@ -32,6 +32,8 @@ internal class CompatModule
 
         if (!PurificationManager.ListenersActive)
             PurificationManager.EnableListeners();
+        if (!RepairManager.ListenersActive)
+            RepairManager.ToggleListeners(true);
 
         // ensure we don't get afk-kicked while running the route
         OverrideAFK.ResetTimers();
@@ -42,5 +44,6 @@ internal class CompatModule
         if (!Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
             Player.FlyingControlType = 0;
         PurificationManager.DisableListeners();
+        RepairManager.ToggleListeners(false);
     }
 }

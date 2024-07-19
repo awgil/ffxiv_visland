@@ -1,4 +1,6 @@
-﻿using Dalamud.Game.ClientState.Conditions;
+﻿using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Conditions;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
@@ -6,6 +8,7 @@ using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using visland.Gathering;
@@ -19,22 +22,43 @@ internal unsafe class RepairManager
     internal static void Repair()
     {
         if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var addon) && addon->AtkUnitBase.IsVisible && addon->RepairAllButton->IsEnabled)
-        {
             _throttle.Exec(() => new AddonMaster.Repair((IntPtr)addon).RepairAll());
+    }
+
+    public unsafe static void OpenRepair()
+    {
+        if (Svc.GameGui.GetAddonByName("Repair", 1) == IntPtr.Zero)
+            UseRepair();
+    }
+
+    public unsafe static void CloseRepair()
+    {
+        if (Svc.GameGui.GetAddonByName("Repair", 1) != IntPtr.Zero)
+            UseRepair();
+    }
+
+    private static readonly string[] _texts = ["Repair as many of the displayed items as possible using the following materials?", "修理可能なアイテムをまとめて修理しますか？", "Folgendes Material verbrauchen, um möglichst viele Gegenstände der Liste zu reparieren?", "Réparer tous les objets affichés pouvant l'être"];
+    public static bool ListenersActive;
+    public static void ToggleListeners(bool enable)
+    {
+        if (enable)
+        {
+            Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectYesno", ConfirmYesNo);
+            ListenersActive = true;
+        }
+        else
+        {
+            Svc.AddonLifecycle.UnregisterListener(ConfirmYesNo);
+            ListenersActive = false;
         }
     }
 
-    internal static void ConfirmYesNo()
+
+    internal static void ConfirmYesNo(AddonEvent type, AddonArgs args)
     {
-        if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) &&
-            r->AtkUnitBase.IsVisible && GenericHelpers.TryGetAddonByName<AddonSelectYesno>("SelectYesno", out var addon) &&
-            addon->AtkUnitBase.IsVisible &&
-            addon->YesButton is not null &&
-            addon->YesButton->IsEnabled &&
-            addon->AtkUnitBase.UldManager.NodeList[15]->IsVisible())
-        {
-            new AddonMaster.SelectYesno((IntPtr)addon).Yes();
-        }
+        var addon = new AddonMaster.SelectYesno((AtkUnitBase*)args.Addon);
+        if (addon.Text.ContainsAny(_texts))
+            addon.Yes();
     }
 
     internal static bool HasDarkMatterOrBetter(uint darkMatterID)
@@ -59,9 +83,7 @@ internal unsafe class RepairManager
         {
             var item = equipment->GetInventorySlot(i);
             if (item != null && item->ItemId > 0)
-            {
                 if (item->Condition < ret) ret = item->Condition;
-            }
         }
         return (int)Math.Ceiling((double)ret / 300);
     }
@@ -73,12 +95,8 @@ internal unsafe class RepairManager
         {
             var item = equipment->GetInventorySlot(i);
             if (item != null && item->ItemId > 0)
-            {
                 if (CanRepairItem(item->ItemId) && item->Condition / 300 < (repairPercent > 0 ? repairPercent : 100))
-                {
                     return true;
-                }
-            }
         }
         return false;
     }
@@ -105,19 +123,12 @@ internal unsafe class RepairManager
 
     public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[Utils.GetRow<ClassJob>((uint)job)?.ExpArrayIndex ?? 0];
 
-    internal static bool RepairWindowOpen()
-    {
-        if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var repairAddon))
-            return true;
-
-        return false;
-    }
+    internal static bool RepairWindowOpen() => GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out _);
 
     private static DateTime _nextRetry;
-
     internal static bool ProcessRepair()
     {
-        if (GetMinEquippedPercent() <= Service.Config.Get<GatherRouteDB>().RepairPercent)
+        if (GetMinEquippedPercent() >= Service.Config.Get<GatherRouteDB>().RepairPercent)
         {
             if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) && r->AtkUnitBase.IsVisible)
             {
@@ -134,30 +145,31 @@ internal unsafe class RepairManager
             return true;
         }
 
-        if (DateTime.Now < _nextRetry) return false;
-
-        if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var repairAddon) && repairAddon->AtkUnitBase.IsVisible && repairAddon->RepairAllButton != null)
+        if (RepairWindowOpen() && !CanRepairAny())
         {
-            if (!repairAddon->RepairAllButton->IsEnabled)
-            {
-                UseRepair();
-                _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
-                return false;
-            }
-
-            if (!Svc.Condition[ConditionFlag.Occupied39])
-            {
-                ConfirmYesNo();
-                Repair();
-            }
+            if (DateTime.Now < _nextRetry) return false;
+            CloseRepair();
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
             return false;
         }
 
         if (CanRepairAny())
         {
-            if (!RepairWindowOpen() && !GenericHelpers.IsOccupied())
-                UseRepair();
+            if (DateTime.Now < _nextRetry) return false;
+            if (!RepairWindowOpen())
+            {
+                OpenRepair();
+                _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+                return false;
+            }
+
+            if (RepairWindowOpen() && !GenericHelpers.IsOccupied())
+            {
+                Repair();
+                _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+                return false;
+            }
+
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
             return false;
         }
