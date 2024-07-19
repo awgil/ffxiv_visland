@@ -8,6 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -22,42 +23,55 @@ internal class PurificationManager
         InventoryType.Inventory4,
     ];
 
+    private static DateTime _nextRetry;
     public static unsafe bool PurifyAllTask()
     {
-        Svc.Log.Debug($"{nameof(PurifyAllTask)}: {IsResultsOpen()}:{ListenersActive}:{Svc.Condition[ConditionFlag.Occupied39]}");
-        if (IsResultsOpen() || ListenersActive || Svc.Condition[ConditionFlag.Occupied39]) return false;
-        return PurifyItemTask();
+        if (CanPurifyAny())
+        {
+            if (DateTime.Now < _nextRetry) return false;
+            if (!GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Occupied39])
+            {
+                PurifyItem(GetPurifyableItems().First());
+                _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
+                return false;
+            }
+
+            _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
+            return false;
+        }
+        return true;
     }
 
-    public static unsafe bool PurifyItemTask()
+    public static unsafe void PurifyItem(Pointer<InventoryItem> item)
     {
-        var items = GetPurifyableItems();
         var agent = AgentPuryfyItemSelector.Instance();
-        if (items.Count == 0 || agent == null) { Svc.Log.Debug("No items to purify or the agent is null"); return true; }
+        if (agent == null) { Svc.Log.Debug("AgentPurify is null"); return; }
 
-        EnableListeners();
-        agent->ReduceItem(items.First());
-        Svc.Log.Debug($"Reducing {items.First().Value->Condition}/{items.First().Value->Slot}/{items.First().Value->ItemId}");
-        return true;
+        agent->ReduceItem(item);
+        Svc.Log.Debug($"Reducing [{item.Value->ItemId}] {item.Value->Container}/{item.Value->Slot}");
     }
 
     private static unsafe bool IsResultsOpen() => GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyResult", out var results) && results->IsVisible;
 
-    private static bool ListenersActive;
-    private static void EnableListeners()
+    public static bool ListenersActive;
+    public static void EnableListeners()
     {
-        Svc.Log.Debug("Enabling PurifyResult listeners");
-        Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
-        Svc.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, "PurifyResult", DisableListeners);
-        ListenersActive = true;
+        if (!ListenersActive)
+        {
+            Svc.Log.Debug("Enabling PurifyResult listeners");
+            Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
+            ListenersActive = true;
+        }
     }
 
-    private static void DisableListeners(AddonEvent type, AddonArgs args)
+    public static void DisableListeners()
     {
-        Svc.Log.Debug("Disabling PurifyResult listeners");
-        Svc.AddonLifecycle.UnregisterListener(ResultsSetup);
-        Svc.AddonLifecycle.UnregisterListener(DisableListeners);
-        ListenersActive = false;
+        if (ListenersActive)
+        {
+            Svc.Log.Debug("Disabling PurifyResult listeners");
+            Svc.AddonLifecycle.UnregisterListener(ResultsSetup);
+            ListenersActive = false;
+        }
     }
 
     private static unsafe void ResultsSetup(AddonEvent type, AddonArgs args)

@@ -30,6 +30,9 @@ internal class CompatModule
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
         }
 
+        if (!PurificationManager.ListenersActive)
+            PurificationManager.EnableListeners();
+
         // ensure we don't get afk-kicked while running the route
         OverrideAFK.ResetTimers();
     }
@@ -38,5 +41,6 @@ internal class CompatModule
     {
         if (!Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
             Player.FlyingControlType = 0;
+        PurificationManager.DisableListeners();
     }
 }
