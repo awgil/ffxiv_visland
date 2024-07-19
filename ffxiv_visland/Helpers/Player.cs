@@ -2,6 +2,7 @@
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -42,4 +43,5 @@ public unsafe static class Player
     public static float FoodCD => Status.FirstOrDefault(s => s.StatusId == 48)?.RemainingTime ?? 0;
     public static bool HasManual => Status.Any(x => x.StatusId == 49);
     public static float ManualCD => Status.FirstOrDefault(s => s.StatusId == 49)?.RemainingTime ?? 0;
+    public static float AnimationLock => ActionManager.Instance()->AnimationLock;
 }

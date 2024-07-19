@@ -1,12 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using ECommons.DalamudServices;
-using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
-using FFXIVClientStructs.Interop;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using visland.Helpers;
 
@@ -53,5 +49,6 @@ public unsafe class GatherDebug(GatherRouteExec exec)
         ImGui.TextUnformatted($"Has Extractables: {SpiritbondManager.IsSpiritbondReadyAny()}");
         ImGui.TextUnformatted($"Has Repairables: {RepairManager.CanRepairAny()}");
         ImGui.TextUnformatted($"Has Desynthables: {PurificationManager.CanPurifyAny()}");
+        ImGui.TextUnformatted($"AnimLock: {Player.AnimationLock} Food:{Player.HasFood} CD:{Player.FoodCD}");
     }
 }

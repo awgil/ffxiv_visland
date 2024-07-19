@@ -192,8 +192,7 @@ public static class UICombo
             _filtered = null;
         if (_filtered == null)
         {
-            _filtered = possibilities.Where(preFilter).Where(s => searchPredicate(s, _search)).Cast<object>()
-                                     .ToHashSet();
+            _filtered = possibilities.Where(preFilter).Where(s => searchPredicate(s, _search)).Cast<object>().ToHashSet();
             _hoveredItem = 0;
         }
         var i = 0;

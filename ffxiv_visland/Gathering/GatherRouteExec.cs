@@ -8,6 +8,7 @@ using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Linq;
@@ -68,6 +69,14 @@ public class GatherRouteExec : IDisposable
         var toWaypoint = wp.Position - Player.Object.Position;
         var needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
         Pathfind = wp.Pathfind;
+
+        var food = CurrentRoute.Food != 0 ? CurrentRoute.Food : RouteDB.GlobalFood != 0 ? RouteDB.GlobalFood : 0;
+        if (food != 0 && !Player.HasFood && Player.AnimationLock == 0)
+        {
+            Svc.Log.Debug($"Eating {Utils.GetRow<Item>((uint)food)?.Name.RawString}");
+            ExecuteEatFood(food);
+            return;
+        }
 
         //if (wp.ZoneID != default && Player.Territory != wp.ZoneID)
         //{
@@ -272,6 +281,12 @@ public class GatherRouteExec : IDisposable
     }
 
     private unsafe void ExecuteActionSafe(ActionType type, uint id) => _action.Exec(() => ActionManager.Instance()->UseAction(type, id));
+    private unsafe void ExecuteEatFood(int id)
+    {
+        if (InventoryManager.Instance()->GetInventoryItemCount((uint)id) > 0 || InventoryManager.Instance()->GetInventoryItemCount((uint)id, true) > 0)
+            _action.Exec(() => AgentInventoryContext.Instance()->UseItem((uint)id));
+    }
+
     private void ExecuteMount() => ExecuteActionSafe(ActionType.GeneralAction, 24); // flying mount roulette
     private void ExecuteDismount() => ExecuteActionSafe(ActionType.GeneralAction, 23);
     private void ExecuteJump() => ExecuteActionSafe(ActionType.GeneralAction, 2);

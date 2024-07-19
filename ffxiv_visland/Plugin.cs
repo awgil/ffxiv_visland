@@ -1,14 +1,10 @@
 ﻿using Dalamud.Common;
-using Dalamud.Game.Command;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
-using ECommons.Automation;
 using ECommons.Automation.LegacyTaskManager;
 using ECommons.Configuration;
 using ECommons.Reflection;
-using ECommons.SimpleGui;
-using ImGuiNET;
 using System;
 using System.Collections.Specialized;
 using System.Globalization;

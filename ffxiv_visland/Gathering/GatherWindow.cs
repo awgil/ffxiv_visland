@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
@@ -235,15 +236,20 @@ public class GatherWindow : Window, System.IDisposable
         using var popup = ImRaii.Popup("Advanced Options");
         if (popup.Success)
         {
+            Utils.DrawSection("Global Route Editing Options", ImGuiColors.ParsedGold);
             if (ImGui.SliderFloat("Default Waypoint Radius", ref RouteDB.DefaultWaypointRadius, 0, 100))
                 RouteDB.NotifyModified();
             if (ImGui.SliderFloat("Default Interaction Radius", ref RouteDB.DefaultInteractionRadius, 0, 100))
                 RouteDB.NotifyModified();
+
+            Utils.DrawSection("Global Route Operation Options", ImGuiColors.ParsedGold);
             if (ImGui.Checkbox("Auto Enable Gather Mode on Route Start", ref RouteDB.GatherModeOnStart))
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+
+            Utils.DrawSection("Global Route Extras", ImGuiColors.ParsedGold);
             if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
@@ -252,6 +258,18 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Purify collectables during routes", ref RouteDB.PurifyCollectables))
                 RouteDB.NotifyModified();
+            if (UICombo.ExcelSheetCombo("##Foods", out Item? i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.RawString}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+            {
+                RouteDB.GlobalFood = (int)i.RowId;
+                RouteDB.NotifyModified();
+            }
+            ImGui.SameLine();
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Undo))
+            {
+                RouteDB.GlobalFood = 0;
+                RouteDB.NotifyModified();
+            }
+            ImGuiComponents.HelpMarker("Food set here will apply to all routes unless overwritten in the route itself.");
         }
     }
 
@@ -398,6 +416,21 @@ public class GatherWindow : Window, System.IDisposable
         using var popup = ImRaii.Popup("##MassEditing");
         if (!popup) return;
 
+        Utils.DrawSection("Route Settings", ImGuiColors.ParsedGold);
+        if (UICombo.ExcelSheetCombo("##Foods", out Item? i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.RawString}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+        {
+            RouteDB.GlobalFood = (int)i.RowId;
+            RouteDB.NotifyModified();
+        }
+        ImGui.SameLine();
+        if (ImGuiEx.IconButton(FontAwesomeIcon.Undo))
+        {
+            RouteDB.GlobalFood = 0;
+            RouteDB.NotifyModified();
+        }
+        ImGuiComponents.HelpMarker("Food set here will apply to this route only and overrides the global food setting.");
+
+        Utils.DrawSection("Mass Editing", ImGuiColors.ParsedGold);
         ImGui.Checkbox("Pathfind", ref pathfind);
         ImGui.SameLine();
         if (ImGui.Button("Apply All###Pathfind"))

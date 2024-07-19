@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
@@ -76,6 +77,26 @@ public static unsafe class Utils
         if (elapsedTime >= duration)
         {
             startTime = currentTime;
+        }
+    }
+
+    public static void DrawSection(string Label, Vector4 colour, bool PushDown = true, bool drawSeparator = true)
+    {
+        var style = ImGui.GetStyle();
+
+        // push down a bit
+        if (PushDown)
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + style.ItemSpacing.Y * 2);
+
+        using (ImRaii.PushColor(ImGuiCol.Text, colour))
+            ImGui.TextUnformatted(Label);
+
+        if (drawSeparator)
+        {
+            // pull up the separator
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() - style.ItemSpacing.Y + 3);
+            ImGui.Separator();
+            ImGui.SetCursorPosY(ImGui.GetCursorPosY() + style.ItemSpacing.Y * 2 - 1);
         }
     }
 
