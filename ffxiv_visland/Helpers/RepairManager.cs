@@ -143,6 +143,7 @@ internal unsafe class RepairManager
                 Svc.Log.Verbose("return 1");
                 return false;
             }
+            Svc.Log.Verbose("return -1");
             return true;
         }
 
@@ -179,6 +180,7 @@ internal unsafe class RepairManager
             return false;
         }
 
+        Svc.Log.Verbose("return -2");
         return true;
     }
 }
