@@ -140,6 +140,7 @@ internal unsafe class RepairManager
                     UseRepair();
                 }
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+                Svc.Log.Verbose("return 1");
                 return false;
             }
             return true;
@@ -150,6 +151,7 @@ internal unsafe class RepairManager
             if (DateTime.Now < _nextRetry) return false;
             CloseRepair();
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+            Svc.Log.Verbose("return 2");
             return false;
         }
 
@@ -160,6 +162,7 @@ internal unsafe class RepairManager
             {
                 OpenRepair();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+                Svc.Log.Verbose("return 3");
                 return false;
             }
 
@@ -167,10 +170,12 @@ internal unsafe class RepairManager
             {
                 Repair();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+                Svc.Log.Verbose("return 4");
                 return false;
             }
 
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
+            Svc.Log.Verbose("return 5");
             return false;
         }
 
