@@ -207,7 +207,7 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        if (Service.Config.Get<GatherRouteDB>().PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (DalamudReflector.IsOnStaging() && Service.Config.Get<GatherRouteDB>().PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             Svc.Log.Debug("Purify collectables task queued.");
             P.TaskManager.Enqueue(() => PurificationManager.PurifyAllTask(), "PurifyCollectables");
