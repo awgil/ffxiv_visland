@@ -313,7 +313,7 @@ public class GatherRouteExec : IDisposable
     private void CheckToDisable(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         if (!Service.Config.Get<GatherRouteDB>().DisableOnErrors) return;
-        
+
         var msg = message.ExtractText();
         if (logErrors.Any(x => msg == Utils.GetRow<LogMessage>(x)!.Text.ExtractText()))
             Errors.PushBack(Environment.TickCount64);

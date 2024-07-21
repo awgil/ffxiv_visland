@@ -46,7 +46,7 @@ internal class PurificationManager
 
     public static unsafe void PurifyItem(Pointer<InventoryItem> item)
     {
-        var agent = AgentPuryfyItemSelector.Instance();
+        var agent = AgentPurify.Instance();
         if (agent == null) { Svc.Log.Debug("AgentPurify is null"); return; }
 
         agent->ReduceItem(item);
