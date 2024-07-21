@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using visland.Helpers;
+using visland.IPC;
 using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
@@ -276,6 +277,9 @@ public class GatherRouteDB : Configuration.Node
                 import = JsonConvert.DeserializeObject<Route>(data);
             if (import != null)
             {
+                if (import.Waypoints.Any(x => x.Pathfind && !NavmeshIPC.IsEnabled))
+                    Svc.Chat.Print($"[{Plugin.Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Plugin.Name}.");
+
                 RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
                 RouteDB.NotifyModified();
             }
