@@ -128,24 +128,7 @@ internal unsafe class RepairManager
     private static DateTime _nextRetry;
     internal static bool ProcessRepair()
     {
-        if (GetMinEquippedPercent() >= Service.Config.Get<GatherRouteDB>().RepairPercent)
-        {
-            if (GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out var r) && r->AtkUnitBase.IsVisible)
-            {
-                if (DateTime.Now < _nextRetry) return false;
-                if (!Svc.Condition[ConditionFlag.Occupied39])
-                {
-                    Svc.Log.Verbose("Repair visible");
-                    Svc.Log.Verbose("Closing repair window");
-                    UseRepair();
-                }
-                _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
-                Svc.Log.Verbose("return 1");
-                return false;
-            }
-            Svc.Log.Verbose("return -1");
-            return true;
-        }
+        if (DateTime.Now < _nextRetry) return false;
 
         if (RepairWindowOpen() && !CanRepairAny())
         {
