@@ -1,6 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons;
 using ECommons.DalamudServices;
 using ImGuiNET;
+using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -72,6 +74,8 @@ public class GatherRouteDB : Configuration.Node
         public bool showWaits;
         public ConditionFlag WaitForCondition;
         public int WaitTimeMs;
+
+        public bool IsNode => !InteractWithName.IsNullOrEmpty() && Utils.GetSheet<GatheringPointName>().Select(x => x.Singular.RawString).Contains(InteractWithName);
     }
 
     public class Route
@@ -99,6 +103,7 @@ public class GatherRouteDB : Configuration.Node
 
     public bool WasFlyingInManual = false;
 
+    public bool TeleportBetweenZones = true;
     public int LandDistance = 10;
     public int PathFindCancellationTime = 5;
 
@@ -126,6 +131,8 @@ public class GatherRouteDB : Configuration.Node
         GatherModeOnStart = (bool?)j["GatherModeOnStart"] ?? true;
         DefaultWaypointRadius = (float?)j["DefaultWaypointRadius"] ?? 3;
         DefaultInteractionRadius = (float?)j["DefaultInteractionRadius"] ?? 2;
+
+        TeleportBetweenZones = (bool?)j["TeleportBetweenZones"] ?? true;
 
         ExtractMateria = (bool?)j["ExtractMateria"] ?? true;
         RepairGear = (bool?)j["RepairGear"] ?? true;
@@ -156,6 +163,7 @@ public class GatherRouteDB : Configuration.Node
             { "GatherModeOnStart", GatherModeOnStart },
             { "DefaultWaypointRadius", DefaultWaypointRadius },
             { "DefaultInteractionRadius", DefaultInteractionRadius },
+            { "TeleportBetweenZones", TeleportBetweenZones },
             { "ExtractMateria", ExtractMateria },
             { "RepairGear", RepairGear },
             { "RepairPercent", RepairPercent },
@@ -176,6 +184,7 @@ public class GatherRouteDB : Configuration.Node
                 { "X", wp.Position.X },
                 { "Y", wp.Position.Y },
                 { "Z", wp.Position.Z },
+                { "ZoneID", wp.ZoneID },
                 { "Radius", wp.Radius },
                 { "InteractWithName", wp.InteractWithName },
                 { "Movement", wp.Movement.ToString() },
@@ -219,6 +228,7 @@ public class GatherRouteDB : Configuration.Node
                         jweObj["Y"]?.Value<float>() ?? 0,
                         jweObj["Z"]?.Value<float>() ?? 0
                     ),
+                    ZoneID = jweObj["ZoneID"]?.Value<int>() ?? 0,
                     Radius = jweObj["Radius"]?.Value<float>() ?? 0,
                     InteractWithName = jweObj["InteractWithName"]?.Value<string>() ?? "",
                     Movement = Enum.TryParse<Movement>(jweObj["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,

@@ -8,6 +8,7 @@ using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Lumina.Excel.GeneratedSheets;
 using System;
@@ -78,14 +79,24 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        //if (wp.ZoneID != default && Player.Territory != wp.ZoneID)
-        //{
-        //    Plugin.P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(wp.ZoneID, wp.Position), 0));
-        //    return;
-        //}
+        if (RouteDB.TeleportBetweenZones && wp.ZoneID != default && Coordinates.HasAetheryteInZone((uint)wp.ZoneID) && Player.Territory != wp.ZoneID)
+        {
+            P.TaskManager.Enqueue(() => Telepo.Instance()->Teleport(Coordinates.GetNearestAetheryte(wp.ZoneID, wp.Position), 0));
+            P.TaskManager.Enqueue(() => Player.Object.IsCasting);
+            P.TaskManager.Enqueue(() => Player.Territory == wp.ZoneID);
+            return;
+        }
 
         if (needToGetCloser)
         {
+            //if (wp.IsNode && Vector3.DistanceSquared(Player.Object.Position, wp.Position) < 100 && !Svc.Objects.Any(x => x.Position == wp.Position && !x.IsTargetable))
+            //{
+            //    ++CurrentWaypoint;
+            //    if (NavmeshIPC.IsRunning())
+            //        NavmeshIPC.Stop();
+            //    return;
+            //}
+
             if (NavmeshIPC.IsRunning()) return;
             if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted)
             {
@@ -187,27 +198,23 @@ public class GatherRouteExec : IDisposable
                 break;
         }
 
-        if (P.TaskManager.IsBusy)
-        {
-            Svc.Log.Verbose("Waiting for previous interactions to finish.");
-            return;
-        }
+        if (P.TaskManager.IsBusy) return;
 
-        if (Service.Config.Get<GatherRouteDB>().ExtractMateria && SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (RouteDB.ExtractMateria && SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             Svc.Log.Debug("Extract materia task queued.");
             P.TaskManager.Enqueue(() => SpiritbondManager.ExtractMateriaTask(), "ExtractMateria");
             return;
         }
 
-        if (Service.Config.Get<GatherRouteDB>().RepairGear && RepairManager.CanRepairAny(Service.Config.Get<GatherRouteDB>().RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (RouteDB.RepairGear && RepairManager.CanRepairAny(RouteDB.RepairPercent) && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             Svc.Log.Debug("Repair gear task queued.");
             P.TaskManager.Enqueue(() => RepairManager.ProcessRepair(), "RepairGear");
             return;
         }
 
-        if (DalamudReflector.IsOnStaging() && Service.Config.Get<GatherRouteDB>().PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (DalamudReflector.IsOnStaging() && RouteDB.PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             Svc.Log.Debug("Purify collectables task queued.");
             P.TaskManager.Enqueue(() => PurificationManager.PurifyAllTask(), "PurifyCollectables");
@@ -241,6 +248,14 @@ public class GatherRouteExec : IDisposable
             else
                 Finish();
         }
+    }
+
+    private bool NodeExists(Vector3 nodePos)
+    {
+        if (Vector3.DistanceSquared(Player.Object.Position, nodePos) < 100)
+            if (Svc.Objects.FirstOrDefault(x => x?.Position == nodePos, null) != null)
+                return true;
+        throw new NotImplementedException();
     }
 
     public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd, bool pathfind = false)
@@ -303,21 +318,29 @@ public class GatherRouteExec : IDisposable
 
     private void CheckToDisable(ref SeString message, ref bool isHandled)
     {
-        if (!Service.Config.Get<GatherRouteDB>().DisableOnErrors) return;
+        if (!RouteDB.DisableOnErrors) return;
+        Svc.Log.Verbose($"ErrorToast fired with string: {message}");
         Errors.PushBack(Environment.TickCount64);
         if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
+        {
+            Svc.Log.Debug("Toast error threshold reached. Stopping route.");
             Finish();
+        }
     }
 
     private static readonly uint[] logErrors = [3570, 3574, 3575, 3584, 3589]; // various unable to spearfish errors
     private void CheckToDisable(XivChatType type, int timestamp, ref SeString sender, ref SeString message, ref bool isHandled)
     {
-        if (!Service.Config.Get<GatherRouteDB>().DisableOnErrors) return;
+        if (!RouteDB.DisableOnErrors || type != XivChatType.ErrorMessage) return;
 
+        Svc.Log.Verbose($"ErrorMessage fired with string: {message}");
         var msg = message.ExtractText();
         if (logErrors.Any(x => msg == Utils.GetRow<LogMessage>(x)!.Text.ExtractText()))
             Errors.PushBack(Environment.TickCount64);
         if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
+        {
+            Svc.Log.Debug("Chat error threshold reached. Stopping route.");
             Finish();
+        }
     }
 }

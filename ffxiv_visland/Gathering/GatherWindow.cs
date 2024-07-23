@@ -248,6 +248,8 @@ public class GatherWindow : Window, System.IDisposable
             if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+            if (ImGui.Checkbox("Teleport between zones", ref RouteDB.TeleportBetweenZones))
+                RouteDB.NotifyModified();
 
             Utils.DrawSection("Global Route Extras", ImGuiColors.ParsedGold);
             if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
@@ -476,7 +478,7 @@ public class GatherWindow : Window, System.IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        if (UICombo.ExcelSheetCombo("##Territory", out TerritoryType? territory, _ => $"{wp.ZoneID}", x => x.PlaceName.Value!.Name, x => Coordinates.HasAetheryteInZone(x.RowId)))
+        if (UICombo.ExcelSheetCombo("##Territory", out TerritoryType? territory, _ => $"[{wp.ZoneID}] {Utils.GetRow<TerritoryType>((uint)wp.ZoneID)?.PlaceName.Value?.Name}", x => $"[{x.RowId}] {x.PlaceName.Value!.Name}", x => Coordinates.HasAetheryteInZone(x.RowId)))
         {
             wp.ZoneID = (int)territory.RowId;
             RouteDB.NotifyModified();

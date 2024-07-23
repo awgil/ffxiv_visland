@@ -12,7 +12,7 @@ internal class CompatModule
         // set flight activation to double jump to prevent flying when running off cliffs
         if (Player.FlyingControlType == 0)
         {
-            Service.Config.Get<GatherRouteDB>().WasFlyingInManual = false;
+            RouteDB.WasFlyingInManual = false;
             Player.FlyingControlType = 1;
         }
 

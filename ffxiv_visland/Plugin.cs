@@ -74,9 +74,9 @@ public sealed class Plugin : IDalamudPlugin
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
 
-        EzConfig.DefaultSerializationFactory = new YamlFactory();
-        ShoppingListsFile = EzConfig.Init<ShoppingListDB>();
-        ShoppingListsFile.ShoppingLists.CollectionChanged += OnChange;
+        //EzConfig.DefaultSerializationFactory = new YamlFactory();
+        //ShoppingListsFile = EzConfig.Init<ShoppingListDB>();
+        //ShoppingListsFile.ShoppingLists.CollectionChanged += OnChange;
 
         _wndGather = new GatherWindow();
         //EzConfigGui.Init(_wndGather.Draw);
@@ -117,7 +117,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
-        ShoppingListsFile.ShoppingLists.CollectionChanged -= OnChange;
+        //ShoppingListsFile.ShoppingLists.CollectionChanged -= OnChange;
         ECommonsMain.Dispose();
     }
 
