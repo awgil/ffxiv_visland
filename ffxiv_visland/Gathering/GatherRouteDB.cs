@@ -74,6 +74,7 @@ public class GatherRouteDB : Configuration.Node
         public bool showWaits;
         public ConditionFlag WaitForCondition;
         public int WaitTimeMs;
+        public Vector2 WaitTimeET;
 
         public bool IsNode => !InteractWithName.IsNullOrEmpty() && Utils.GetSheet<GatheringPointName>().Select(x => x.Singular.RawString).Contains(InteractWithName);
     }

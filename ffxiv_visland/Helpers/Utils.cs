@@ -7,6 +7,7 @@ using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
+using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
@@ -225,6 +226,9 @@ public static unsafe class Utils
 
     public static IEnumerable<T> FindRows<T>(Func<T?, bool> predicate) where T : ExcelRow
         => GetSheet<T>().Where(predicate);
+
+    public static int EorzeanHour() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Hour;
+    public static int EorzeanMinute() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Minute;
 }
 
 public static class Extensions

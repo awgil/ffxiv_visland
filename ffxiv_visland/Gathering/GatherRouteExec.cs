@@ -229,6 +229,8 @@ public class GatherRouteExec : IDisposable
 
         Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
+        if (wp.WaitTimeET != default && !((int)wp.WaitTimeET.X == Utils.EorzeanHour() && (int)wp.WaitTimeET.Y == Utils.EorzeanMinute())) return;
+
         if (!Waiting && wp.WaitTimeMs != default)
         {
             WaitUntil = Environment.TickCount64 + wp.WaitTimeMs;

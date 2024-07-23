@@ -468,9 +468,9 @@ public class GatherWindow : Window, System.IDisposable
 
     private void DrawWaypoint(Waypoint wp)
     {
-        if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && Service.ClientState.LocalPlayer is var player && player != null)
+        if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && Player.Available)
         {
-            wp.Position = player.Position;
+            wp.Position = Player.Object.Position;
             wp.ZoneID = Service.ClientState.TerritoryType;
             RouteDB.NotifyModified();
         }
@@ -478,15 +478,13 @@ public class GatherWindow : Window, System.IDisposable
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
-        if (UICombo.ExcelSheetCombo("##Territory", out TerritoryType? territory, _ => $"[{wp.ZoneID}] {Utils.GetRow<TerritoryType>((uint)wp.ZoneID)?.PlaceName.Value?.Name}", x => $"[{x.RowId}] {x.PlaceName.Value!.Name}", x => Coordinates.HasAetheryteInZone(x.RowId)))
-        {
-            wp.ZoneID = (int)territory.RowId;
-            RouteDB.NotifyModified();
-        }
+
         if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))
             RouteDB.NotifyModified();
+
         if (UICombo.Enum("Movement mode", ref wp.Movement))
             RouteDB.NotifyModified();
+
         ImGui.SameLine();
         using (var noNav = ImRaii.Disabled(!Utils.HasPlugin(NavmeshIPC.Name)))
         {
@@ -624,6 +622,8 @@ public class GatherWindow : Window, System.IDisposable
 
         if (wp.showWaits)
         {
+            if (ImGui.InputFloat2("Eorzean Time Wait", ref wp.WaitTimeET, "%.0f"))
+                RouteDB.NotifyModified();
             if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
                 RouteDB.NotifyModified();
             if (UICombo.Enum("Wait for Condition", ref wp.WaitForCondition))
