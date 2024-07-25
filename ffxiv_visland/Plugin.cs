@@ -25,6 +25,7 @@ namespace visland;
 public sealed class Plugin : IDalamudPlugin
 {
     public static string Name => "visland";
+    public static string Repo => "https://puni.sh/api/repository/veyn";
     internal static string HelpMessage => "Opens the Gathering Menu\n" +
         $"/{Name} moveto <X> <Y> <Z> → move to raw coordinates\n" +
         $"/{Name} movedir <X> <Y> <Z> → move this many units over (relative to player facing)\n" +

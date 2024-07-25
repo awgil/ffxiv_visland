@@ -6,6 +6,7 @@ using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.Reflection;
+using FFXIVClientStructs;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -38,6 +39,17 @@ public static unsafe class Utils
 
         return new Vector4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
+
+    public static uint ToHex(this Vector4 color)
+    {
+        var r = (byte)(color.X * 255);
+        var g = (byte)(color.Y * 255);
+        var b = (byte)(color.Z * 255);
+        var a = (byte)(color.W * 255);
+        return (uint)(a << 24 | b << 16 | g << 8 | r);
+    }
+
+    public static Vector2 ToVec2(this (int, int) tuple) => new(tuple.Item1, tuple.Item2);
 
     public static bool HasPlugin(string name) => DalamudReflector.TryGetDalamudPlugin(name, out var _, false, true);
 

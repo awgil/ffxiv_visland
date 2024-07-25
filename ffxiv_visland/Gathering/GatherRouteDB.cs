@@ -38,6 +38,7 @@ public class GatherRouteDB : Configuration.Node
         StartRoute = 9,
         EquipRecommendedGear = 10,
         ChatCommand = 11,
+        NodeScan = 12,
     }
 
     public enum GrindStopConditions
@@ -77,6 +78,7 @@ public class GatherRouteDB : Configuration.Node
         public Vector2 WaitTimeET;
 
         public bool IsNode => !InteractWithName.IsNullOrEmpty() && Utils.GetSheet<GatheringPointName>().Select(x => x.Singular.RawString).Contains(InteractWithName);
+        public bool IsPhantom;
     }
 
     public class Route
@@ -180,6 +182,7 @@ public class GatherRouteDB : Configuration.Node
 
         foreach (var wp in waypoints)
         {
+            if (wp.IsPhantom) continue;
             var wpObj = new JObject
             {
                 { "X", wp.Position.X },
@@ -288,8 +291,8 @@ public class GatherRouteDB : Configuration.Node
                 import = JsonConvert.DeserializeObject<Route>(data);
             if (import != null)
             {
-                if (import.Waypoints.Any(x => x.Pathfind && !NavmeshIPC.IsEnabled))
-                    Svc.Chat.Print($"[{Plugin.Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Plugin.Name}.");
+                if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !NavmeshIPC.IsEnabled))
+                    Svc.Chat.Print($"[{Plugin.Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Plugin.Name} ({Plugin.Repo}).");
 
                 RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
                 RouteDB.NotifyModified();

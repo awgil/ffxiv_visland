@@ -4,7 +4,6 @@ using Dalamud.Game.Text.SeStringHandling;
 using ECommons;
 using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
-using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -89,8 +88,9 @@ public class GatherRouteExec : IDisposable
 
         if (needToGetCloser)
         {
-            //if (wp.IsNode && Vector3.DistanceSquared(Player.Object.Position, wp.Position) < 100 && !Svc.Objects.Any(x => x.Position == wp.Position && !x.IsTargetable))
+            //if (wp.InteractWithOID != default && Vector3.Distance(Player.Object.Position, wp.Position) < 100 && !Svc.Objects.Any(x => x.DataId == wp.InteractWithOID && !x.IsTargetable))
             //{
+            //    Svc.Log.Debug("Current waypoint target is not targetable, moving to next waypoint");
             //    ++CurrentWaypoint;
             //    if (NavmeshIPC.IsRunning())
             //        NavmeshIPC.Stop();
@@ -196,9 +196,25 @@ public class GatherRouteExec : IDisposable
             case GatherRouteDB.InteractionType.ChatCommand:
                 QuestsHelper.UseCommand(wp.ChatCommand);
                 break;
+            //case GatherRouteDB.InteractionType.NodeScan:
+            //    var nodes = Svc.Objects.Where(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.GatheringPoint && x.IsTargetable)
+            //        .OrderBy(x => Vector3.DistanceSquared(x.Position, Player.Object.Position))
+            //        .Select((x, i) => new { Value = x, DistanceToLast = i > 0 ? Vector3.Distance(Svc.Objects.ElementAt(i - 1).Position, x.Position) : 0 });
+            //    var waypoints = nodes.Select(node => new GatherRouteDB.Waypoint
+            //    {
+            //        IsPhantom = true,
+            //        Position = NavmeshIPC.QueryMeshPointOnFloor(node.Value.Position, 3) ?? node.Value.Position,
+            //        InteractWithName = node.Value.Name.TextValue,
+            //        InteractWithOID = node.Value.DataId,
+            //        Movement = node.DistanceToLast < 30 ? GatherRouteDB.Movement.Normal
+            //        : Player.ExclusiveFlying ? GatherRouteDB.Movement.MountFly
+            //        : GatherRouteDB.Movement.MountNoFly
+            //    }).ToList();
+            //    CurrentRoute.Waypoints.InsertRange(CurrentRoute.Waypoints.IndexOf(wp) + 1, waypoints);
+            //    break;
         }
 
-        if (P.TaskManager.IsBusy) return;
+        if (P.TaskManager.IsBusy) return; // let interactions play out
 
         if (RouteDB.ExtractMateria && SpiritbondManager.IsSpiritbondReadyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
@@ -214,7 +230,7 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        if (DalamudReflector.IsOnStaging() && RouteDB.PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
+        if (RouteDB.PurifyCollectables && PurificationManager.CanPurifyAny() && !GenericHelpers.IsOccupied() && !Svc.Condition[ConditionFlag.Mounted])
         {
             Svc.Log.Debug("Purify collectables task queued.");
             P.TaskManager.Enqueue(() => PurificationManager.PurifyAllTask(), "PurifyCollectables");
@@ -229,7 +245,7 @@ public class GatherRouteExec : IDisposable
 
         Errors.Clear(); //Resets errors between points in case gathering is still valid but just unable to gather all items from a node (e.g maxed out on stone, but not quartz)
 
-        if (wp.WaitTimeET != default && !((int)wp.WaitTimeET.X == Utils.EorzeanHour() && (int)wp.WaitTimeET.Y == Utils.EorzeanMinute())) return;
+        if (wp.WaitTimeET != default && wp.WaitTimeET != (Utils.EorzeanHour(), Utils.EorzeanMinute()).ToVec2()) return;
 
         if (!Waiting && wp.WaitTimeMs != default)
         {
@@ -246,7 +262,10 @@ public class GatherRouteExec : IDisposable
         if (++CurrentWaypoint >= CurrentRoute!.Waypoints.Count)
         {
             if (Loop)
+            {
+                CurrentRoute.Waypoints.RemoveAll(x => x.IsPhantom);
                 CurrentWaypoint = 0;
+            }
             else
                 Finish();
         }
@@ -263,6 +282,7 @@ public class GatherRouteExec : IDisposable
     public void Start(GatherRouteDB.Route route, int waypoint, bool continueToNext, bool loopAtEnd, bool pathfind = false)
     {
         CurrentRoute = route;
+        route.Waypoints.RemoveAll(x => x.IsPhantom);
         CurrentWaypoint = waypoint;
         ContinueToNext = continueToNext;
         Loop = loopAtEnd;
@@ -276,6 +296,7 @@ public class GatherRouteExec : IDisposable
     {
         if (CurrentRoute == null)
             return;
+        CurrentRoute.Waypoints.RemoveAll(x => x.IsPhantom);
         CurrentRoute = null;
         CurrentWaypoint = 0;
         ContinueToNext = false;
