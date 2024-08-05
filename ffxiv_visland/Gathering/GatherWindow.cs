@@ -13,7 +13,6 @@ using Lumina.Excel;
 using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Numerics;
 using visland.Helpers;
@@ -615,6 +614,10 @@ public class GatherWindow : Window, System.IDisposable
                     ImGuiEx.TextV("Chat Command: ");
                     ImGui.SameLine();
                     if (ImGui.InputText("##chatCommand", ref wp.ChatCommand, 256))
+                        RouteDB.NotifyModified();
+                    break;
+                case InteractionType.SurveyNodeScan:
+                    if (UICombo.Enum("Node Type", ref wp.SurveyNodeType))
                         RouteDB.NotifyModified();
                     break;
             }

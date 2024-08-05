@@ -67,7 +67,9 @@ public class GatherRouteExec : IDisposable
 
         var wp = CurrentRoute.Waypoints[CurrentWaypoint];
         var toWaypoint = wp.Position - Player.Object.Position;
-        var needToGetCloser = toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+        // a target of exactly 0 means "do this without moving"
+        var needToGetCloser = wp.Position != Vector3.Zero && toWaypoint.LengthSquared() > wp.Radius * wp.Radius;
+        //needToGetCloser = 
         Pathfind = wp.Pathfind;
 
         var food = CurrentRoute.Food != 0 ? CurrentRoute.Food : RouteDB.GlobalFood != 0 ? RouteDB.GlobalFood : 0;
@@ -196,22 +198,66 @@ public class GatherRouteExec : IDisposable
             case GatherRouteDB.InteractionType.ChatCommand:
                 QuestsHelper.UseCommand(wp.ChatCommand);
                 break;
-            //case GatherRouteDB.InteractionType.NodeScan:
-            //    var nodes = Svc.Objects.Where(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.GatheringPoint && x.IsTargetable)
-            //        .OrderBy(x => Vector3.DistanceSquared(x.Position, Player.Object.Position))
-            //        .Select((x, i) => new { Value = x, DistanceToLast = i > 0 ? Vector3.Distance(Svc.Objects.ElementAt(i - 1).Position, x.Position) : 0 });
-            //    var waypoints = nodes.Select(node => new GatherRouteDB.Waypoint
-            //    {
-            //        IsPhantom = true,
-            //        Position = NavmeshIPC.QueryMeshPointOnFloor(node.Value.Position, 3) ?? node.Value.Position,
-            //        InteractWithName = node.Value.Name.TextValue,
-            //        InteractWithOID = node.Value.DataId,
-            //        Movement = node.DistanceToLast < 30 ? GatherRouteDB.Movement.Normal
-            //        : Player.ExclusiveFlying ? GatherRouteDB.Movement.MountFly
-            //        : GatherRouteDB.Movement.MountNoFly
-            //    }).ToList();
-            //    CurrentRoute.Waypoints.InsertRange(CurrentRoute.Waypoints.IndexOf(wp) + 1, waypoints);
-            //    break;
+            case GatherRouteDB.InteractionType.NodeScan:
+                if (NavmeshIPC.PathfindInProgress()) break;
+                if (Waiting) break;
+                var nodes = Svc.Objects.Where(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.GatheringPoint && x.IsTargetable)
+                    .OrderBy(x => Vector3.DistanceSquared(x.Position, Player.Object.Position))
+                    .Select((x, i) => new {Value = x, DistanceToLast = i > 0 ? Vector3.Distance(Svc.Objects.ElementAt(i - 1).Position, x.Position) : 0});
+                if (wp.NodeScanTarget != String.Empty)
+                    nodes = nodes.Where(x => x.Value.Name.TextValue.EqualsIgnoreCase(wp.NodeScanTarget)).Take(1);
+                var waypoints = nodes.Select(node => new GatherRouteDB.Waypoint
+                {
+                    IsPhantom = true,
+                    Position = node.Value.Position,
+                    ZoneID = Service.ClientState.TerritoryType,
+                    InteractWithName = node.Value.Name.TextValue.ToLower(),
+                    InteractWithOID = node.Value.DataId,
+                    Radius = RouteDB.DefaultInteractionRadius,
+                    Movement = node.DistanceToLast < 30 ? GatherRouteDB.Movement.Normal
+                    : Player.ExclusiveFlying ? GatherRouteDB.Movement.MountFly
+                    : wp.Movement == GatherRouteDB.Movement.MountFly ? GatherRouteDB.Movement.MountFly
+                    : GatherRouteDB.Movement.MountNoFly,
+                    Pathfind = true
+                }).ToList();
+                CurrentRoute.Waypoints.InsertRange(CurrentRoute.Waypoints.IndexOf(wp) + 1, waypoints);
+                break;
+            case GatherRouteDB.InteractionType.SurveyNodeScan:
+                if (NavmeshIPC.PathfindInProgress()) break;
+                if (Waiting) break;
+                AgentMap* map = AgentMap.Instance();
+                if (map == null || map->CurrentMapId == 0)
+                    break;
+                if ((int)wp.SurveyNodeType > map->MiniMapGatheringMarkers.Length)
+                    break;
+                // these are the flashy gathering markers around the compass
+                var marker = map->MiniMapGatheringMarkers[(int)wp.SurveyNodeType];
+                if (marker.MapMarker.IconId == 0)
+                    break;
+                var targetPosition = new Vector3(marker.MapMarker.X / 16.0f, 1024, marker.MapMarker.Y / 16.0f);
+                if (NavmeshIPC.QueryMeshPointOnFloor(targetPosition, false, 1) is Vector3 foundTarget)
+                    targetPosition = foundTarget;
+                else
+                {
+                    Svc.Log.Verbose($"Didn't find navigable position around {targetPosition}, defaulting to player position");
+                    targetPosition = Player.Object.Position;
+                }
+                var waypoint = new GatherRouteDB.Waypoint
+                {
+                    IsPhantom = true,
+                    Position = targetPosition,
+                    showInteractions = true,
+                    Interaction = GatherRouteDB.InteractionType.NodeScan,
+                    NodeScanTarget = marker.TooltipText.ToString().Split(' ', 3).LastOrDefault(String.Empty),// breaks by space so "Lv. 60 Rocky Outcrop" gets split into {"Lv.", "60", "Rocky Outcrop"}
+                    Radius = wp.Radius,
+                    Movement = Vector3.Distance(Player.Object.Position, targetPosition) < 30 ? GatherRouteDB.Movement.Normal
+                        : Player.ExclusiveFlying ? GatherRouteDB.Movement.MountFly
+                        : wp.Movement == GatherRouteDB.Movement.MountFly ? GatherRouteDB.Movement.MountFly
+                        : GatherRouteDB.Movement.MountNoFly,
+                    Pathfind = true
+                };
+                CurrentRoute.Waypoints.Insert(CurrentRoute.Waypoints.IndexOf(wp) + 1, waypoint);
+                break;
         }
 
         if (P.TaskManager.IsBusy) return; // let interactions play out

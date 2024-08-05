@@ -39,6 +39,7 @@ public class GatherRouteDB : Configuration.Node
         EquipRecommendedGear = 10,
         ChatCommand = 11,
         NodeScan = 12,
+        SurveyNodeScan = 13
     }
 
     public enum GrindStopConditions
@@ -47,6 +48,16 @@ public class GatherRouteDB : Configuration.Node
         Kills = 1,
         QuestSequence = 2,
         QuestComplete = 3,
+    }
+
+    public enum SurveyNodeType 
+    {
+        Survey = 0,
+        Legendary = 1,
+        Unspoiled = 2,
+        // Unknown = 3,
+        Ephemeral = 4,
+        SwimmingShallows = 5
     }
 
     public class Waypoint
@@ -67,6 +78,8 @@ public class GatherRouteDB : Configuration.Node
         public int QuestID;
         public int QuestSeq;
         public int MobID;
+        public string NodeScanTarget = "";
+        public SurveyNodeType SurveyNodeType;
         public GrindStopConditions StopCondition;
         public int KillCount;
         public string RouteName = "";
