@@ -78,7 +78,6 @@ public class GatherRouteDB : Configuration.Node
         public int QuestID;
         public int QuestSeq;
         public int MobID;
-        public string NodeScanTarget = "";
         public SurveyNodeType SurveyNodeType;
         public GrindStopConditions StopCondition;
         public int KillCount;

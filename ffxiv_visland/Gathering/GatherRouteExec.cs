@@ -204,8 +204,8 @@ public class GatherRouteExec : IDisposable
                 var nodes = Svc.Objects.Where(x => x.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.GatheringPoint && x.IsTargetable)
                     .OrderBy(x => Vector3.DistanceSquared(x.Position, Player.Object.Position))
                     .Select((x, i) => new {Value = x, DistanceToLast = i > 0 ? Vector3.Distance(Svc.Objects.ElementAt(i - 1).Position, x.Position) : 0});
-                if (wp.NodeScanTarget != String.Empty)
-                    nodes = nodes.Where(x => x.Value.Name.TextValue.EqualsIgnoreCase(wp.NodeScanTarget)).Take(1);
+                if (wp.InteractWithName != String.Empty)
+                    nodes = nodes.Where(x => x.Value.Name.TextValue.EqualsIgnoreCase(wp.InteractWithName)).Take(1);
                 var waypoints = nodes.Select(node => new GatherRouteDB.Waypoint
                 {
                     IsPhantom = true,
@@ -248,7 +248,7 @@ public class GatherRouteExec : IDisposable
                     Position = targetPosition,
                     showInteractions = true,
                     Interaction = GatherRouteDB.InteractionType.NodeScan,
-                    NodeScanTarget = marker.TooltipText.ToString().Split(' ', 3).LastOrDefault(String.Empty),// breaks by space so "Lv. 60 Rocky Outcrop" gets split into {"Lv.", "60", "Rocky Outcrop"}
+                    InteractWithName = marker.TooltipText.ToString().Split(' ', 3).LastOrDefault(String.Empty),// breaks by space so "Lv. 60 Rocky Outcrop" gets split into {"Lv.", "60", "Rocky Outcrop"}
                     Radius = wp.Radius,
                     Movement = Vector3.Distance(Player.Object.Position, targetPosition) < 30 ? GatherRouteDB.Movement.Normal
                         : Player.ExclusiveFlying ? GatherRouteDB.Movement.MountFly
