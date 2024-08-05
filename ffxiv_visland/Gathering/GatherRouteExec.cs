@@ -203,7 +203,7 @@ public class GatherRouteExec : IDisposable
             //    var waypoints = nodes.Select(node => new GatherRouteDB.Waypoint
             //    {
             //        IsPhantom = true,
-            //        Position = NavmeshIPC.QueryMeshPointOnFloor(node.Value.Position, 3) ?? node.Value.Position,
+            //        Position = NavmeshIPC.QueryMeshPointOnFloor(node.Value.Position, true, 3) ?? node.Value.Position,
             //        InteractWithName = node.Value.Name.TextValue,
             //        InteractWithOID = node.Value.DataId,
             //        Movement = node.DistanceToLast < 30 ? GatherRouteDB.Movement.Normal
