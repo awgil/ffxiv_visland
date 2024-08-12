@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommons;
+using System;
 using System.Collections.Generic;
 using visland.Gathering;
 
@@ -14,12 +15,19 @@ internal class VislandIPC
         Register("IsRoutePaused", () => _wndGather.Exec.Paused);
         Register<bool>("SetRoutePaused", s => _wndGather.Exec.Paused = s);
         Register("StopRoute", _wndGather.Exec.Finish);
+        Register("GatherItem", (uint itemId) => GatherItem(_wndGather, itemId));
     }
 
     public void Dispose()
     {
         foreach (var a in _disposeActions)
             a();
+    }
+
+    private static void GatherItem(GatherWindow _wndGather, uint itemId)
+    {
+        if (_wndGather.Exec.GatheringAM?.GatheredItems.TryGetFirst(x => x.ItemID == itemId, out var item) ?? false)
+            item.Gather();
     }
 
     private void Register<TRet>(string name, Func<TRet> func)

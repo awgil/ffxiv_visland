@@ -22,7 +22,8 @@ internal class NavmeshIPC
 
     // query
     private static ICallGateSubscriber<Vector3, float, float, Vector3?>? _queryMeshNearestPoint;
-    private static ICallGateSubscriber<Vector3, float, Vector3?>? _queryMeshPointOnFloor;
+    private static ICallGateSubscriber<Vector3, bool, float, Vector3?>? _queryMeshPointOnFloor;
+    private static ICallGateSubscriber<Vector3, float, float, float, Vector3?>? _queryMeshFurthestPoint;
 
     // path
     private static ICallGateSubscriber<List<Vector3>, bool, object>? _pathMoveTo;
@@ -55,7 +56,8 @@ internal class NavmeshIPC
                 _navSetAutoLoad = Service.Interface.GetIpcSubscriber<bool, object>($"{Name}.Nav.SetAutoLoad");
 
                 _queryMeshNearestPoint = Service.Interface.GetIpcSubscriber<Vector3, float, float, Vector3?>($"{Name}.Query.Mesh.NearestPoint");
-                _queryMeshPointOnFloor = Service.Interface.GetIpcSubscriber<Vector3, float, Vector3?>($"{Name}.Query.Mesh.PointOnFloor");
+                _queryMeshPointOnFloor = Service.Interface.GetIpcSubscriber<Vector3, bool, float, Vector3?>($"{Name}.Query.Mesh.PointOnFloor");
+                _queryMeshFurthestPoint = Service.Interface.GetIpcSubscriber<Vector3, float, float, float, Vector3?>($"{Name}.Query.Mesh.FurthestPoint");
 
                 _pathMoveTo = Service.Interface.GetIpcSubscriber<List<Vector3>, bool, object>($"{Name}.Path.MoveTo");
                 _pathStop = Service.Interface.GetIpcSubscriber<object>($"{Name}.Path.Stop");
@@ -93,37 +95,19 @@ internal class NavmeshIPC
     internal static void Execute(Action action)
     {
         if (Utils.HasPlugin(Name))
-        {
-            try
-            {
-                action?.Invoke();
-            }
-            catch (Exception ex) { ex.Log(); }
-        }
+            GenericHelpers.TryExecute(() => action?.Invoke());
     }
 
     internal static void Execute<T>(Action<T> action, T param)
     {
         if (Utils.HasPlugin(Name))
-        {
-            try
-            {
-                action?.Invoke(param);
-            }
-            catch (Exception ex) { ex.Log(); }
-        }
+            GenericHelpers.TryExecute(() => action?.Invoke(param));
     }
 
     internal static void Execute<T1, T2>(Action<T1, T2> action, T1 p1, T2 p2)
     {
         if (Utils.HasPlugin(Name))
-        {
-            try
-            {
-                action?.Invoke(p1, p2);
-            }
-            catch (Exception ex) { ex.Log(); }
-        }
+            GenericHelpers.TryExecute(() => action?.Invoke(p1, p2));
     }
 
     internal static bool IsReady() => Execute(() => _navIsReady!.InvokeFunc());
@@ -135,7 +119,7 @@ internal class NavmeshIPC
     internal static void SetAutoLoad(bool value) => Execute(_navSetAutoLoad!.InvokeAction, value);
 
     internal static Vector3? QueryMeshNearestPoint(Vector3 pos, float halfExtentXZ, float halfExtentY) => Execute(() => _queryMeshNearestPoint!.InvokeFunc(pos, halfExtentXZ, halfExtentY));
-    internal static Vector3? QueryMeshPointOnFloor(Vector3 pos, float halfExtentXZ) => Execute(() => _queryMeshPointOnFloor!.InvokeFunc(pos, halfExtentXZ));
+    internal static Vector3? QueryMeshPointOnFloor(Vector3 pos, bool allowUnlandable, float halfExtentXZ) => Execute(() => _queryMeshPointOnFloor!.InvokeFunc(pos, allowUnlandable, halfExtentXZ));
 
     internal static void MoveTo(List<Vector3> waypoints, bool fly) => Execute(_pathMoveTo!.InvokeAction, waypoints, fly);
     internal static void Stop() => Execute(_pathStop!.InvokeAction);

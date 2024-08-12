@@ -10,11 +10,11 @@ internal class CompatModule
     public static unsafe void EnsureCompatibility(GatherRouteDB RouteDB)
     {
         // set flight activation to double jump to prevent flying when running off cliffs
-        if (Player.FlyingControlType == 0)
-        {
-            RouteDB.WasFlyingInManual = false;
-            Player.FlyingControlType = 1;
-        }
+        //if (Player.FlyingControlType == 0)
+        //{
+        //    RouteDB.WasFlyingInManual = false;
+        //    Player.FlyingControlType = 1;
+        //}
 
         if (RouteDB.GatherModeOnStart)
         {
@@ -37,12 +37,21 @@ internal class CompatModule
 
         // ensure we don't get afk-kicked while running the route
         OverrideAFK.ResetTimers();
+        //UpdateLegacyMode();
+        
+    }
+
+    private static bool _legacyMode;
+    private static void UpdateLegacyMode()
+    {
+        _legacyMode = Service.GameConfig.UiControl.TryGetUInt("MoveMode", out var mode) && mode == 0;
+        Service.Log.Info($"Legacy mode is now {(_legacyMode ? "enabled" : "disabled")}");
     }
 
     public static void RestoreChanges()
     {
-        if (!Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
-            Player.FlyingControlType = 0;
+        //if (!Service.Config.Get<GatherRouteDB>().WasFlyingInManual)
+        //    Player.FlyingControlType = 0;
         PurificationManager.DisableListeners();
         RepairManager.ToggleListeners(false);
     }

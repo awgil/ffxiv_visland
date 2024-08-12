@@ -1,5 +1,6 @@
 ﻿using ECommons.DalamudServices;
-using Lumina.Excel.GeneratedSheets;
+using ExdSheets;
+using ExdSheets.Sheets;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -7,17 +8,16 @@ using System.Numerics;
 namespace visland.Helpers;
 internal class Coordinates
 {
-    public static Lumina.Excel.ExcelSheet<Aetheryte> Aetherytes = Utils.GetSheet<Aetheryte>()!;
-    public static Lumina.Excel.ExcelSheet<MapMarker> AetherytesMap = Utils.GetSheet<MapMarker>()!;
+    public static Sheet<Aetheryte> Aetherytes = Utils.GetSheet<Aetheryte>()!;
 
-    private static float ConvertMapMarkerToMapCoordinate(int pos, float scale)
+    public static float ConvertMapMarkerToMapCoordinate(float pos, float scale)
     {
         var num = scale / 100f;
         var rawPosition = (int)((float)(pos - 1024.0) / num * 1000f);
         return ConvertRawPositionToMapCoordinate(rawPosition, scale);
     }
 
-    private static float ConvertRawPositionToMapCoordinate(int pos, float scale)
+    public static float ConvertRawPositionToMapCoordinate(float pos, float scale)
     {
         var num = scale / 100f;
         return (float)((((pos / 1000f * num) + 1024.0) / 2048.0 * 41.0 / num) + 1.0);
@@ -30,18 +30,16 @@ internal class Coordinates
         foreach (var data in Aetherytes)
         {
             if (!data.IsAetheryte) continue;
-            if (data.Territory.Value == null) continue;
-            if (data.PlaceName.Value == null) continue;
             if (data.Territory.Value.RowId == zoneID)
             {
-                var mapMarker = AetherytesMap.FirstOrDefault(m => m.DataType == 3 && m.DataKey == data.RowId);
+                var mapMarker = Utils.FindRow<MapMarker>(m => m.DataType == 3 && m.DataKey.RowId == data.RowId);
                 if (mapMarker == null)
                 {
                     Svc.Log.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
                     continue;
                 }
-                var AethersX = ConvertMapMarkerToMapCoordinate(mapMarker.X, 100);
-                var AethersY = ConvertMapMarkerToMapCoordinate(mapMarker.Y, 100);
+                var AethersX = ConvertMapMarkerToMapCoordinate(mapMarker.Value.X, 100);
+                var AethersY = ConvertMapMarkerToMapCoordinate(mapMarker.Value.Y, 100);
                 var temp_distance = Math.Pow(AethersX - pos.X, 2) + Math.Pow(AethersY - pos.Z, 2);
                 if (aetheryte == default || temp_distance < distance)
                 {

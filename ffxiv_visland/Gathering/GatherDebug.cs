@@ -1,10 +1,9 @@
-﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.DalamudServices;
-using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.UI;
+﻿using Dalamud.Game.Text;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility.Raii;
+using ECommons.ImGuiMethods;
+using ExdSheets.Sheets;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
-using System;
 using System.Linq;
 using visland.Helpers;
 
@@ -14,50 +13,45 @@ public unsafe class GatherDebug(GatherRouteExec exec)
     private readonly UITree _tree = new();
     private GatherRouteExec exec = exec;
 
-    private string? import;
     public void Draw()
     {
-        var activeConditions = Enum.GetValues<ConditionFlag>().Where(c => Svc.Condition[c]).ToList();
-        var activeAddons = RaptureAtkModule.Instance()->RaptureAtkUnitManager.AtkUnitManager.AllLoadedUnitsList.Entries.ToArray().Where(a => a.Value != null && a.Value->IsReady && a.Value->IsVisible).Select(a => a.Value->NameString);
-        var activeRoute = exec.CurrentRoute;
-        string x = $"Conditions: {string.Join(", ", activeConditions)}";
-        string y = $"Addons: {string.Join(", ", activeAddons)}";
-        string z = $"Route (Waypoint {exec.CurrentWaypoint}): {Utils.ToCompressedBase64(activeRoute)}";
+        using var child = ImRaii.Child("child");
+        if (!child) return;
 
-        if (ImGui.Button("Export Debug Info"))
-            ImGui.SetClipboardText(Utils.ToCompressedBase64($"{x}\n{y}\n{z}"));
-        ImGui.SameLine();
-        if (ImGui.Button("Import Debug Info"))
-            (_, import)= Utils.FromCompressedBase64(ImGui.GetClipboardText());
-        ImGui.SameLine();
-        if (ImGui.Button("Wipe import"))
-            import = null;
-
-        if (import != null)
+        if (Player.Available)
+            ImGuiEx.Text($"{Player.Dismounting} {Player.FlyingControlType}");
+        if (exec.CurrentRoute != null && exec.CurrentRoute.TargetGatherItem != default)
         {
-            ImGui.TextWrapped(import);
-            if (ImGui.IsItemClicked()) ImGui.SetClipboardText(import);
+            Utils.DrawSection("Target Item", ImGuiColors.ParsedGold);
+            var item = Utils.GetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem)!.Value;
+            var wp = exec.CurrentRoute.Waypoints[exec.CurrentWaypoint];
+            ImGuiEx.Text($"[{exec.CurrentRoute.TargetGatherItem}] {item.Name}");
+            ImGuiEx.Text($"Waypoint: IsNode: {wp.IsNode} Type: {wp.GatheringType} NodeJob: {wp.NodeJob}");
         }
-        else
+        if (exec.GatheringAM != null)
         {
-            ImGui.TextWrapped(x);
-            if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{x}");
-            ImGui.TextWrapped(y);
-            if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{y}");
-            ImGui.TextWrapped(z);
-            if (ImGui.IsItemClicked()) ImGui.SetClipboardText($"{z}");
+            Utils.DrawSection("Gathering Addon", ImGuiColors.ParsedGold);
+            ImGuiEx.Text($"Integrity: {exec.GatheringAM.CurrentIntegrity}/{exec.GatheringAM.TotalIntegrity}");
+            foreach (var item in exec.GatheringAM.GatheredItems.Where(x => x.IsEnabled))
+            {
+                ImGuiEx.TextV($@"[{item.ItemID}] Lv{item.ItemLevel} {item.GatherChance}% {item.ItemName} {(item.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
+                ImGui.SameLine();
+                if (ImGuiEx.IconButton(Dalamud.Interface.FontAwesomeIcon.BoreHole, $"###{item.ItemID}"))
+                    item.Gather();
+            }
         }
-
-        ImGui.TextUnformatted($"Has Extractables: {SpiritbondManager.IsSpiritbondReadyAny()}");
-        ImGui.TextUnformatted($"Has Repairables: {RepairManager.CanRepairAny()}");
-        ImGui.TextUnformatted($"Has Desynthables: {PurificationManager.CanPurifyAny()}");
-        ImGui.TextUnformatted($"AnimLock: {Player.AnimationLock} Food:{Player.HasFood} CD:{Player.FoodCD}");
-        var equipment = InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems);
-        for (var i = 0; i < equipment->Size; i++)
+        if (exec.GatheredItem != null)
         {
-            var item = equipment->GetInventorySlot(i);
-            if (item != null && item->ItemId > 0)
-                ImGui.TextUnformatted($"[{item->ItemId}] {Utils.GetRow<Item>(item->ItemId).Name} {item->Condition}");
+            Utils.DrawSection("Gathered Item", ImGuiColors.ParsedGold);
+            ImGuiEx.Text($"[{exec.GatheredItem.ItemID}] {exec.GatheredItem.ItemName} {(exec.GatheredItem.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
+        }
+        if (exec.GatheringCollectableAM != null)
+        {
+            Utils.DrawSection("Gathering Collectable Addon", ImGuiColors.ParsedGold);
+            ImGuiEx.Text($"Item: [{exec.GatheringCollectableAM.ItemID}] {exec.GatheringCollectableAM.ItemName}");
+            ImGuiEx.Text($"Integrity: {exec.GatheringCollectableAM.CurrentIntegrity}/{exec.GatheringCollectableAM.TotalIntegrity}");
+            ImGuiEx.Text($"Collectability: {exec.GatheringCollectableAM.CurrentCollectability}/{exec.GatheringCollectableAM.MaxCollectability}");
+            ImGuiEx.Text($"Scour: {exec.GatheringCollectableAM.ScourPower} Brazen: {exec.GatheringCollectableAM.BrazenPowerMin}/{exec.GatheringCollectableAM.BrazenPowerMax} Meticulous: {exec.GatheringCollectableAM.MeticulousPower}");
         }
     }
 }

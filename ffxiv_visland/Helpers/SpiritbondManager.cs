@@ -24,6 +24,8 @@ public unsafe static class SpiritbondManager
 
     public static bool IsSpiritbondReadyAny()
     {
+        if (!QuestManager.IsQuestComplete(66174)) return false; // doesn't have materia extraction unlocked so doesn't matter
+
         if (Weapon == 10000) return true;
         if (Offhand == 10000) return true;
         if (Helm == 10000) return true;
@@ -72,8 +74,6 @@ public unsafe static class SpiritbondManager
 
     public unsafe static bool ExtractMateriaTask()
     {
-        if (!QuestManager.IsQuestComplete(66174)) return true; // doesn't have materia extraction unlocked
-
         if (IsMateriaMenuOpen() && !IsSpiritbondReadyAny())
         {
             if (DateTime.Now < _nextRetry) return false;

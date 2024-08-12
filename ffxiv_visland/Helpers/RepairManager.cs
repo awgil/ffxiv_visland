@@ -1,17 +1,15 @@
 ﻿using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Game.ClientState.Conditions;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.UIHelpers.AddonMasterImplementations;
+using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 using System;
-using visland.Gathering;
 
 namespace visland.Helpers;
 internal unsafe class RepairManager
@@ -66,10 +64,10 @@ internal unsafe class RepairManager
         var repairResources = Utils.GetSheet<ItemRepairResource>()!;
         foreach (var dm in repairResources)
         {
-            if (dm.Item.Row < darkMatterID)
+            if (dm.Item.RowId < darkMatterID)
                 continue;
 
-            if (InventoryManager.Instance()->GetInventoryItemCount(dm.Item.Row) > 0)
+            if (InventoryManager.Instance()->GetInventoryItemCount(dm.Item.RowId) > 0)
                 return true;
         }
         return false;
@@ -105,16 +103,16 @@ internal unsafe class RepairManager
     {
         var row = Utils.GetRow<Item>(ItemId)!;
 
-        if (row.ClassJobRepair.Row > 0)
+        if (row.Value.ClassJobRepair.RowId > 0)
         {
-            var actualJob = (Job)row.ClassJobRepair.Row;
-            var repairItem = row.ItemRepair.Value!.Item;
+            var actualJob = (Job)row.Value.ClassJobRepair.RowId;
+            var repairItem = row.Value.ItemRepair.Value!.Item;
 
-            if (!HasDarkMatterOrBetter(repairItem.Row))
+            if (!HasDarkMatterOrBetter(repairItem.RowId))
                 return false;
 
             var jobLevel = JobLevel(actualJob);
-            if (Math.Max(row.LevelEquip - 10, 1) <= jobLevel)
+            if (Math.Max(row.Value.LevelEquip - 10, 1) <= jobLevel)
                 return true;
         }
 

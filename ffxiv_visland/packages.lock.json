@@ -8,6 +8,24 @@
         "resolved": "2.1.12",
         "contentHash": "Sc0PVxvgg4NQjcI8n10/VfUQBAS4O+Fw2pZrAqBdRMbthYGeogzu5+xmIGCGmsEZ/ukMOBuAqiNiB5qA3MRalg=="
       },
+      "ExdSheets": {
+        "type": "Direct",
+        "requested": "[2.1.0, )",
+        "resolved": "2.1.0",
+        "contentHash": "SfvLFyL8LYsW4AzPLFVfFwtKPl9xegGraIe9oFar3IlWW8Z4kf5dkM+1CiSr/J+PQt4xt2QZc/ydZ4ibs3RosA==",
+        "dependencies": {
+          "Lumina": "4.1.1"
+        }
+      },
+      "Lumina": {
+        "type": "Direct",
+        "requested": "[4.1.1, )",
+        "resolved": "4.1.1",
+        "contentHash": "Hd+iTtdaPACTpViXaJ/+sQ3ZQ8MEpApCSD+mxTXnUTYDSZOAipuC4LsZqhAkLMeQHSK/R/jiXEXaXS7e0mTXyA==",
+        "dependencies": {
+          "Microsoft.Extensions.ObjectPool": "9.0.0-preview.1.24081.5"
+        }
+      },
       "SharpDX.Mathematics": {
         "type": "Direct",
         "requested": "[4.2.0, )",
@@ -23,6 +41,11 @@
         "requested": "[16.0.0, )",
         "resolved": "16.0.0",
         "contentHash": "kZ4jR5ltFhnjaUqK9x81zXRIUTH4PTXTTEmJDNQdkDLQhcv+2Nl19r0dCSvPW1mstOYBfXTnjdieRbUO6gHMDw=="
+      },
+      "Microsoft.Extensions.ObjectPool": {
+        "type": "Transitive",
+        "resolved": "9.0.0-preview.1.24081.5",
+        "contentHash": "aAR7YW+pUUdvHk3vj7GtAi71dWGDIuY9270lsmQ6lKw23zzY+r8pLP3cGNbJdlnA9VWl+S+gnIVkBCqj2ROlEg=="
       },
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",
@@ -928,6 +951,12 @@
           "System.Text.Encoding": "4.3.0",
           "System.Threading": "4.3.0",
           "System.Xml.ReaderWriter": "4.3.0"
+        }
+      },
+      "autoretainerapi": {
+        "type": "Project",
+        "dependencies": {
+          "ECommons": "[2.2.0.2, )"
         }
       },
       "ecommons": {

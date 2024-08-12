@@ -6,15 +6,13 @@ using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.Reflection;
-using FFXIVClientStructs;
+using ExdSheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using FFXIVClientStructs.Interop;
 using ImGuiNET;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -224,20 +222,23 @@ public static unsafe class Utils
         return clicked;
     }
 
-    public static ExcelSheet<T> GetSheet<T>(ClientLanguage? language = null) where T : ExcelRow
-        => Svc.Data.GetExcelSheet<T>(language ?? Svc.ClientState.ClientLanguage)!;
+    public static Sheet<T> GetSheet<T>(ClientLanguage? language = null) where T : struct, ISheetRow<T>
+        => Service.Module.GetSheet<T>((language ?? Svc.ClientState.ClientLanguage).ToLumina());
 
-    public static uint GetRowCount<T>() where T : ExcelRow
-        => GetSheet<T>().RowCount;
+    public static int GetRowCount<T>() where T : struct, ISheetRow<T>
+        => GetSheet<T>().Count;
 
-    public static T? GetRow<T>(uint rowId, uint subRowId = uint.MaxValue, ClientLanguage? language = null) where T : ExcelRow
-        => GetSheet<T>(language).GetRow(rowId, subRowId);
+    public static T? GetRow<T>(uint rowId, ClientLanguage? language = null) where T : struct, ISheetRow<T>
+        => GetSheet<T>(language).TryGetRow(rowId);
 
-    public static T? FindRow<T>(Func<T?, bool> predicate) where T : ExcelRow
-        => GetSheet<T>().FirstOrDefault(predicate, null);
+    public static T? GetRow<T>(uint rowId, ushort subRowId, ClientLanguage? language = null) where T : struct, ISheetRow<T>
+        => GetSheet<T>(language).TryGetRow(rowId, subRowId);
 
-    public static IEnumerable<T> FindRows<T>(Func<T?, bool> predicate) where T : ExcelRow
-        => GetSheet<T>().Where(predicate);
+    public static T? FindRow<T>(Func<T, bool> predicate) where T : struct, ISheetRow<T>
+         => GetSheet<T>().FirstOrDefault(predicate);
+
+    public static T[] FindRows<T>(Func<T, bool> predicate) where T : struct, ISheetRow<T>
+        => GetSheet<T>().Where(predicate).ToArray();
 
     public static int EorzeanHour() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Hour;
     public static int EorzeanMinute() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Minute;
@@ -245,20 +246,19 @@ public static unsafe class Utils
 
 public static class Extensions
 {
-    public static LazyRow<T> GetDifferentLanguage<T>(this LazyRow<T> row, ClientLanguage language) where T : ExcelRow => new LazyRow<T>(Service.DataManager.GameData, row.Row, language.ToLumina());
+    //public static string GetItemName(this ILazyRow row)
+    //{
+    //    if (Utils.GetSheet<Item>()!.HasRow(row.Row))
+    //        return (Utils.GetRow<Item>(row.Row)!.Name);
+    //    return Utils.GetSheet<EventItem>()!.HasRow(row.Row) ? Utils.GetRow<EventItem>(row.Row)!.Name : "";
+    //}
 
-    public static string GetItemName(this ILazyRow row)
-    {
-        if (Utils.GetSheet<Item>()!.HasRow(row.Row))
-            return (Utils.GetRow<Item>(row.Row)!.Name);
-        return Utils.GetSheet<EventItem>()!.HasRow(row.Row) ? Utils.GetRow<EventItem>(row.Row)!.Name : "";
-    }
+    //public static string GetGatheringItem(this ILazyRow row)
+    //{
+    //    if (Utils.GetSheet<GatheringItem>()!.HasRow(row.Row))
+    //        return Utils.GetRow<Item>((uint)Utils.GetRow<GatheringItem>(row.Row)!.Item)!.Name;
+    //    return Utils.GetSheet<SpearfishingItem>()!.HasRow(row.Row) ? Utils.GetRow<SpearfishingItem>(row.Row)!.Item.GetItemName() : row.Row.ToString();
+    //}
 
-    public static string GetGatheringItem(this ILazyRow row)
-    {
-        if (Utils.GetSheet<GatheringItem>()!.HasRow(row.Row))
-            return Utils.GetRow<Item>((uint)Utils.GetRow<GatheringItem>(row.Row)!.Item)!.Name;
-        return Utils.GetSheet<SpearfishingItem>()!.HasRow(row.Row) ? Utils.GetRow<SpearfishingItem>(row.Row)!.Item.GetItemName() : row.Row.ToString();
-    }
-
+    public static int ToUnixTimestamp(this DateTime value) => (int)Math.Truncate(value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
 }

@@ -1,10 +1,15 @@
-﻿using Dalamud.Game;
+﻿using AutoRetainerAPI;
+using Dalamud.Game;
 using Dalamud.Game.ClientState.Objects;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
+using ECommons.DalamudServices;
+using ExdSheets;
 using System;
+using System.Linq;
 using visland.Helpers;
+using visland.IPC;
 
 namespace visland;
 
@@ -12,7 +17,6 @@ public class Service
 {
     [PluginService] public static IDalamudPluginInterface Interface { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
-    [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] public static IDataManager DataManager { get; private set; } = null!;
     [PluginService] public static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] public static ITargetManager TargetManager { get; private set; } = null!;
@@ -23,14 +27,14 @@ public class Service
     [PluginService] public static IGameGui GameGui { get; private set; } = null!;
     [PluginService] public static IChatGui ChatGui { get; private set; } = null!;
     [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
-    [PluginService] public static IAddonLifecycle AddonLifecycle { get; private set; } = null!;
-    [PluginService] public static IFramework Framework { get; private set; } = null!;
     [PluginService] public static IGameConfig GameConfig { get; private set; } = null!;
 
     public static Lumina.GameData LuminaGameData => DataManager.GameData;
     public static T? LuminaRow<T>(uint row) where T : Lumina.Excel.ExcelRow => LuminaGameData.GetExcelSheet<T>(Lumina.Data.Language.English)?.GetRow(row);
+    public static Module Module = new(Svc.Data.GameData);
 
     public static Configuration Config = new();
+    public static Retainers Retainers = new();
 
     internal static bool IsInitialized = false;
     public static void Init(IDalamudPluginInterface pi)
@@ -47,6 +51,47 @@ public class Service
         catch (Exception ex)
         {
             Log.Error($"Error initalising {nameof(Service)}", ex);
+        }
+    }
+}
+
+public class Retainers
+{
+    public AutoRetainerApi API = null!;
+    public AutoRetainerIPC IPC = null!;
+    public Retainers()
+    {
+        API = new();
+        IPC = new();
+    }
+
+    public ulong StartingCharacter = 0;
+    public bool Finished => IPC.GetMultiEnabled() && !IPC.IsBusy() && Player.CID == StartingCharacter && !HasRetainersReady && !HasSubsReady;
+
+    public ulong PreferredCharacter => API.GetRegisteredCharacters().FirstOrDefault(c => API.GetOfflineCharacterData(c).Preferred);
+    public bool HasRetainersReady
+        => API.GetRegisteredCharacters().Where(c => API.GetOfflineCharacterData(c).Enabled)
+        .Any(character => API.GetOfflineCharacterData(character).RetainerData.Any(x => x.HasVenture && x.VentureEndsAt <= DateTime.Now.ToUnixTimestamp()));
+
+    public bool HasSubsReady
+        => API.GetRegisteredCharacters().Where(c => API.GetOfflineCharacterData(c).Enabled)
+        .Any(c => API.GetOfflineCharacterData(c).OfflineSubmarineData.Any(x => x.ReturnTime <= DateTime.Now.ToUnixTimestamp()));
+
+    public ulong GetPreferredCharacter() => API.GetRegisteredCharacters().FirstOrDefault(c => API.GetOfflineCharacterData(c).Preferred);
+
+    private ulong TempCharacter = 0;
+    public void TempSwapPreferred(ulong cid, bool swapback)
+    {
+        if (swapback)
+        {
+            API.GetOfflineCharacterData(cid).Preferred = false;
+            API.GetOfflineCharacterData(TempCharacter).Preferred = true;
+        }
+        else
+        {
+            TempCharacter = PreferredCharacter;
+            API.GetOfflineCharacterData(PreferredCharacter).Preferred = false;
+            API.GetOfflineCharacterData(cid).Preferred = true;
         }
     }
 }

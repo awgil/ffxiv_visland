@@ -1,8 +1,8 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons;
 using ECommons.DalamudServices;
+using ECommons.ExcelServices;
+using ExdSheets.Sheets;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -31,7 +31,7 @@ public class GatherRouteDB : Configuration.Node
         Emote = 2,
         UseItem = 3,
         UseAction = 4,
-        QuestTalk = 5,
+        //QuestTalk = 5,
         Grind = 6,
         //PickupQuest = 7,
         //TurninQuest = 8,
@@ -49,6 +49,21 @@ public class GatherRouteDB : Configuration.Node
         QuestComplete = 3,
     }
 
+    public enum NodeType : byte
+    {
+        Unknown = 0xFF,
+        Regular = 0,
+        Unspoiled = 1,
+        Ephemeral = 2,
+        Legendary = 3,
+    }
+
+    public class Node
+    {
+        public NodeType Type;
+        public int GpThreshold;
+    }
+
     public class Waypoint
     {
         public Vector3 Position;
@@ -58,6 +73,7 @@ public class GatherRouteDB : Configuration.Node
         public bool Pathfind = true;
         public uint InteractWithOID = 0;
         public string InteractWithName = "";
+        public Vector3 InteractWithPosition;
 
         public bool showInteractions;
         public InteractionType Interaction = InteractionType.Standard;
@@ -77,8 +93,24 @@ public class GatherRouteDB : Configuration.Node
         public int WaitTimeMs;
         public Vector2 WaitTimeET;
 
-        public bool IsNode => !InteractWithName.IsNullOrEmpty() && Utils.GetSheet<GatheringPointName>().Select(x => x.Singular.RawString).Contains(InteractWithName);
+        public uint GatheringType => IsNode ? Utils.GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
+        public bool IsNode => Utils.GetSheet<GatheringPoint>().HasRow(InteractWithOID);
+        public Job NodeJob
+        {
+            get
+            {
+                if (!IsNode) return Job.ADV;
+                return GatheringType switch
+                {
+                    0 or 1 => Job.MIN,
+                    2 or 3 => Job.BTN,
+                    4 or 5 => Job.FSH,
+                    _ => Job.ADV
+                };
+            }
+        }
         public bool IsPhantom;
+        public List<Vector3>? Path;
     }
 
     public class Route
@@ -87,6 +119,7 @@ public class GatherRouteDB : Configuration.Node
         public string Group = "";
         public int Food = 0;
         public int Manual = 0;
+        public int TargetGatherItem = 0;
         public List<Waypoint> Waypoints = [];
     }
 
@@ -105,10 +138,12 @@ public class GatherRouteDB : Configuration.Node
     public int GlobalManual = 0;
 
     public bool WasFlyingInManual = false;
+    public bool AutoRetainerIntegration = false;
 
     public bool TeleportBetweenZones = true;
     public int LandDistance = 10;
     public int PathFindCancellationTime = 5;
+    public bool AutoGather = false;
 
     public override void Deserialize(JObject j, JsonSerializer ser)
     {
@@ -121,12 +156,13 @@ public class GatherRouteDB : Configuration.Node
                 var jg = jr["Group"]?.Value<string>();
                 var jf = jr["Food"]?.Value<int>();
                 var jm = jr["Manual"]?.Value<int>();
+                var ji = jr["TargetGatherItem"]?.Value<int>();
                 if (jn != null && jr["Waypoints"] is JArray jw)
                 {
                     if (jg != null)
-                        Routes.Add(new Route() { Name = jn, Group = jg, Waypoints = LoadFromJSONWaypoints(jw) });
+                        Routes.Add(new Route() { Name = jn, Group = jg, Food = jf ?? 0, Manual = jm ?? 0, TargetGatherItem = ji ?? 0, Waypoints = LoadFromJSONWaypoints(jw) });
                     else
-                        Routes.Add(new Route() { Name = jn, Waypoints = LoadFromJSONWaypoints(jw) });
+                        Routes.Add(new Route() { Name = jn, Food = jf ?? 0, Manual = jm ?? 0, TargetGatherItem = ji ?? 0, Waypoints = LoadFromJSONWaypoints(jw) });
                 }
             }
         }
@@ -136,6 +172,11 @@ public class GatherRouteDB : Configuration.Node
         DefaultInteractionRadius = (float?)j["DefaultInteractionRadius"] ?? 2;
 
         TeleportBetweenZones = (bool?)j["TeleportBetweenZones"] ?? true;
+        AutoRetainerIntegration = (bool?)j["AutoRetainerIntegration"] ?? false;
+
+        AutoGather = (bool?)j["AutoGather"] ?? false;
+        LandDistance = (int?)j["LandDistance"] ?? 10;
+        PathFindCancellationTime = (int?)j["PathFindCancellationTime"] ?? 5;
 
         ExtractMateria = (bool?)j["ExtractMateria"] ?? true;
         RepairGear = (bool?)j["RepairGear"] ?? true;
@@ -157,6 +198,7 @@ public class GatherRouteDB : Configuration.Node
                 { "Group", r.Group },
                 { "Food", r.Food },
                 { "Manual", r.Manual },
+                { "TargetGatherItem", r.TargetGatherItem },
                 { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
             });
         }
@@ -172,7 +214,11 @@ public class GatherRouteDB : Configuration.Node
             { "RepairPercent", RepairPercent },
             { "Desynth", PurifyCollectables },
             { "GlobalFood", GlobalFood },
-            { "GlobalManual", GlobalManual }
+            { "GlobalManual", GlobalManual },
+            { "AutoRetainerIntegration", AutoRetainerIntegration },
+            { "AutoGather", AutoGather },
+            { "LandDistance", LandDistance },
+            { "PathFindCancellationTime", PathFindCancellationTime },
         };
     }
 
@@ -193,6 +239,9 @@ public class GatherRouteDB : Configuration.Node
                 { "InteractWithName", wp.InteractWithName },
                 { "Movement", wp.Movement.ToString() },
                 { "InteractWithOID", wp.InteractWithOID },
+                { "iX", wp.InteractWithPosition.X },
+                { "iY", wp.InteractWithPosition.Y },
+                { "iZ", wp.InteractWithPosition.Z },
                 { "showInteractions", wp.showInteractions },
                 { "Interaction", wp.Interaction.ToString() },
                 { "EmoteID", wp.EmoteID },
@@ -237,6 +286,11 @@ public class GatherRouteDB : Configuration.Node
                     InteractWithName = jweObj["InteractWithName"]?.Value<string>() ?? "",
                     Movement = Enum.TryParse<Movement>(jweObj["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,
                     InteractWithOID = jweObj["InteractWithOID"]?.Value<uint>() ?? 0,
+                    InteractWithPosition = new Vector3(
+                        jweObj["iX"]?.Value<float>() ?? 0,
+                        jweObj["iY"]?.Value<float>() ?? 0,
+                        jweObj["iZ"]?.Value<float>() ?? 0
+                    ),
                     showInteractions = jweObj["showInteractions"]?.Value<bool>() ?? false,
                     Interaction = Enum.TryParse<InteractionType>(jweObj["Interaction"]?.Value<string>(), out var interaction) ? interaction : InteractionType.Standard,
                     EmoteID = jweObj["EmoteID"]?.Value<int>() ?? 0,
@@ -294,7 +348,7 @@ public class GatherRouteDB : Configuration.Node
                 if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !NavmeshIPC.IsEnabled))
                     Svc.Chat.Print($"[{Plugin.Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Plugin.Name} ({Plugin.Repo}).");
 
-                RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Waypoints = import.Waypoints });
+                RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Food = import.Food, Manual = import.Manual, TargetGatherItem = import.TargetGatherItem, Waypoints = import.Waypoints });
                 RouteDB.NotifyModified();
             }
         }
@@ -308,7 +362,7 @@ public class GatherRouteDB : Configuration.Node
 
 public static class WaypointExtensions
 {
-    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, out Waypoint? nextWaypoint)
+    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, bool loop, out Waypoint? nextWaypoint)
     {
         var index = route.Waypoints.IndexOf(waypoint);
         if (index >= 0 && index < route.Waypoints.Count - 1)
@@ -318,8 +372,21 @@ public static class WaypointExtensions
         }
         else
         {
-            nextWaypoint = route.Waypoints.First();
+            if (loop)
+            {
+                nextWaypoint = route.Waypoints.First();
+                return true;
+            }
+            nextWaypoint = null;
             return false;
         }
     }
+
+    public static void AddWaypointsAfter(this Waypoint waypoint, Route route, List<Waypoint> waypoints)
+    {
+        var index = route.Waypoints.IndexOf(waypoint);
+        route.Waypoints.InsertRange(index + 1, waypoints);
+    }
+
+    public static bool IsLast(this Waypoint waypoint, Route route) => waypoint.Equals(route.Waypoints.Last());
 }

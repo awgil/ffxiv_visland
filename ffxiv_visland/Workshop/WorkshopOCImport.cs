@@ -4,12 +4,11 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ECommons.ImGuiMethods;
+using ExdSheets;
+using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using Lumina.Data;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +23,7 @@ public unsafe class WorkshopOCImport
     public WorkshopSolver.Recs Recommendations = new();
 
     private WorkshopConfig _config;
-    private ExcelSheet<MJICraftworksObject> _craftSheet;
+    private Sheet<MJICraftworksObject> _craftSheet;
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = [];
     private bool IgnoreFourthWorkshop;
@@ -32,8 +31,8 @@ public unsafe class WorkshopOCImport
     public WorkshopOCImport()
     {
         _config = Service.Config.Get<WorkshopConfig>();
-        _craftSheet = Service.DataManager.GetExcelSheet<MJICraftworksObject>()!;
-        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.GetDifferentLanguage(ClientLanguage.English).Value?.Name.RawString ?? r.Item.Value?.Name.RawString ?? "")).ToList();
+        _craftSheet = Utils.GetSheet<MJICraftworksObject>(ClientLanguage.English)!;
+        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.Value.Name.ToString() ?? r.Item.Value.Name.ToString() ?? "")).ToList();
     }
 
     public void Update()
@@ -201,15 +200,14 @@ public unsafe class WorkshopOCImport
             return "";
         }
 
-        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         var res = "/favors";
         var offset = nextWeek ? 6 : 3;
         for (var i = 0; i < 3; ++i)
         {
             var id = state->CraftObjectIds[offset + i];
             // the bot doesn't like names with apostrophes because it "breaks their formulas"
-            var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
-            if (name != null)
+            var row = Utils.GetRow<MJICraftworksObject>(id, language: ClientLanguage.English);
+            if (row != null && row.Value.Item.Value.Name.ToString() != null)
                 res += $" favor{i + 1}:{_botNames[id].Replace("\'", "")}";
         }
         return res;
@@ -330,14 +328,14 @@ public unsafe class WorkshopOCImport
             }
             else if (TryParseItem(l) is var item && item != null)
             {
-                if (nextSlot + item.CraftingTime > 24)
+                if (nextSlot + item.Value.CraftingTime > 24)
                 {
                     // start next workshop schedule
                     curRec.Workshops.Add(new());
                     nextSlot = 0;
                 }
-                curRec.Workshops.Last().Add(nextSlot, item.RowId);
-                nextSlot += item.CraftingTime;
+                curRec.Workshops.Last().Add(nextSlot, item.Value.RowId);
+                nextSlot += item.Value.CraftingTime;
             }
         }
         // complete current cycle; if the number was not known, assume it is tomorrow.
@@ -406,14 +404,14 @@ public unsafe class WorkshopOCImport
             }
             else if (TryParseItem(l) is var item && item != null)
             {
-                if (nextSlot + item.CraftingTime > 24)
+                if (nextSlot + item.Value.CraftingTime > 24)
                 {
                     // start next workshop schedule
                     result.Add(new());
                     nextSlot = 0;
                 }
-                result.Last().Add(nextSlot, item.RowId);
-                nextSlot += item.CraftingTime;
+                result.Last().Add(nextSlot, item.Value.RowId);
+                nextSlot += item.Value.CraftingTime;
             }
         }
 

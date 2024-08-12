@@ -4,6 +4,7 @@ using Dalamud.Plugin.Services;
 using ECommons;
 using ECommons.Automation;
 using ECommons.DalamudServices;
+using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
@@ -12,7 +13,6 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,14 +26,13 @@ namespace visland.Helpers;
 
 public class QuestsHelper
 {
-    private static readonly Dictionary<uint, Quest>? QuestSheet = Utils.FindRows<Quest>(x => x?.Id.RawString.Length > 0).ToDictionary(i => i.RowId, i => i);
+    private static readonly Dictionary<uint, Quest>? QuestSheet = Utils.FindRows<Quest>(x => x.Id.ToString().Length > 0).ToDictionary(i => i.RowId, i => i);
 
     public static nint emoteAgent = nint.Zero;
     public delegate void DoEmoteDelegate(nint agent, uint emoteID, long a3, bool a4, bool a5);
     public static DoEmoteDelegate DoEmote = null!;
 
     private static Throttle _interact = new();
-    private static NavmeshIPC NavmeshIPC = new();
 
     public unsafe QuestsHelper()
     {
@@ -50,7 +49,7 @@ public class QuestsHelper
         catch { Service.Log.Error($"Failed to load agentModule"); }
     }
 
-    public static string GetMobName(uint npcID) => Utils.GetRow<BNpcName>(npcID)?.Singular.RawString ?? "";
+    public static string GetMobName(uint npcID) => Utils.GetRow<BNpcName>(npcID)?.Singular.ToString() ?? "";
 
     public static bool IsQuestAccepted(int questID) => new QuestManager().IsQuestAccepted(((uint)questID).ToInternalID());
     public static bool IsQuestCompleted(int questID) => QuestManager.IsQuestComplete(((uint)questID).ToInternalID());
@@ -175,10 +174,8 @@ public class QuestsHelper
         if (questID > 0)
         {
             var digits = questID.ToString().Length;
-            if (QuestSheet!.Any(x => Convert.ToInt16(x.Value.Id.RawString.GetLast(digits)) == questID))
-            {
-                return QuestSheet!.First(x => Convert.ToInt16(x.Value.Id.RawString.GetLast(digits)) == questID).Value.Name.RawString.Replace("", "").Trim();
-            }
+            if (QuestSheet!.Any(x => Convert.ToInt16(x.Value.Id.ToString().GetLast(digits)) == questID))
+                return QuestSheet!.First(x => Convert.ToInt16(x.Value.Id.ToString().GetLast(digits)) == questID).Value.Name.ToString().Replace("", "").Trim();
         }
         return "";
     }

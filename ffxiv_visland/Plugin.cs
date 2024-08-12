@@ -1,10 +1,14 @@
 ﻿using Dalamud.Common;
+using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Windowing;
 using Dalamud.Plugin;
 using ECommons;
 using ECommons.Automation.LegacyTaskManager;
 using ECommons.Configuration;
+using ECommons.DalamudServices;
 using ECommons.Reflection;
+using ECommons.UIHelpers.AddonMasterImplementations;
 using System;
 using System.Collections.Specialized;
 using System.Globalization;
@@ -39,7 +43,8 @@ public sealed class Plugin : IDalamudPlugin
 
     internal static Plugin P = null!;
     internal TaskManager TaskManager;
-    internal ShoppingListDB ShoppingListsFile;
+    internal DataStore DataStore;
+    //internal ShoppingListDB ShoppingListsFile;
 
     private VislandIPC _vislandIPC;
 
@@ -74,6 +79,7 @@ public sealed class Plugin : IDalamudPlugin
 
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
+        DataStore = new();
 
         //EzConfig.DefaultSerializationFactory = new YamlFactory();
         //ShoppingListsFile = EzConfig.Init<ShoppingListDB>();
@@ -106,10 +112,14 @@ public sealed class Plugin : IDalamudPlugin
         EzCmd.Add("/visland", OnCommand, HelpMessage);
         Service.Interface.UiBuilder.Draw += WindowSystem.Draw;
         Service.Interface.UiBuilder.OpenConfigUi += () => _wndGather.IsOpen = true;
+        Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, ["Gathering", "GatheringMasterpiece"], GenerateAddonMasters);
+        Svc.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, ["Gathering", "GatheringMasterpiece"], ClearAddonMasters);
     }
 
     public void Dispose()
     {
+        Svc.AddonLifecycle.UnregisterListener(GenerateAddonMasters);
+        Svc.AddonLifecycle.UnregisterListener(ClearAddonMasters);
         _vislandIPC.Dispose();
         WindowSystem.RemoveAllWindows();
         _wndGather.Dispose();
@@ -207,5 +217,37 @@ public sealed class Plugin : IDalamudPlugin
             NavmeshIPC.Init();
     }
 
-    public static void OnChange(object? sender, NotifyCollectionChangedEventArgs e) => EzConfig.Save();
+    private static void OnChange(object? sender, NotifyCollectionChangedEventArgs e) => EzConfig.Save();
+
+    private void GenerateAddonMasters(AddonEvent type, AddonArgs args)
+    {
+        switch (args.AddonName)
+        {
+            case "Gathering":
+                _wndGather.Exec.GatheringAM = new AddonMaster.Gathering(args.Addon);
+                if (_wndGather.Exec.CurrentRoute != null)
+                {
+                    TaskManager.Enqueue(() => _wndGather.Exec.GatheringAM.GatheredItems.Any(x => x.ItemID != 0));
+                    TaskManager.Enqueue(() => _wndGather.Exec.GatheredItem = _wndGather.Exec.GatheringAM.GatheredItems.FirstOrDefault(x => x?.ItemID != 0 && x?.ItemID == (uint)_wndGather.Exec.CurrentRoute.TargetGatherItem, null));
+                }
+                break;
+            case "GatheringMasterpiece":
+                _wndGather.Exec.GatheringCollectableAM = new AddonMaster.GatheringMasterpiece(args.Addon);
+                break;
+        }
+    }
+
+    private void ClearAddonMasters(AddonEvent type, AddonArgs args)
+    {
+        switch (args.AddonName)
+        {
+            case "Gathering":
+                _wndGather.Exec.GatheringAM = null;
+                _wndGather.Exec.GatheredItem = null;
+                break;
+            case "GatheringMasterpiece":
+                _wndGather.Exec.GatheringCollectableAM = null;
+                break;
+        }
+    }
 }

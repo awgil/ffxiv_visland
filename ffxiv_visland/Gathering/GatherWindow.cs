@@ -8,10 +8,11 @@ using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.SimpleGui;
+using ExdSheets;
+using ExdSheets.Sheets;
 using ImGuiNET;
-using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -22,14 +23,13 @@ using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
 
-public class GatherWindow : Window, System.IDisposable
+public class GatherWindow : Window, IDisposable
 {
     private readonly UITree _tree = new();
     private readonly List<System.Action> _postDraw = [];
 
     public GatherRouteDB RouteDB = null!;
     public GatherRouteExec Exec = new();
-    //public AutoGatherTab _autoGather;
     public GatherDebug _debug = null!;
 
     private int selectedRouteIndex = -1;
@@ -41,7 +41,7 @@ public class GatherWindow : Window, System.IDisposable
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
 
     private readonly List<int> Items = Utils.GetSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
-    private ExcelSheet<Item> _items = null!;
+    private Sheet<Item> _items = null!;
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
@@ -224,7 +224,7 @@ public class GatherWindow : Window, System.IDisposable
                     ImGui.SetClipboardText("");
                 }
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 Svc.Log.Error(e.Message, e);
             }
@@ -243,15 +243,31 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
 
             Utils.DrawSection("Global Route Operation Options", ImGuiColors.ParsedGold);
-            if (ImGui.Checkbox("Auto Enable Gather Mode on Route Start", ref RouteDB.GatherModeOnStart))
+
+            if (ImGui.Checkbox("Auto Enable Island Sanctuary Gather Mode", ref RouteDB.GatherModeOnStart))
                 RouteDB.NotifyModified();
-            if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
-                RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker("Enables \"Gather Mode\" when on your Island Sanctuary automatically when commencing a route.");
+
+            using (ImRaii.Disabled())
+            {
+                if (ImGui.Checkbox("Stop Route on Error", ref RouteDB.DisableOnErrors))
+                    RouteDB.NotifyModified();
+            }
             ImGuiComponents.HelpMarker("Stops executing a route when you encounter a node you can't gather from due to full inventory.");
+
             if (ImGui.Checkbox("Teleport between zones", ref RouteDB.TeleportBetweenZones))
                 RouteDB.NotifyModified();
 
+            if (ImGui.Checkbox("Auto Gather", ref RouteDB.AutoGather))
+                RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker($"Applies to non-island routes only. Will auto gather the item in the \"Item Target\" field and use the best actions available.");
+
+            //if (ImGui.SliderInt("Land Distance", ref RouteDB.LandDistance, 1, 30))
+            //    RouteDB.NotifyModified();
+            //ImGuiComponents.HelpMarker("Only applies to waypoints auto generated from node scanning. How far to land from the node to land and switch from fly pathfinding to ground pathfinding.");
+
             Utils.DrawSection("Global Route Extras", ImGuiColors.ParsedGold);
+
             if (ImGui.Checkbox("Extract materia during routes", ref RouteDB.ExtractMateria))
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Repair gear during routes", ref RouteDB.RepairGear))
@@ -260,16 +276,22 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Purify collectables during routes", ref RouteDB.PurifyCollectables))
                 RouteDB.NotifyModified();
-            if (UICombo.ExcelSheetCombo("##Foods", out Item? i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.RawString}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+            if (ImGui.Checkbox("Check AutoRetainer during routes", ref RouteDB.AutoRetainerIntegration))
+                RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker($"Will enable multi mode when you have any retainers or submarines returned across any enabled characters. Requires the current character to be set as the Preferred Character and the Teleport to FC config enabled in AutoRetainer.");
+            if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.ToString()}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
             {
                 RouteDB.GlobalFood = (int)i.RowId;
                 RouteDB.NotifyModified();
             }
-            ImGui.SameLine();
-            if (ImGuiEx.IconButton(FontAwesomeIcon.Undo))
+            if (RouteDB.GlobalFood != 0)
             {
-                RouteDB.GlobalFood = 0;
-                RouteDB.NotifyModified();
+                ImGui.SameLine();
+                if (ImGuiEx.IconButton(FontAwesomeIcon.Undo, "ClearGlobalFood"))
+                {
+                    RouteDB.GlobalFood = 0;
+                    RouteDB.NotifyModified();
+                }
             }
             ImGuiComponents.HelpMarker("Food set here will apply to all routes unless overwritten in the route itself.");
         }
@@ -300,7 +322,8 @@ public class GatherWindow : Window, System.IDisposable
                 }
                 else
                 {
-                    Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
+                    if (route.Waypoints.Count > 0)
+                        Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
                     hoverText = "Execute Route";
                 }
             }
@@ -396,12 +419,32 @@ public class GatherWindow : Window, System.IDisposable
                 RouteDB.NotifyModified();
             }
 
+            if (RouteDB.AutoGather)
+            {
+                ImGuiEx.TextV("Item Target: ");
+                ImGui.SameLine();
+                if (UICombo.ExcelSheetCombo("##Gatherables", out GatheringItem gatherable, _ => $"[{route.TargetGatherItem}] {Utils.GetRow<Item>((uint)route.TargetGatherItem)?.Name.ToString()}", x => $"[{x.RowId}] {Utils.GetRow<Item>(x.Item.RowId)?.Name.ToString()}", x => x.Item.RowId != 0))
+                {
+                    route.TargetGatherItem = (int)gatherable.Item.RowId;
+                    RouteDB.NotifyModified();
+                }
+                if (route.TargetGatherItem != 0)
+                {
+                    ImGui.SameLine();
+                    if (ImGuiEx.IconButton(FontAwesomeIcon.Undo, "ClearItemTarget"))
+                    {
+                        route.TargetGatherItem = 0;
+                        RouteDB.NotifyModified();
+                    }
+                }
+            }
+
             using (ImRaii.Child("waypoints"))
             {
                 for (var i = 0; i < route.Waypoints.Count; ++i)
                 {
                     var wp = route.Waypoints[i];
-                    foreach (var wn in _tree.Node($"#{i + 1}: [x: {wp.Position.X:f0}, y: {wp.Position.Y:f0}, z: {wp.Position.Z:f0}] ({wp.Movement}){(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", color: wp.IsPhantom ? ImGuiColors.HealerGreen.ToHex() : 0xffffffff, contextMenu: () => ContextMenuWaypoint(route, i)))
+                    foreach (var wn in _tree.Node($"#{i + 1}: [x: {wp.Position.X:f0}, y: {wp.Position.Y:f0}, z: {wp.Position.Z:f0}] ({wp.Movement}) {(wp.InteractWithOID != 0 ? $" @ {wp.InteractWithName} ({wp.InteractWithOID:X})" : "")}###{i}", color: wp.IsPhantom ? ImGuiColors.HealerGreen.ToHex() : 0xffffffff, contextMenu: () => ContextMenuWaypoint(route, i)))
                         DrawWaypoint(wp);
                 }
             }
@@ -419,16 +462,19 @@ public class GatherWindow : Window, System.IDisposable
         if (!popup) return;
 
         Utils.DrawSection("Route Settings", ImGuiColors.ParsedGold);
-        if (UICombo.ExcelSheetCombo("##Foods", out Item? i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.RawString}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+        if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {Utils.GetRow<Item>((uint)route.Food)?.Name.ToString()}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
         {
-            RouteDB.GlobalFood = (int)i.RowId;
+            route.Food = (int)i.RowId;
             RouteDB.NotifyModified();
         }
-        ImGui.SameLine();
-        if (ImGuiEx.IconButton(FontAwesomeIcon.Undo))
+        if (RouteDB.GlobalFood != 0)
         {
-            RouteDB.GlobalFood = 0;
-            RouteDB.NotifyModified();
+            ImGui.SameLine();
+            if (ImGuiEx.IconButton(FontAwesomeIcon.Undo, "ClearLocalFood"))
+            {
+                route.Food = 0;
+                RouteDB.NotifyModified();
+            }
         }
         ImGuiComponents.HelpMarker("Food set here will apply to this route only and overrides the global food setting.");
 
@@ -477,6 +523,9 @@ public class GatherWindow : Window, System.IDisposable
         if (ImGui.IsItemHovered()) ImGui.SetTooltip("Set Position to Current");
         ImGui.SameLine();
         if (ImGui.InputFloat3("Position", ref wp.Position))
+            RouteDB.NotifyModified();
+
+        if (ImGui.InputInt("Zone ID", ref wp.ZoneID))
             RouteDB.NotifyModified();
 
         if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))
@@ -536,7 +585,7 @@ public class GatherWindow : Window, System.IDisposable
                 case InteractionType.None: break;
                 case InteractionType.Standard: break;
                 case InteractionType.Emote:
-                    if (UICombo.ExcelSheetCombo("##Emote", out Emote? emote, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Name}", x => !x.Name.RawString.IsNullOrEmpty()))
+                    if (UICombo.ExcelSheetCombo("##Emote", out Emote emote, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Name}", x => !x.Name.ToString().IsNullOrEmpty()))
                     {
                         wp.EmoteID = (int)emote.RowId;
                         RouteDB.NotifyModified();
@@ -544,11 +593,11 @@ public class GatherWindow : Window, System.IDisposable
                     break;
                 case InteractionType.UseItem:
                     ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Item {_items.GetRow((uint)wp.ItemID)?.Name}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
+                    if (ImGui.DragInt($"Item {_items.GetRow((uint)wp.ItemID).Name}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.UseAction:
-                    if (UICombo.ExcelSheetCombo("##Action", out Action? action, _ => $"{wp.ActionID}", x => $"[{x.RowId}] {x.Name}", x => x.ClassJobCategory.Row > 0 && x.ActionCategory.Row <= 4 && x.RowId > 8))
+                    if (UICombo.ExcelSheetCombo("##Action", out ExdSheets.Sheets.Action action, _ => $"{wp.ActionID}", x => $"[{x.RowId}] {x.Name}", x => x.ClassJobCategory.RowId > 0 && x.ActionCategory.RowId <= 4 && x.RowId > 8))
                     {
                         wp.ActionID = (int)action.RowId;
                         RouteDB.NotifyModified();
@@ -565,7 +614,7 @@ public class GatherWindow : Window, System.IDisposable
                 case InteractionType.Grind:
                     using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
                     {
-                        if (UICombo.ExcelSheetCombo("##Mob", out BNpcName? mob, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Singular}", x => !x.Singular.RawString.IsNullOrEmpty()))
+                        if (UICombo.ExcelSheetCombo("##Mob", out BNpcName mob, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Singular}", x => !x.Singular.ToString().IsNullOrEmpty()))
                         {
                             wp.MobID = (int)mob.RowId;
                             RouteDB.NotifyModified();
@@ -587,7 +636,7 @@ public class GatherWindow : Window, System.IDisposable
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestSequence:
-                                if (UICombo.ExcelSheetCombo("##QuestSequence", out Quest? qs, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.RawString.Length > 0))
+                                if (UICombo.ExcelSheetCombo("##QuestSequence", out Quest qs, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.ToString().Length > 0))
                                 {
                                     wp.QuestID = (int)qs.RowId;
                                     RouteDB.NotifyModified();
@@ -597,7 +646,7 @@ public class GatherWindow : Window, System.IDisposable
                                     RouteDB.NotifyModified();
                                 break;
                             case GrindStopConditions.QuestComplete:
-                                if (UICombo.ExcelSheetCombo("##QuestComplete", out Quest? qc, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.RawString.Length > 0))
+                                if (UICombo.ExcelSheetCombo("##QuestComplete", out Quest qc, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.ToString().Length > 0))
                                 {
                                     wp.QuestID = (int)qc.RowId;
                                     RouteDB.NotifyModified();
