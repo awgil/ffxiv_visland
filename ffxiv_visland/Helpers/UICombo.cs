@@ -22,15 +22,14 @@ public static class UICombo
     {
         var res = false;
         ImGui.SetNextItemWidth(200);
-        if (ImRaii.Combo(label, EnumString(v)))
+        using var combo = ImRaii.Combo(label, EnumString(v));
+        if (!combo) return false;
+        foreach (var opt in System.Enum.GetValues(v.GetType()))
         {
-            foreach (var opt in System.Enum.GetValues(v.GetType()))
+            if (ImGui.Selectable(EnumString((Enum)opt), opt.Equals(v)))
             {
-                if (ImGui.Selectable(EnumString((Enum)opt), opt.Equals(v)))
-                {
-                    v = (T)opt;
-                    res = true;
-                }
+                v = (T)opt;
+                res = true;
             }
         }
         return res;
@@ -79,15 +78,14 @@ public static class UICombo
     {
         var res = false;
         ImGui.SetNextItemWidth(200);
-        if (ImRaii.Combo(label, v.ToString()))
+        using var combo = ImRaii.Combo(label, v.ToString());
+        if (!combo) return false;
+        for (var i = 0; i < values.Length; ++i)
         {
-            for (var i = 0; i < values.Length; ++i)
+            if (ImGui.Selectable(values[i], v == values[i]))
             {
-                if (ImGui.Selectable(values[i], v == values[i]))
-                {
-                    v = values[i];
-                    res = true;
-                }
+                v = values[i];
+                res = true;
             }
         }
         return res;

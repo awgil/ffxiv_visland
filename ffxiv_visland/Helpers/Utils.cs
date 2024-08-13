@@ -17,6 +17,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -64,6 +65,19 @@ public static unsafe class Utils
     }
     public static bool DangerousButton(string label) => DangerousItem(() => ImGui.Button(label));
     public static bool DangerousMenuItem(string label) => DangerousItem(() => ImGui.MenuItem(label));
+
+    private static Vector2 size = new(24);
+    public static void WorkInProgressIcon()
+    {
+        const uint iconID = 60073;
+        var texture = Svc.Texture?.GetFromGameIcon(iconID).GetWrapOrEmpty();
+        if (texture != null)
+            ImGui.Image(texture.ImGuiHandle, size);
+        else
+            ImGui.Dummy(size);
+        if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Work in progress");
+    }
 
     private static float startTime;
     public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration)

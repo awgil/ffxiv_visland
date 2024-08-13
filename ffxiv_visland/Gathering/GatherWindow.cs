@@ -52,7 +52,6 @@ public class GatherWindow : Window, IDisposable
         SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
-        //_autoGather = new(Exec);
         _debug = new(Exec);
         _items = Utils.GetSheet<Item>()!;
     }
@@ -63,7 +62,6 @@ public class GatherWindow : Window, IDisposable
         EzConfigGui.Window.SizeCondition = ImGuiCond.FirstUseEver;
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
-        //_autoGather = new(Exec);
         _debug = new(Exec);
         _items = Utils.GetSheet<Item>()!;
     }
@@ -258,6 +256,8 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.Checkbox("Teleport between zones", ref RouteDB.TeleportBetweenZones))
                 RouteDB.NotifyModified();
 
+            Utils.WorkInProgressIcon();
+            ImGui.SameLine();
             if (ImGui.Checkbox("Auto Gather", ref RouteDB.AutoGather))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker($"Applies to non-island routes only. Will auto gather the item in the \"Item Target\" field and use the best actions available.");
@@ -666,6 +666,12 @@ public class GatherWindow : Window, IDisposable
                     ImGui.SameLine();
                     if (ImGui.InputText("##chatCommand", ref wp.ChatCommand, 256))
                         RouteDB.NotifyModified();
+                    break;
+                case InteractionType.NodeScan:
+                    ImGui.SameLine();
+                    Utils.WorkInProgressIcon();
+                    ImGuiComponents.HelpMarker("Node scanning will check the object table for nearby targetable gathering points, failing that will use your gatherer's reveal node ability and navigate to that. It will create a new phantom waypoint with the aforementioned information and navigate to it. Every phantom waypoint will also node scan. These special waypoints do not get saved to the route.");
+                    ImGui.TextUnformatted("This feature will have trouble with land nodes at the moment.");
                     break;
             }
         }
