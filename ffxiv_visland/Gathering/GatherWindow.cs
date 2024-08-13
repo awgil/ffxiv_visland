@@ -276,6 +276,7 @@ public class GatherWindow : Window, IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Purify collectables during routes", ref RouteDB.PurifyCollectables))
                 RouteDB.NotifyModified();
+            ImGuiComponents.HelpMarker($"Also known as {Utils.GetRow<Addon>(2160)!.Value.Text}");
             if (ImGui.Checkbox("Check AutoRetainer during routes", ref RouteDB.AutoRetainerIntegration))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker($"Will enable multi mode when you have any retainers or submarines returned across any enabled characters. Requires the current character to be set as the Preferred Character and the Teleport to FC config enabled in AutoRetainer.");
