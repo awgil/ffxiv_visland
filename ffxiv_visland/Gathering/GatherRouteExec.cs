@@ -172,7 +172,7 @@ public class GatherRouteExec : IDisposable
         if (needToGetCloser)
         {
             // skip current waypoint if target isn't there
-            if (wp.InteractWithOID != default && Vector3.Distance(Player.Object.Position, wp.Position) < 100 && !Svc.Objects.Any(x => x.DataId == wp.InteractWithOID && x.IsTargetable))
+            if (wp.IsNode && Vector3.Distance(Player.Object.Position, wp.Position) < 50 && !Svc.Objects.Any(x => x.DataId == wp.InteractWithOID && x.IsTargetable))
             {
                 Svc.Log.Debug("Current waypoint target is not targetable, moving to next waypoint");
                 if (NavmeshIPC.IsRunning())
