@@ -45,6 +45,8 @@ public class GatherWindow : Window, IDisposable
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
+    private FontAwesomeIcon PlayIcon => Exec.CurrentRoute != null && !Exec.Paused ? FontAwesomeIcon.Pause : FontAwesomeIcon.Play;
+    private string PlayTooltip => Exec.CurrentRoute == null ? "Start Route" : Exec.Paused ? "Resume Route" : "Pause Route";
 
     public GatherWindow() : base("Gathering Automation", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
     {
@@ -305,30 +307,17 @@ public class GatherWindow : Window, IDisposable
         var routeSource = FilteredRoutes.Count > 0 ? FilteredRoutes : RouteDB.Routes;
         if (routeSource.Count == 0) return;
         var route = selectedRouteIndex >= routeSource.Count ? routeSource.Last() : routeSource[selectedRouteIndex];
-        var hoverText = string.Empty;
 
         using (ImRaii.Child("Editor", size))
         {
-            if (ImGuiComponents.IconButton(Exec.CurrentRoute != null && !Exec.Paused ? FontAwesomeIcon.Pause : FontAwesomeIcon.Play))
+            if (ImGuiComponents.IconButton(PlayIcon))
             {
-                if (Exec.CurrentRoute != null && !Exec.Paused)
-                {
-                    Exec.Paused = true;
-                    hoverText = "Pause Route";
-                }
-                else if (Exec.CurrentRoute != null && Exec.Paused)
-                {
-                    Exec.Paused = false;
-                    hoverText = "Resume Route";
-                }
-                else
-                {
-                    if (route.Waypoints.Count > 0)
-                        Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
-                    hoverText = "Execute Route";
-                }
+                if (Exec.CurrentRoute != null)
+                    Exec.Paused = !Exec.Paused;
+                if (Exec.CurrentRoute == null && route.Waypoints.Count > 0)
+                    Exec.Start(route, 0, true, loop, route.Waypoints[0].Pathfind);
             }
-            if (ImGui.IsItemHovered()) ImGui.SetTooltip(hoverText);
+            if (ImGui.IsItemHovered()) ImGui.SetTooltip(PlayTooltip);
             ImGui.SameLine();
 
             ImGui.PushStyleColor(ImGuiCol.Button, loop ? greenColor : redColor);
