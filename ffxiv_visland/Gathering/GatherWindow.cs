@@ -282,7 +282,7 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.Checkbox("Check AutoRetainer during routes", ref RouteDB.AutoRetainerIntegration))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker($"Will enable multi mode when you have any retainers or submarines returned across any enabled characters. Requires the current character to be set as the Preferred Character and the Teleport to FC config enabled in AutoRetainer.");
-            if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name.ToString()}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+            if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
             {
                 RouteDB.GlobalFood = (int)i.RowId;
                 RouteDB.NotifyModified();
@@ -452,7 +452,7 @@ public class GatherWindow : Window, IDisposable
         if (!popup) return;
 
         Utils.DrawSection("Route Settings", ImGuiColors.ParsedGold);
-        if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {Utils.GetRow<Item>((uint)route.Food)?.Name.ToString()}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.Value!.RowId == 46))
+        if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {Utils.GetRow<Item>((uint)route.Food)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
         {
             route.Food = (int)i.RowId;
             RouteDB.NotifyModified();
