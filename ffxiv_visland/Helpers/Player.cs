@@ -82,8 +82,10 @@ public unsafe static class Player
 
     public static unsafe void EatFood(int id)
     {
-        if (InventoryManager.Instance()->GetInventoryItemCount((uint)id) > 0 || InventoryManager.Instance()->GetInventoryItemCount((uint)id, true) > 0)
+        if (InventoryManager.Instance()->GetInventoryItemCount((uint)id) > 0)
             _action.Exec(() => AgentInventoryContext.Instance()->UseItem((uint)id));
+        else if (InventoryManager.Instance()->GetInventoryItemCount((uint)id, true) > 0)
+            _action.Exec(() => AgentInventoryContext.Instance()->UseItem((uint)id + 1_000_000));
     }
 
     public static void Mount() => ExecuteActionSafe(ActionType.GeneralAction, 24); // flying mount roulette
