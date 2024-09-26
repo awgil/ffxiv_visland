@@ -162,7 +162,7 @@ public class GatherRouteExec : IDisposable
             return;
         }
 
-        if (wp.InteractWithOID != default && wp.IsNode && Player.Job != wp.NodeJob)
+        if (wp.InteractWithOID != default && !Player.OnIsland && wp.IsNode && Player.Job != wp.NodeJob)
         {
             // must be done before movement or nodes will be skipped
             P.TaskManager.Enqueue(() => Player.SwitchJob(wp.NodeJob));
