@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
+using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ExdSheets.Sheets;
 using ImGuiNET;
@@ -17,9 +18,15 @@ public unsafe class GatherDebug(GatherRouteExec exec)
     {
         using var child = ImRaii.Child("child");
         if (!child) return;
+        if (!Player.Available) return;
 
-        if (Player.Available)
-            ImGuiEx.Text($"{Player.Dismounting} {Player.FlyingControlType}");
+        if (Svc.Targets.Target != null)
+        {
+            Utils.DrawSection("Target", ImGuiColors.ParsedGold);
+            var t = Svc.Targets.Target;
+            ImGuiEx.Text($"IsNode: {Utils.GetSheet<GatheringPoint>().HasRow(t.DataId)}");
+            ImGuiEx.Text($"GatheringType: {Utils.GetRow<GatheringPoint>(t.DataId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
+        }
         if (exec.CurrentRoute != null && exec.CurrentRoute.TargetGatherItem != default)
         {
             Utils.DrawSection("Target Item", ImGuiColors.ParsedGold);

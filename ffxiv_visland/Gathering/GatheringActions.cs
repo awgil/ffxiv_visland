@@ -1,5 +1,6 @@
 ﻿using ECommons.DalamudServices;
 using ECommons.ExcelServices;
+using ECommons.Logging;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -123,12 +124,12 @@ internal class GatheringActions
         var action = GetNextBestAction(am, item);
         if (action == 0)
         {
-            Svc.Log.Info($"Gathering {item.ItemName}");
+            PluginLog.Information($"Gathering {item.ItemName}");
             item.Gather();
         }
         else
         {
-            Svc.Log.Info($"Using {Utils.GetRow<Action>(action)?.Name}");
+            PluginLog.Information($"Using {Utils.GetRow<Action>(action)?.Name}");
             P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
         }
     }
@@ -188,7 +189,7 @@ internal class GatheringActions
         var action = GetNextBestAction(am);
         if (action == 0) return;
 
-        Svc.Log.Info($"Using {Utils.GetRow<Action>(action)?.Name}");
+        PluginLog.Information($"Using {Utils.GetRow<Action>(action)?.Name}");
         P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
     }
 

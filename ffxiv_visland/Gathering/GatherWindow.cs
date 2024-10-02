@@ -7,6 +7,7 @@ using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
+using ECommons.Logging;
 using ECommons.SimpleGui;
 using ExdSheets;
 using ExdSheets.Sheets;
@@ -99,6 +100,9 @@ public class GatherWindow : Window, IDisposable
             //using (var tab = ImRaii.TabItem("Shopping"))
             //    if (tab)
             //        _autoGather.Draw();
+            using (var tab = ImRaii.TabItem("Log"))
+                if (tab)
+                    InternalLog.PrintImgui();
             using (var tab = ImRaii.TabItem("Debug"))
                 if (tab)
                     _debug.Draw();
@@ -107,7 +111,7 @@ public class GatherWindow : Window, IDisposable
 
     private void DrawExecution()
     {
-        ImGui.Text("Status: ");
+        ImGuiEx.Text("Status: ");
         ImGui.SameLine();
 
         if (Exec.CurrentRoute != null)
@@ -123,14 +127,17 @@ public class GatherWindow : Window, IDisposable
         if (Exec.CurrentRoute != null) // Finish() call could've reset it
         {
             ImGui.SameLine();
-            ImGui.Text($"{Exec.CurrentRoute.Name}: Step #{Exec.CurrentWaypoint + 1} {Exec.CurrentRoute.Waypoints[Exec.CurrentWaypoint].Position}");
+            ImGuiEx.Text($"{Exec.CurrentRoute.Name}: Step #{Exec.CurrentWaypoint + 1} {Exec.CurrentRoute.Waypoints[Exec.CurrentWaypoint].Position}");
 
             if (Exec.Waiting)
             {
                 ImGui.SameLine();
-                ImGui.Text($"waiting {Exec.WaitUntil - System.Environment.TickCount64}ms");
+                ImGuiEx.Text($"waiting {Exec.WaitUntil - System.Environment.TickCount64}ms");
             }
         }
+
+        ImGui.SameLine();
+        ImGuiEx.Text($"State: {Exec.CurrentState}");
     }
 
     private unsafe void DrawSidebar(Vector2 size)

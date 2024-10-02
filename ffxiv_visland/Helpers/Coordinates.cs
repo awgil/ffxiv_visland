@@ -1,4 +1,5 @@
 ﻿using ECommons.DalamudServices;
+using ECommons.Logging;
 using ExdSheets;
 using ExdSheets.Sheets;
 using System;
@@ -35,7 +36,7 @@ internal class Coordinates
                 var mapMarker = Utils.FindRow<MapMarker>(m => m.DataType == 3 && m.DataKey.RowId == data.RowId);
                 if (mapMarker == null)
                 {
-                    Svc.Log.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
+                    PluginLog.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
                     continue;
                 }
                 var AethersX = ConvertMapMarkerToMapCoordinate(mapMarker.Value.X, 100);

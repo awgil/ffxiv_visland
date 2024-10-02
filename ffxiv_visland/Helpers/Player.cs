@@ -3,6 +3,7 @@ using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.ClientState.Statuses;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
+using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
@@ -112,7 +113,7 @@ public unsafe static class Player
             if (!RaptureGearsetModule.Instance()->IsValidGearset(gs.Id)) continue;
             if ((Job)gs.ClassJob == job)
             {
-                Svc.Log.Debug($"Switching from {Job} to {job} (gs: {gs.Id}/{gs.NameString})");
+                PluginLog.Debug($"Switching from {Job} to {job} (gs: {gs.Id}/{gs.NameString})");
                 return gearsets->EquipGearset(gs.Id) == 0;
             }
         }

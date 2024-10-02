@@ -129,6 +129,21 @@ public class Retainers
         }
     }
 
+    public uint NextReturn
+    {
+        get
+        {
+            try
+            {
+                return API.GetRegisteredCharacters().Where(c => API.GetOfflineCharacterData(c).Enabled).Min(c => API.GetOfflineCharacterData(c).OfflineSubmarineData.Min(x => x.ReturnTime));
+            }
+            catch (IpcNotReadyError)
+            {
+                return 0;
+            }
+        }
+    }
+
     public ulong GetPreferredCharacter()
     {
         try

@@ -3,6 +3,7 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Conditions;
 using ECommons;
 using ECommons.DalamudServices;
+using ECommons.Logging;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
@@ -47,10 +48,10 @@ internal class PurificationManager
     public static unsafe void PurifyItem(Pointer<InventoryItem> item)
     {
         var agent = AgentPurify.Instance();
-        if (agent == null) { Svc.Log.Debug("AgentPurify is null"); return; }
+        if (agent == null) { PluginLog.Debug("AgentPurify is null"); return; }
 
         agent->ReduceItem(item);
-        Svc.Log.Debug($"Reducing [{item.Value->ItemId}] {item.Value->Container}/{item.Value->Slot}");
+        PluginLog.Debug($"Reducing [{item.Value->ItemId}] {item.Value->Container}/{item.Value->Slot}");
     }
 
     private static unsafe bool IsResultsOpen() => GenericHelpers.TryGetAddonByName<AtkUnitBase>("PurifyResult", out var results) && results->IsVisible;
@@ -60,7 +61,7 @@ internal class PurificationManager
     {
         if (!ListenersActive)
         {
-            Svc.Log.Debug("Enabling PurifyResult listeners");
+            PluginLog.Debug("Enabling PurifyResult listeners");
             Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
             ListenersActive = true;
         }
@@ -70,7 +71,7 @@ internal class PurificationManager
     {
         if (ListenersActive)
         {
-            Svc.Log.Debug("Disabling PurifyResult listeners");
+            PluginLog.Debug("Disabling PurifyResult listeners");
             Svc.AddonLifecycle.UnregisterListener(ResultsSetup);
             ListenersActive = false;
         }
