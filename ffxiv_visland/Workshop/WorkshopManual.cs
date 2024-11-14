@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 
@@ -17,7 +17,7 @@ public class WorkshopManual
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         foreach (var row in sheetCraft)
         {
-            var name = row.Item.Value?.Name.ToString() ?? "";
+            var name = row.Item.Value.Name.ToString() ?? "";
             if (name.Length == 0 || !name.Contains(_filter, StringComparison.InvariantCultureIgnoreCase))
                 continue;
             DrawRowCraft(row, false);
@@ -33,7 +33,7 @@ public class WorkshopManual
 
     private void DrawRowCraft(MJICraftworksObject row, bool fromRecent)
     {
-        var name = row.Item.Value?.Name.ToString() ?? "???";
+        var name = row.Item.Value.Name.ToString() ?? "???";
         ImGui.PushID((int)row.RowId * 2 + (fromRecent ? 1 : 0));
         if (ImGui.Button("+1"))
             AddToSchedule(row, 1);

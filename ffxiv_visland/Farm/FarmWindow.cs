@@ -3,7 +3,7 @@ using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using visland.Helpers;
 
 namespace visland.Farm;
@@ -164,7 +164,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             return CollectResult.NothingToCollect;
 
         var sheet = Service.LuminaGameData.GetExcelSheet<MJICropSeed>()!;
-        var perCropYield = new int[sheet.RowCount];
+        var perCropYield = new int[sheet.Count];
         for (var i = 0; i < 20; ++i)
         {
             var seed = mji->FarmState->SeedType[i];
@@ -181,7 +181,7 @@ public unsafe class FarmWindow : UIAttachedWindow
             if (perCropYield[i] == 0)
                 continue;
 
-            var inventory = Utils.NumItems(sheet.GetRow((uint)i)!.Item.Row);
+            var inventory = Utils.NumItems(sheet.GetRow((uint)i)!.Item.RowId);
             allFull &= inventory >= 999;
             anyOvercap |= inventory + perCropYield[i] > 999;
         }

@@ -31,11 +31,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.12" />
-    <PackageReference Include="ExdSheets" Version="2.1.0" />
-	<PackageReference Include="Lumina" Version="4.1.1" ExcludeAssets="all" />
+    <PackageReference Include="DalamudPackager" Version="11.0.0" />
+	<PackageReference Include="Lumina" Version="5.2.1" ExcludeAssets="all" />
+	<PackageReference Include="Lumina.Excel" Version="7.1.0" />
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
-    <PackageReference Include="YamlDotNet" Version="16.0.0" />
+    <PackageReference Include="YamlDotNet" Version="16.2.0" />
     <Reference Include="Newtonsoft.Json">
         <HintPath>$(DalamudLibPath)Newtonsoft.Json.dll</HintPath>
         <Private>false</Private>

@@ -25,16 +25,19 @@ public unsafe static class Player
     public static StatusList Status => Service.ClientState.LocalPlayer.StatusList;
     public static string Name => Service.ClientState.LocalPlayer?.Name.ToString();
     public static int Level => Service.ClientState.LocalPlayer?.Level ?? 0;
-    public static bool IsInHomeWorld => Service.ClientState.LocalPlayer.HomeWorld.Id == Service.ClientState.LocalPlayer.CurrentWorld.Id;
-    public static string HomeWorld => Service.ClientState.LocalPlayer?.HomeWorld.GameData.Name.ToString();
-    public static string CurrentWorld => Service.ClientState.LocalPlayer?.CurrentWorld.GameData.Name.ToString();
+    public static bool IsInHomeWorld => Service.ClientState.LocalPlayer.HomeWorld.Value.RowId == Service.ClientState.LocalPlayer.CurrentWorld.Value.RowId;
+    public static string HomeWorld => Service.ClientState.LocalPlayer?.HomeWorld.Value.Name.ToString();
+    public static string CurrentWorld => Service.ClientState.LocalPlayer?.CurrentWorld.Value.Name.ToString();
     public static Character* Character => (Character*)Service.ClientState.LocalPlayer.Address;
     public static BattleChara* BattleChara => (BattleChara*)Service.ClientState.LocalPlayer.Address;
     public static GameObject* GameObject => (GameObject*)Service.ClientState.LocalPlayer.Address;
     public static uint Territory => Service.ClientState.TerritoryType;
     public static bool Mounted => Service.Condition[ConditionFlag.Mounted];
     public static bool Mounting => Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
-    public static unsafe bool Dismounting => **(byte**)(Service.ClientState.LocalPlayer.Address + 1432) == 1;
+
+    // TODO: find again
+    public static unsafe bool Dismounting => false;
+        //**(byte**)(Service.ClientState.LocalPlayer.Address + 1432) == 1;
     public static bool Jumping => Service.Condition[ConditionFlag.Jumping] || Service.Condition[ConditionFlag.Jumping61];
     public static bool OnIsland => MJIManager.Instance()->IsPlayerInSanctuary == 1;
     public static bool Normal => Service.Condition[ConditionFlag.NormalConditions];
@@ -79,7 +82,7 @@ public unsafe static class Player
     }
 
     public static Job Job => GetJob(Svc.ClientState.LocalPlayer);
-    public static Job GetJob(this IPlayerCharacter pc) => (Job)pc.ClassJob.Id;
+    public static Job GetJob(this IPlayerCharacter pc) => (Job)pc.ClassJob.RowId;
 
     public static unsafe void EatFood(int id)
     {

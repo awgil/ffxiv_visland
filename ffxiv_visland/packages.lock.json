@@ -4,26 +4,26 @@
     "net8.0-windows7.0": {
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[2.1.12, )",
-        "resolved": "2.1.12",
-        "contentHash": "Sc0PVxvgg4NQjcI8n10/VfUQBAS4O+Fw2pZrAqBdRMbthYGeogzu5+xmIGCGmsEZ/ukMOBuAqiNiB5qA3MRalg=="
-      },
-      "ExdSheets": {
-        "type": "Direct",
-        "requested": "[2.1.0, )",
-        "resolved": "2.1.0",
-        "contentHash": "SfvLFyL8LYsW4AzPLFVfFwtKPl9xegGraIe9oFar3IlWW8Z4kf5dkM+1CiSr/J+PQt4xt2QZc/ydZ4ibs3RosA==",
-        "dependencies": {
-          "Lumina": "4.1.1"
-        }
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "bjT7XUlhIJSmsE/O76b7weUX+evvGQctbQB8aKXt94o+oPWxHpCepxAGMs7Thow3AzCyqWs7cOpp9/2wcgRRQA=="
       },
       "Lumina": {
         "type": "Direct",
-        "requested": "[4.1.1, )",
-        "resolved": "4.1.1",
-        "contentHash": "Hd+iTtdaPACTpViXaJ/+sQ3ZQ8MEpApCSD+mxTXnUTYDSZOAipuC4LsZqhAkLMeQHSK/R/jiXEXaXS7e0mTXyA==",
+        "requested": "[5.2.1, )",
+        "resolved": "5.2.1",
+        "contentHash": "WQld2p7eWfcItfxjFwvySpiuUCT+fmJWh9GdCHgKS7vOjYGhPH6SWq6gh0ie+vHp0eaSIB2Tigv6i4qKT+HRSA==",
         "dependencies": {
-          "Microsoft.Extensions.ObjectPool": "9.0.0-preview.1.24081.5"
+          "Microsoft.Extensions.ObjectPool": "8.0.7"
+        }
+      },
+      "Lumina.Excel": {
+        "type": "Direct",
+        "requested": "[7.1.0, )",
+        "resolved": "7.1.0",
+        "contentHash": "rDlA336de7au4VKiEv8XhnmWSLqpJLrcRE9rGeJATj27lljm9aPkERPavifu0bWyrIy0GGhpan2w1dMJw8I25A==",
+        "dependencies": {
+          "Lumina": "5.2.1"
         }
       },
       "SharpDX.Mathematics": {
@@ -38,14 +38,14 @@
       },
       "YamlDotNet": {
         "type": "Direct",
-        "requested": "[16.0.0, )",
-        "resolved": "16.0.0",
-        "contentHash": "kZ4jR5ltFhnjaUqK9x81zXRIUTH4PTXTTEmJDNQdkDLQhcv+2Nl19r0dCSvPW1mstOYBfXTnjdieRbUO6gHMDw=="
+        "requested": "[16.2.0, )",
+        "resolved": "16.2.0",
+        "contentHash": "iKVYog7JNiFOTr4gMHSjCqrGFD2NyABUHgSkRq9XR8A2+fsWepSWTpjHAOnKo1LVAHjy33o6I0u6lo5Ng0NtAw=="
       },
       "Microsoft.Extensions.ObjectPool": {
         "type": "Transitive",
-        "resolved": "9.0.0-preview.1.24081.5",
-        "contentHash": "aAR7YW+pUUdvHk3vj7GtAi71dWGDIuY9270lsmQ6lKw23zzY+r8pLP3cGNbJdlnA9VWl+S+gnIVkBCqj2ROlEg=="
+        "resolved": "8.0.7",
+        "contentHash": "2yLweyqmpuuFSRo+I3sLHMxmnAgNcI537kBJiyv49U2ZEqo00jZcG8lrnD8uCiOJp9IklYyTZULtbsXoFVzsjQ=="
       },
       "Microsoft.NETCore.Platforms": {
         "type": "Transitive",

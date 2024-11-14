@@ -1,8 +1,9 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
+using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
-using ExdSheets.Sheets;
 using ImGuiNET;
+using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -28,16 +29,16 @@ public class GatherRouteDB : Configuration.Node
     {
         None = 0,
         Standard = 1,
-        Emote = 2,
-        UseItem = 3,
-        UseAction = 4,
+        //Emote = 2,
+        //UseItem = 3,
+        //UseAction = 4,
         //QuestTalk = 5,
-        Grind = 6,
+        //Grind = 6,
         //PickupQuest = 7,
         //TurninQuest = 8,
         StartRoute = 9,
-        EquipRecommendedGear = 10,
-        ChatCommand = 11,
+        //EquipRecommendedGear = 10,
+        //ChatCommand = 11,
         NodeScan = 12,
     }
 
@@ -93,8 +94,8 @@ public class GatherRouteDB : Configuration.Node
         public int WaitTimeMs;
         public Vector2 WaitTimeET;
 
-        public uint GatheringType => IsNode ? Utils.GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
-        public bool IsNode => Utils.GetSheet<GatheringPoint>().HasRow(InteractWithOID);
+        public uint GatheringType => IsNode ? GenericHelpers.GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
+        public bool IsNode => GenericHelpers.GetSheet<GatheringPoint>().HasRow(InteractWithOID);
         public Job NodeJob
         {
             get

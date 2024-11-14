@@ -1,7 +1,7 @@
 ﻿using Dalamud.Memory;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using System.Runtime.CompilerServices;
 using visland.Helpers;
 
@@ -22,14 +22,14 @@ public unsafe class PastureDebug
             {
                 foreach (var (k, v) in mgr->PastureHandler->AnimalToLeavingItemIds)
                 {
-                    _tree.LeafNode($"{k} = {v.Item1} '{sheetItem.GetRow(v.Item1)?.Name}' / {v.Item2} '{sheetItem.GetRow(v.Item2)?.Name}'");
+                    _tree.LeafNode($"{k} = {v.Item1} '{sheetItem.GetRow(v.Item1).Name}' / {v.Item2} '{sheetItem.GetRow(v.Item2).Name}'");
                 }
             }
             foreach (var n2 in _tree.Node("Available Leavings"))
             {
                 foreach (var (k, v) in mgr->PastureHandler->AvailableMammetLeavings)
                 {
-                    _tree.LeafNode($"{k} '{sheetItem.GetRow(k)?.Name}' = {v}");
+                    _tree.LeafNode($"{k} '{sheetItem.GetRow(k).Name}' = {v}");
                 }
             }
             foreach (var n2 in _tree.Node("Animals"))
@@ -38,7 +38,7 @@ public unsafe class PastureDebug
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
                 foreach (ref var a in mgr->PastureHandler->MJIAnimals)
                 {
-                    var baseName = sheetName.GetRow(a.BNPCNameId)?.Singular;
+                    var baseName = sheetName.GetRow(a.BNPCNameId).Singular;
                     var pa = (byte*)Unsafe.AsPointer(ref a);
                     foreach (var n3 in _tree.Node($"{a.SlotId} '{baseName}'"))
                     {
@@ -49,7 +49,7 @@ public unsafe class PastureDebug
                         _tree.LeafNode($"Mood={a.Mood}, food={a.FoodLevel} hours");
                         _tree.LeafNode($"Have leavings: {a.ManualLeavingsAvailable}");
                         _tree.LeafNode($"Care: cared={a.UnderCare}, paid={a.WasUnderCare}, halted={a.CareHalted}");
-                        _tree.LeafNode($"Mammet Food: {food?.RowId} '{food?.Name}");
+                        _tree.LeafNode($"Mammet Food: {food.RowId} '{food.Name}");
                         _tree.LeafNode($"Mammet Collect: {a.AutoAvailableLeavings1} / {a.AutoAvailableLeavings2}");
                     }
                 }
@@ -76,7 +76,7 @@ public unsafe class PastureDebug
                         _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"Rarity: {a.Desc.Rarity}");
                         _tree.LeafNode($"Sort: {a.Desc.Sort}");
-                        _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{sheetItem.GetRow(a.Desc.Leaving1ItemId)?.Name}' / {a.Desc.Leaving2ItemId} '{sheetItem.GetRow(a.Desc.Leaving2ItemId)?.Name}'");
+                        _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{sheetItem.GetRow(a.Desc.Leaving1ItemId).Name}' / {a.Desc.Leaving2ItemId} '{sheetItem.GetRow(a.Desc.Leaving2ItemId).Name}'");
                         _tree.LeafNode($"Food: {a.FoodItemId} '{a.FoodName}' ({a.FoodLink}) {a.FoodItemCategoryId} {a.FoodCount}");
                         _tree.LeafNode($"Tail: leavings={a.HaveUngatheredLeavings} cared={a.UnderCare}, paid={a.WasCared}, halted={a.CareHalted}");
                     }
@@ -87,11 +87,11 @@ public unsafe class PastureDebug
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
                 foreach (ref readonly var a in agent->AnimalDescs.AsSpan())
                 {
-                    foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{sheetName.GetRow(a.BNpcNameId)?.Singular}"))
+                    foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{sheetName.GetRow(a.BNpcNameId).Singular}"))
                     {
                         _tree.LeafNode($"Rarity: {a.Rarity}");
                         _tree.LeafNode($"Sort: {a.Sort}");
-                        _tree.LeafNode($"Rewards: {a.Leaving1ItemId} '{sheetItem.GetRow(a.Leaving1ItemId)?.Name}' / {a.Leaving2ItemId} '{sheetItem.GetRow(a.Leaving2ItemId)?.Name}'");
+                        _tree.LeafNode($"Rewards: {a.Leaving1ItemId} '{sheetItem.GetRow(a.Leaving1ItemId).Name}' / {a.Leaving2ItemId} '{sheetItem.GetRow(a.Leaving2ItemId).Name}'");
                     }
                 }
             }

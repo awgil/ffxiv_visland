@@ -3,13 +3,14 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
+using ECommons;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using ImGuiNET;
 using Lumina.Data;
 using Lumina.Excel;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,7 @@ public unsafe class WorkshopOCImport
     {
         _config = Service.Config.Get<WorkshopConfig>();
         _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(ClientLanguage.English.ToLumina())!;
-        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.Value?.Name ?? "")).ToList();
+        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.Value.Name.ToString())).ToList();
     }
 
     public void Update()
@@ -207,8 +208,8 @@ public unsafe class WorkshopOCImport
         {
             var id = state->CraftObjectIds[offset + i];
             // the bot doesn't like names with apostrophes because it "breaks their formulas"
-            var name = sheetCraft.GetRow(id)?.Item.Value?.Name;
-            if (name != null)
+            var name = sheetCraft.GetRow(id).Item.Value.Name;
+            if (!name.IsEmpty)
                 res += $" favor{i + 1}:{_botNames[id].Replace("\'", "")}";
         }
         return res;
@@ -331,14 +332,14 @@ public unsafe class WorkshopOCImport
             }
             else if (TryParseItem(l) is var item && item != null)
             {
-                if (nextSlot + item.CraftingTime > 24)
+                if (nextSlot + item.Value.CraftingTime > 24)
                 {
                     // start next workshop schedule
                     curRec.Workshops.Add(new());
                     nextSlot = 0;
                 }
-                curRec.Workshops.Last().Add(nextSlot, item.RowId);
-                nextSlot += item.CraftingTime;
+                curRec.Workshops.Last().Add(nextSlot, item.Value.RowId);
+                nextSlot += item.Value.CraftingTime;
             }
         }
         // complete current cycle; if the number was not known, assume it is tomorrow.
@@ -403,14 +404,14 @@ public unsafe class WorkshopOCImport
             }
             else if (TryParseItem(l) is var item && item != null)
             {
-                if (nextSlot + item.CraftingTime > 24)
+                if (nextSlot + item.Value.CraftingTime > 24)
                 {
                     // start next workshop schedule
                     result.Add(new());
                     nextSlot = 0;
                 }
-                result.Last().Add(nextSlot, item.RowId);
-                nextSlot += item.CraftingTime;
+                result.Last().Add(nextSlot, item.Value.RowId);
+                nextSlot += item.Value.CraftingTime;
             }
         }
 

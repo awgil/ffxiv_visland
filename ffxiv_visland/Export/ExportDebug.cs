@@ -1,5 +1,5 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using visland.Helpers;
 
 namespace visland.Export;
@@ -18,8 +18,8 @@ public unsafe class ExportDebug
             _tree.LeafNode($"OpHandler: {(nint)opHandler:X}, vtable=+{(nint)opHandler->AtkEventInterface.VirtualTable - Service.SigScanner.Module.BaseAddress:X}, obj={*(nint*)((nint)opHandler + 0x10):X}");
             _tree.LeafNode($"Unk2C: {agent->Data->u2C}");
             _tree.LeafNode($"Init: stage={agent->Data->InitializationState}, data-init={agent->Data->DataInitialized}, dirty={agent->Data->AddonDirty}");
-            _tree.LeafNode($"Currency 0: {agent->Data->CurrencyItemIds[0]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[0])?.Name}': {agent->Data->CurrencyCounts[0]}/{agent->Data->CurrencyStackSizes[0]}");
-            _tree.LeafNode($"Currency 1: {agent->Data->CurrencyItemIds[1]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[1])?.Name}': {agent->Data->CurrencyCounts[1]}/{agent->Data->CurrencyStackSizes[1]}");
+            _tree.LeafNode($"Currency 0: {agent->Data->CurrencyItemIds[0]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[0]).Name}': {agent->Data->CurrencyCounts[0]}/{agent->Data->CurrencyStackSizes[0]}");
+            _tree.LeafNode($"Currency 1: {agent->Data->CurrencyItemIds[1]} '{sheetItem.GetRow(agent->Data->CurrencyItemIds[1]).Name}': {agent->Data->CurrencyCounts[1]}/{agent->Data->CurrencyStackSizes[1]}");
             _tree.LeafNode($"Cur category: {agent->Data->CurSelectedCategory} '{agent->Data->CategoryNames.AsSpan()[agent->Data->CurSelectedCategory]}'");
             _tree.LeafNode($"Cur ship item: {agent->Data->CurShipItemIndex} qty={agent->Data->CurShipQuantity}");
             _tree.LeafNode($"Cur ship bulk: limit={agent->Data->CurBulkShiptLimit} stage={agent->Data->CurBulkShipCheckStage}");

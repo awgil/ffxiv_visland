@@ -1,7 +1,8 @@
-﻿using ECommons.DalamudServices;
+﻿using ECommons;
+using ECommons.DalamudServices;
 using ECommons.Logging;
-using ExdSheets;
-using ExdSheets.Sheets;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -9,7 +10,7 @@ using System.Numerics;
 namespace visland.Helpers;
 internal class Coordinates
 {
-    public static Sheet<Aetheryte> Aetherytes = Utils.GetSheet<Aetheryte>()!;
+    public static ExcelSheet<Aetheryte> Aetherytes = GenericHelpers.GetSheet<Aetheryte>()!;
 
     public static float ConvertMapMarkerToMapCoordinate(float pos, float scale)
     {
@@ -33,7 +34,7 @@ internal class Coordinates
             if (!data.IsAetheryte) continue;
             if (data.Territory.Value.RowId == zoneID)
             {
-                var mapMarker = Utils.FindRow<MapMarker>(m => m.DataType == 3 && m.DataKey.RowId == data.RowId);
+                var mapMarker = GenericHelpers.FindRow<MapMarker>(m => m!.DataType == 3 && m.DataKey.RowId == data.RowId);
                 if (mapMarker == null)
                 {
                     PluginLog.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");

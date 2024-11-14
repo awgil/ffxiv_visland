@@ -1,12 +1,9 @@
-﻿using Dalamud.Game;
-using Dalamud.Interface.Components;
+﻿using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using Dalamud.Utility;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.Reflection;
-using ExdSheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -17,7 +14,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -235,24 +231,6 @@ public static unsafe class Utils
 
         return clicked;
     }
-
-    public static Sheet<T> GetSheet<T>(ClientLanguage? language = null) where T : struct, ISheetRow<T>
-        => Service.Module.GetSheet<T>((language ?? Svc.ClientState.ClientLanguage).ToLumina());
-
-    public static int GetRowCount<T>() where T : struct, ISheetRow<T>
-        => GetSheet<T>().Count;
-
-    public static T? GetRow<T>(uint rowId, ClientLanguage? language = null) where T : struct, ISheetRow<T>
-        => GetSheet<T>(language).TryGetRow(rowId);
-
-    public static T? GetRow<T>(uint rowId, ushort subRowId, ClientLanguage? language = null) where T : struct, ISheetRow<T>
-        => GetSheet<T>(language).TryGetRow(rowId, subRowId);
-
-    public static T? FindRow<T>(Func<T, bool> predicate) where T : struct, ISheetRow<T>
-         => GetSheet<T>().FirstOrDefault(predicate);
-
-    public static T[] FindRows<T>(Func<T, bool> predicate) where T : struct, ISheetRow<T>
-        => GetSheet<T>().Where(predicate).ToArray();
 
     public static int EorzeanHour() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Hour;
     public static int EorzeanMinute() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Minute;

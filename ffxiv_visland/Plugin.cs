@@ -211,8 +211,6 @@ public sealed class Plugin : IDalamudPlugin
 
     private void CheckIPC()
     {
-        if (Utils.HasPlugin(BossModIPC.Name))
-            BossModIPC.Init();
         if (Utils.HasPlugin(NavmeshIPC.Name))
             NavmeshIPC.Init();
     }

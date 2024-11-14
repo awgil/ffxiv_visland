@@ -5,13 +5,15 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using Dalamud.Utility;
+using ECommons;
 using ECommons.DalamudServices;
+using ECommons.ExcelServices;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.SimpleGui;
-using ExdSheets;
-using ExdSheets.Sheets;
 using ImGuiNET;
+using Lumina.Excel;
+using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -36,13 +38,13 @@ public class GatherWindow : Window, IDisposable
     private int selectedRouteIndex = -1;
     public static bool loop;
 
-    private readonly List<uint> Colours = Utils.GetSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
+    private readonly List<uint> Colours = GenericHelpers.GetSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
 
-    private readonly List<int> Items = Utils.GetSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
-    private Sheet<Item> _items = null!;
+    private readonly List<int> Items = GenericHelpers.GetSheet<Item>()?.Select(x => (int)x.RowId).ToList()!;
+    private ExcelSheet<Item> _items = null!;
 
     private string searchString = string.Empty;
     private readonly List<Route> FilteredRoutes = [];
@@ -56,7 +58,7 @@ public class GatherWindow : Window, IDisposable
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
         _debug = new(Exec);
-        _items = Utils.GetSheet<Item>()!;
+        _items = GenericHelpers.GetSheet<Item>()!;
     }
 
     public void Setup()
@@ -66,7 +68,7 @@ public class GatherWindow : Window, IDisposable
         RouteDB = Service.Config.Get<GatherRouteDB>();
 
         _debug = new(Exec);
-        _items = Utils.GetSheet<Item>()!;
+        _items = GenericHelpers.GetSheet<Item>()!;
     }
 
     public void Dispose() => Exec.Dispose();
@@ -285,11 +287,11 @@ public class GatherWindow : Window, IDisposable
                 RouteDB.NotifyModified();
             if (ImGui.Checkbox("Purify collectables during routes", ref RouteDB.PurifyCollectables))
                 RouteDB.NotifyModified();
-            ImGuiComponents.HelpMarker($"Also known as {Utils.GetRow<Addon>(2160)!.Value.Text}");
+            ImGuiComponents.HelpMarker($"Also known as {GenericHelpers.GetRow<Addon>(2160)!.Value.Text}");
             if (ImGui.Checkbox("Check AutoRetainer during routes", ref RouteDB.AutoRetainerIntegration))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker($"Will enable multi mode when you have any retainers or submarines returned across any enabled characters. Requires the current character to be set as the Preferred Character and the Teleport to FC config enabled in AutoRetainer.");
-            if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {Utils.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
+            if (ExcelCombos.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {GenericHelpers.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
             {
                 RouteDB.GlobalFood = (int)i.RowId;
                 RouteDB.NotifyModified();
@@ -420,7 +422,7 @@ public class GatherWindow : Window, IDisposable
             {
                 ImGuiEx.TextV("Item Target: ");
                 ImGui.SameLine();
-                if (UICombo.ExcelSheetCombo("##Gatherables", out GatheringItem gatherable, _ => $"[{route.TargetGatherItem}] {Utils.GetRow<Item>((uint)route.TargetGatherItem)?.Name.ToString()}", x => $"[{x.RowId}] {Utils.GetRow<Item>(x.Item.RowId)?.Name.ToString()}", x => x.Item.RowId != 0))
+                if (ExcelCombos.ExcelSheetCombo("##Gatherables", out GatheringItem gatherable, _ => $"[{route.TargetGatherItem}] {GenericHelpers.GetRow<Item>((uint)route.TargetGatherItem)?.Name.ToString()}", x => $"[{x.RowId}] {GenericHelpers.GetRow<Item>(x.Item.RowId)?.Name.ToString()}", x => x.Item.RowId != 0))
                 {
                     route.TargetGatherItem = (int)gatherable.Item.RowId;
                     RouteDB.NotifyModified();
@@ -459,7 +461,7 @@ public class GatherWindow : Window, IDisposable
         if (!popup) return;
 
         Utils.DrawSection("Route Settings", ImGuiColors.ParsedGold);
-        if (UICombo.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {Utils.GetRow<Item>((uint)route.Food)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
+        if (ExcelCombos.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {GenericHelpers.GetRow<Item>((uint)route.Food)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
         {
             route.Food = (int)i.RowId;
             RouteDB.NotifyModified();
@@ -581,86 +583,8 @@ public class GatherWindow : Window, IDisposable
             {
                 case InteractionType.None: break;
                 case InteractionType.Standard: break;
-                case InteractionType.Emote:
-                    if (UICombo.ExcelSheetCombo("##Emote", out Emote emote, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Name}", x => !x.Name.ToString().IsNullOrEmpty()))
-                    {
-                        wp.EmoteID = (int)emote.RowId;
-                        RouteDB.NotifyModified();
-                    }
-                    break;
-                case InteractionType.UseItem:
-                    ImGui.PushItemWidth(100);
-                    if (ImGui.DragInt($"Item {_items.GetRow((uint)wp.ItemID).Name}###{nameof(InteractionType.UseItem)}", ref wp.ItemID, 1, Items.First(), Items.Last()))
-                        RouteDB.NotifyModified();
-                    break;
-                case InteractionType.UseAction:
-                    if (UICombo.ExcelSheetCombo("##Action", out ExdSheets.Sheets.Action action, _ => $"{wp.ActionID}", x => $"[{x.RowId}] {x.Name}", x => x.ClassJobCategory.RowId > 0 && x.ActionCategory.RowId <= 4 && x.RowId > 8))
-                    {
-                        wp.ActionID = (int)action.RowId;
-                        RouteDB.NotifyModified();
-                    }
-                    break;
-                //case InteractionType.PickupQuest:
-                //    if (UICombo.ExcelSheetCombo("##PickupQuest", ref wp.QuestID, UICombo.questComboOptions))
-                //        RouteDB.NotifyModified();
-                //    break;
-                //case InteractionType.TurninQuest:
-                //    if (UICombo.ExcelSheetCombo("##TurninQuest", ref wp.QuestID, UICombo.questComboOptions))
-                //        RouteDB.NotifyModified();
-                //    break;
-                case InteractionType.Grind:
-                    using (var noVbm = ImRaii.Disabled(!Utils.HasPlugin(BossModIPC.Name)))
-                    {
-                        if (UICombo.ExcelSheetCombo("##Mob", out BNpcName mob, _ => $"{wp.EmoteID}", x => $"[{x.RowId}] {x.Singular}", x => !x.Singular.ToString().IsNullOrEmpty()))
-                        {
-                            wp.MobID = (int)mob.RowId;
-                            RouteDB.NotifyModified();
-                        }
-                    }
-                    if (!Utils.HasPlugin(BossModIPC.Name))
-                        if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) ImGui.SetTooltip($"This features requires {BossModIPC.Name} to be installed.");
-
-                    if (wp.MobID != default)
-                    {
-                        if (UICombo.Enum("Grind Condition", ref wp.StopCondition))
-                            RouteDB.NotifyModified();
-                        switch (wp.StopCondition)
-                        {
-                            case GrindStopConditions.None: break;
-                            case GrindStopConditions.Kills:
-                                ImGui.PushItemWidth(100);
-                                if (Utils.EditNumberField($"Kill", 25, ref wp.KillCount, " times"))
-                                    RouteDB.NotifyModified();
-                                break;
-                            case GrindStopConditions.QuestSequence:
-                                if (UICombo.ExcelSheetCombo("##QuestSequence", out Quest qs, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.ToString().Length > 0))
-                                {
-                                    wp.QuestID = (int)qs.RowId;
-                                    RouteDB.NotifyModified();
-                                }
-                                ImGui.SameLine();
-                                if (Utils.EditNumberField($"Sequence = ", 25, ref wp.QuestSeq))
-                                    RouteDB.NotifyModified();
-                                break;
-                            case GrindStopConditions.QuestComplete:
-                                if (UICombo.ExcelSheetCombo("##QuestComplete", out Quest qc, _ => $"{wp.QuestID}", x => $"[{x.RowId}] {x.Name}", x => x.Id.ToString().Length > 0))
-                                {
-                                    wp.QuestID = (int)qc.RowId;
-                                    RouteDB.NotifyModified();
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                case InteractionType.EquipRecommendedGear: break;
                 case InteractionType.StartRoute:
                     if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
-                        RouteDB.NotifyModified();
-                    break;
-                case InteractionType.ChatCommand:
-                    ImGuiEx.TextV("Chat Command: ");
-                    ImGui.SameLine();
-                    if (ImGui.InputText("##chatCommand", ref wp.ChatCommand, 256))
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.NodeScan:

@@ -1,10 +1,11 @@
 ﻿using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
+using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
-using ExdSheets.Sheets;
 using ImGuiNET;
+using Lumina.Excel.Sheets;
 using System.Linq;
 using visland.Helpers;
 
@@ -24,13 +25,13 @@ public unsafe class GatherDebug(GatherRouteExec exec)
         {
             Utils.DrawSection("Target", ImGuiColors.ParsedGold);
             var t = Svc.Targets.Target;
-            ImGuiEx.Text($"IsNode: {Utils.GetSheet<GatheringPoint>().HasRow(t.DataId)}");
-            ImGuiEx.Text($"GatheringType: {Utils.GetRow<GatheringPoint>(t.DataId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
+            ImGuiEx.Text($"IsNode: {GenericHelpers.GetRow<GatheringPoint>(t.DataId)}");
+            ImGuiEx.Text($"GatheringType: {GenericHelpers.GetRow<GatheringPoint>(t.DataId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
         }
         if (exec.CurrentRoute != null && exec.CurrentRoute.TargetGatherItem != default)
         {
             Utils.DrawSection("Target Item", ImGuiColors.ParsedGold);
-            var item = Utils.GetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem)!.Value;
+            var item = GenericHelpers.GetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem)!.Value;
             var wp = exec.CurrentRoute.Waypoints[exec.CurrentWaypoint];
             ImGuiEx.Text($"[{exec.CurrentRoute.TargetGatherItem}] {item.Name}");
             ImGuiEx.Text($"Waypoint: IsNode: {wp.IsNode} Type: {wp.GatheringType} NodeJob: {wp.NodeJob}");

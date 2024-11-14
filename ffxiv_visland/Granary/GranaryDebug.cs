@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System;
 using visland.Helpers;
 
@@ -90,7 +90,7 @@ public unsafe class GranaryDebug
 
     private unsafe void DrawGranaryState(int i, ref MJIGranaryState state)
     {
-        var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state.ActiveExpeditionId + 1u)!.Singular}) {state.RemainingDays}days" : "none";
+        var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state.ActiveExpeditionId + 1u)!.Value.Singular}) {state.RemainingDays}days" : "none";
         foreach (var n in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}"))
         {
             DrawGranaryItem("rare", state.RareResourcePouchId, state.RareResourceCount);
@@ -103,8 +103,8 @@ public unsafe class GranaryDebug
     {
         if (count <= 0)
             return;
-        var item = Service.LuminaRow<MJIItemPouch>(mjiPouchId)!.Item;
-        var avail = Utils.NumItems(item.Row);
+        var item = Service.LuminaRow<MJIItemPouch>(mjiPouchId)!.Value.Item;
+        var avail = Utils.NumItems(item.RowId);
         _tree.LeafNode($"[{prompt}] {mjiPouchId} {item.Value!.Name}: {avail}+{count}");
     }
 }

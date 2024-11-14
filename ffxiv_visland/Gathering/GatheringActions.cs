@@ -1,10 +1,10 @@
-﻿using ECommons.DalamudServices;
+﻿using ECommons;
 using ECommons.ExcelServices;
 using ECommons.Logging;
 using ECommons.UIHelpers.AddonMasterImplementations;
-using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
+using Lumina.Excel.Sheets;
 using System.Linq;
 using visland.Helpers;
 using static visland.Plugin;
@@ -129,7 +129,7 @@ internal class GatheringActions
         }
         else
         {
-            PluginLog.Information($"Using {Utils.GetRow<Action>(action)?.Name}");
+            PluginLog.Information($"Using {GenericHelpers.GetRow<Action>(action)?.Name}");
             P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
         }
     }
@@ -189,7 +189,7 @@ internal class GatheringActions
         var action = GetNextBestAction(am);
         if (action == 0) return;
 
-        PluginLog.Information($"Using {Utils.GetRow<Action>(action)?.Name}");
+        PluginLog.Information($"Using {GenericHelpers.GetRow<Action>(action)?.Name}");
         P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
     }
 
@@ -236,7 +236,7 @@ internal class GatheringActions
 
     private static unsafe bool CanUse((uint Id, ushort buff) action)
     {
-        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(Utils.GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
+        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(GenericHelpers.GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
         if (Player.Object.CurrentGp < ActionManager.GetActionCost(ActionType.Action, action.Id, 0, 0, 0, 0)) return false;
         if (action.buff != 0 && Player.Status.Any(x => x.StatusId == action.buff)) return false;
         return true;

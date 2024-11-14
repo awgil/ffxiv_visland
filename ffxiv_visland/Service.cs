@@ -5,8 +5,6 @@ using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Services;
-using ECommons.DalamudServices;
-using ExdSheets;
 using System;
 using System.Linq;
 using visland.Helpers;
@@ -31,8 +29,8 @@ public class Service
     [PluginService] public static IGameConfig GameConfig { get; private set; } = null!;
 
     public static Lumina.GameData LuminaGameData => DataManager.GameData;
-    public static T? LuminaRow<T>(uint row) where T : Lumina.Excel.ExcelRow => LuminaGameData.GetExcelSheet<T>(Lumina.Data.Language.English)?.GetRow(row);
-    public static Module Module = new(Svc.Data.GameData);
+    public static Lumina.Excel.ExcelSheet<T>? LuminaSheet<T>() where T : struct, Lumina.Excel.IExcelRow<T> => LuminaGameData?.GetExcelSheet<T>(Lumina.Data.Language.English);
+    public static T? LuminaRow<T>(uint row) where T : struct, Lumina.Excel.IExcelRow<T> => LuminaSheet<T>()?.GetRowOrDefault(row);
 
     public static Configuration Config = new();
     public static Retainers Retainers = new();

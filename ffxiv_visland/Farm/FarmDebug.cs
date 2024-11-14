@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using visland.Helpers;
 
 namespace visland.Farm;
@@ -24,7 +24,7 @@ public unsafe class FarmDebug
             {
                 for (var i = 0; i < 20; ++i)
                 {
-                    _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i])?.Name.Value?.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
+                    _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i]).Name.Value.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }
             foreach (var n2 in _tree.Node("Seeds"))
@@ -32,7 +32,7 @@ public unsafe class FarmDebug
                 var i = 0;
                 foreach (var id in mgr->FarmState->SeedItemIds.AsSpan())
                 {
-                    _tree.LeafNode($"{i++} = {id} '{sheetItem.GetRow(id)?.Name}'");
+                    _tree.LeafNode($"{i++} = {id} '{sheetItem.GetRow(id).Name}'");
                 }
             }
         }

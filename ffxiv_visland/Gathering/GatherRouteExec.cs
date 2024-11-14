@@ -7,11 +7,11 @@ using ECommons.CircularBuffers;
 using ECommons.DalamudServices;
 using ECommons.Logging;
 using ECommons.UIHelpers.AddonMasterImplementations;
-using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,7 +65,6 @@ public class GatherRouteExec : IDisposable
 
     private OverrideCamera _camera = new();
     private OverrideMovement _movement = new();
-    private QuestsHelper _qh = new();
 
     private Throttle _interact = new();
     private CircularBuffer<long> Errors = new(5);
@@ -171,7 +170,7 @@ public class GatherRouteExec : IDisposable
         if (food != 0 && Player.HasFood((uint)food) && !Player.HasFoodBuff && Player.AnimationLock == 0)
         {
             SetState(State.Eating);
-            PluginLog.Debug($"Eating {Utils.GetRow<Item>((uint)food)?.Name}");
+            PluginLog.Debug($"Eating {GenericHelpers.GetRow<Item>((uint)food)?.Name}");
             Player.EatFood(food);
             return;
         }
@@ -285,30 +284,6 @@ public class GatherRouteExec : IDisposable
                     return;
                 }
                 break;
-            case GatherRouteDB.InteractionType.Emote:
-                QuestsHelper.EmoteAt((uint)wp.EmoteID, wp.InteractWithOID);
-                break;
-            case GatherRouteDB.InteractionType.UseItem:
-                QuestsHelper.UseItemOn((uint)wp.ItemID, wp.InteractWithOID);
-                break;
-            case GatherRouteDB.InteractionType.UseAction:
-                QuestsHelper.UseAction((uint)wp.ActionID, wp.InteractWithOID);
-                break;
-            case GatherRouteDB.InteractionType.Grind:
-                if (Utils.HasPlugin(BossModIPC.Name))
-                    switch (wp.StopCondition)
-                    {
-                        case GatherRouteDB.GrindStopConditions.QuestSequence:
-                            QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID), () => QuestsHelper.GetQuestStep(wp.QuestID) == wp.QuestSeq);
-                            break;
-                        case GatherRouteDB.GrindStopConditions.QuestComplete:
-                            QuestsHelper.Grind(QuestsHelper.GetMobName((uint)wp.MobID), () => QuestsHelper.IsQuestCompleted(wp.QuestID));
-                            break;
-                    }
-                break;
-            case GatherRouteDB.InteractionType.EquipRecommendedGear:
-                QuestsHelper.EquipRecommendedGear();
-                break;
             case GatherRouteDB.InteractionType.StartRoute:
                 var route = RouteDB.Routes.Find(r => r.Name == wp.RouteName);
                 if (route != null)
@@ -317,9 +292,6 @@ public class GatherRouteExec : IDisposable
                     Start(route, 0, true, false, route.Waypoints[0].Pathfind);
                     return;
                 }
-                break;
-            case GatherRouteDB.InteractionType.ChatCommand:
-                QuestsHelper.UseCommand(wp.ChatCommand);
                 break;
             case GatherRouteDB.InteractionType.NodeScan:
                 var objs = Svc.Objects.Where(o => o?.ObjectKind == ObjectKind.GatheringPoint && o.IsTargetable).OrderBy(x => x.DataId);
@@ -533,7 +505,7 @@ public class GatherRouteExec : IDisposable
 
         PluginLog.Verbose($"ErrorMessage fired with string: {message}");
         var msg = message.ExtractText();
-        if (logErrors.Any(x => msg == Utils.GetRow<LogMessage>(x)!.Value.Text.ExtractText()))
+        if (logErrors.Any(x => msg == GenericHelpers.GetRow<LogMessage>(x)!.Value.Text.ExtractText()))
             Errors.PushBack(Environment.TickCount64);
         if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
         {

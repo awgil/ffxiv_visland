@@ -4,11 +4,11 @@ using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using ECommons.UIHelpers.AddonMasterImplementations;
-using ExdSheets.Sheets;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using Lumina.Excel.Sheets;
 using System;
 
 namespace visland.Helpers;
@@ -61,7 +61,7 @@ internal unsafe class RepairManager
 
     internal static bool HasDarkMatterOrBetter(uint darkMatterID)
     {
-        var repairResources = Utils.GetSheet<ItemRepairResource>()!;
+        var repairResources = GenericHelpers.GetSheet<ItemRepairResource>()!;
         foreach (var dm in repairResources)
         {
             if (dm.Item.RowId < darkMatterID)
@@ -101,7 +101,7 @@ internal unsafe class RepairManager
 
     internal static bool CanRepairItem(uint ItemId)
     {
-        var row = Utils.GetRow<Item>(ItemId)!;
+        var row = GenericHelpers.GetRow<Item>(ItemId)!;
 
         if (row.Value.ClassJobRepair.RowId > 0)
         {
@@ -119,7 +119,7 @@ internal unsafe class RepairManager
         return false;
     }
 
-    public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[Utils.GetRow<ClassJob>((uint)job)?.ExpArrayIndex ?? 0];
+    public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[GenericHelpers.GetRow<ClassJob>((uint)job)?.ExpArrayIndex ?? 0];
 
     internal static bool RepairWindowOpen() => GenericHelpers.TryGetAddonByName<AddonRepair>("Repair", out _);
 

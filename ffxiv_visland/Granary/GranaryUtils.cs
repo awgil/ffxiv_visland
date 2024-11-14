@@ -1,6 +1,6 @@
 ﻿using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using Lumina.Excel.GeneratedSheets2;
+using Lumina.Excel.Sheets;
 using System.Runtime.CompilerServices;
 using visland.Helpers;
 
@@ -92,5 +92,5 @@ public static unsafe class GranaryUtils
 
     public static int MaxDays() => Utils.NumCowries() / 50;
 
-    private static bool WillOvercap(uint pouchId, int count) => Utils.NumItems(Service.LuminaRow<MJIItemPouch>(pouchId)!.Item.Row) + count > 999;
+    private static bool WillOvercap(uint pouchId, int count) => Utils.NumItems(Service.LuminaRow<MJIItemPouch>(pouchId)!.Value.Item.RowId) + count > 999;
 }

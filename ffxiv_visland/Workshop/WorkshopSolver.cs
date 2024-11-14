@@ -1,4 +1,4 @@
-﻿using Lumina.Excel.GeneratedSheets2;
+﻿using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,9 +93,9 @@ public class WorkshopSolver
         public void Set(uint rowId)
         {
             var popRow = Service.LuminaRow<MJICraftworksPopularity>(rowId);
-            _values = popRow != null ? new int[popRow.Popularity.Length] : new int[0];
+            _values = popRow != null ? new int[popRow.Value.Popularity.Count] : [];
             for (var i = 0; i < _values.Length; ++i)
-                _values[i] = popRow?.Popularity[i].Value?.Ratio ?? 100;
+                _values[i] = popRow?.Popularity[i].Value.Ratio ?? 100;
         }
     }
 
@@ -127,10 +127,10 @@ public class WorkshopSolver
     {
         if (l.RowId == r.RowId)
             return false; // object is never linked with itself
-        var l1 = l.Theme[0].Row;
-        var l2 = l.Theme[1].Row;
-        var r1 = r.Theme[0].Row;
-        var r2 = r.Theme[1].Row;
+        var l1 = l.Theme[0].Value.RowId;
+        var l2 = l.Theme[1].Value.RowId;
+        var r1 = r.Theme[0].Value.RowId;
+        var r2 = r.Theme[1].Value.RowId;
         return l1 == r1 || l1 == r2 || l2 != 0 && (l2 == r1 || l2 == r2);
     }
 
