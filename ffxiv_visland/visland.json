@@ -5,6 +5,6 @@
   "Description": "Automate gathering, workshop assignments, etc.",
   "InternalName": "visland",
   "ApplicableVersion": "any",
-  "DalamudApiLevel": 10,
+  "DalamudApiLevel": 11,
   "IconUrl": "https://raw.githubusercontent.com/awgil/ffxiv_visland/d3338f6ddbf54365e60fbdf8e85ea8f5abdb745f/icon.png"
 }
