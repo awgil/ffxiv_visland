@@ -30,15 +30,12 @@ public unsafe class WorkshopOCImport
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = [];
     private bool IgnoreFourthWorkshop;
-    private ExcelSheet<Item> _itemSheet;
 
     public WorkshopOCImport()
     {
         _config = Service.Config.Get<WorkshopConfig>();
-        _craftIds = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Where(o => o.Item.Value.RowId != 0).Select(o => o.Item.Value.RowId).ToList();
-        _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(ClientLanguage.English.ToLumina())!; // This doesn't return an english sheet. Accessing sub sheets must be done separately if English is required.
-        _itemSheet = Service.LuminaGameData.GetExcelSheet<Item>(ClientLanguage.English.ToLumina())!;
-        _botNames = _craftIds.Select(i => OfficialNameToBotName(_itemSheet.GetRow(i).Name.ExtractText())).ToList();
+        _craftSheet = GenericHelpers.GetSheet<MJICraftworksObject>(); // unlocalised sheet can't be fetched in english
+        _botNames = _craftSheet.Select(r => OfficialNameToBotName(GenericHelpers.GetRow<Item>(r.Item.RowId, ClientLanguage.English)!.Value.Name.ExtractText())).ToList();
     }
 
     public void Update()
@@ -346,6 +343,8 @@ public unsafe class WorkshopOCImport
                 curRec.Workshops.Last().Add(nextSlot, item.Value.RowId);
                 nextSlot += item.Value.CraftingTime;
             }
+            else
+                Service.Log.Warning($"Failed to parse {l}");
         }
         // complete current cycle; if the number was not known, assume it is tomorrow.
         // On the 7th day, importing a rec will assume the next week, but we can't import into the next week so just modulo it to the first week. Theoretically shouldn't cause problems.
@@ -418,6 +417,8 @@ public unsafe class WorkshopOCImport
                 result.Last().Add(nextSlot, item.Value.RowId);
                 nextSlot += item.Value.CraftingTime;
             }
+            else
+                Service.Log.Warning($"Failed to parse {l}");
         }
 
         return result;
