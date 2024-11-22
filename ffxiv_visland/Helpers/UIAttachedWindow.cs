@@ -19,6 +19,7 @@ public abstract class UIAttachedWindow : Window, IDisposable
         Size = initialSize;
         SizeCondition = ImGuiCond.FirstUseEver;
         PositionCondition = ImGuiCond.Always; // updated every frame
+        ForceMainWindow = true;
     }
 
     public virtual void Dispose() { }

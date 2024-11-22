@@ -190,6 +190,8 @@ public sealed class Plugin : IDalamudPlugin
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(Json);
         if (route != null)
             _wndGather.Exec.Start(route, 0, true, !once);
+        else
+            Svc.Log.Warning($"Failed to deserialize route from clipboard: {base64}");
     }
 
     private void MoveToCommand(string[] args, bool relativeToPlayer)
