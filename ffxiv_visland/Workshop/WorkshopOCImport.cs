@@ -344,7 +344,7 @@ public unsafe class WorkshopOCImport
                 nextSlot += item.Value.CraftingTime;
             }
             else
-                Service.Log.Warning($"Failed to parse {l}");
+                Service.Log.Verbose($"Failed to parse {l}");
         }
         // complete current cycle; if the number was not known, assume it is tomorrow.
         // On the 7th day, importing a rec will assume the next week, but we can't import into the next week so just modulo it to the first week. Theoretically shouldn't cause problems.
@@ -418,7 +418,7 @@ public unsafe class WorkshopOCImport
                 nextSlot += item.Value.CraftingTime;
             }
             else
-                Service.Log.Warning($"Failed to parse {l}");
+                Service.Log.Verbose($"Failed to parse {l}");
         }
 
         return result;
