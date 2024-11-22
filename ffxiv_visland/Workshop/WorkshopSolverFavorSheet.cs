@@ -144,16 +144,18 @@ public class WorkshopSolverFavorSheet
         {
             if (obj == 0)
                 throw new Exception($"Invalid obj id {obj}");
-            var o = _sheet.GetRow(obj);
-            rec.Add(hour, obj);
-            var iFav = Array.FindIndex(Favors, o => o.RowId == obj);
-            if (iFav >= 0)
+            if (_sheet.TryGetRow(obj, out var row))
             {
-                var efficient = prev != null && WorkshopSolver.IsLinked((MJICraftworksObject)prev, o);
-                Complete[iFav] += efficient ? 2 : 1;
+                rec.Add(hour, obj);
+                var iFav = Array.FindIndex(Favors, o => o.RowId == obj);
+                if (iFav >= 0)
+                {
+                    var efficient = prev != null && WorkshopSolver.IsLinked((MJICraftworksObject)prev, row);
+                    Complete[iFav] += efficient ? 2 : 1;
+                }
+                hour += row.CraftingTime;
+                prev = row;
             }
-            hour += o.CraftingTime;
-            prev = o;
         }
         if (hour != 24)
             throw new Exception($"Bad schedule: {hour}h");

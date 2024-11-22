@@ -4,6 +4,7 @@ using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
 using Dalamud.Utility;
 using ECommons;
+using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -25,15 +26,19 @@ public unsafe class WorkshopOCImport
 
     private WorkshopConfig _config;
     private ExcelSheet<MJICraftworksObject> _craftSheet;
+    private List<uint> _craftIds = [];
     private List<string> _botNames;
     private List<Func<bool>> _pendingActions = [];
     private bool IgnoreFourthWorkshop;
+    private ExcelSheet<Item> _itemSheet;
 
     public WorkshopOCImport()
     {
         _config = Service.Config.Get<WorkshopConfig>();
-        _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(ClientLanguage.English.ToLumina())!;
-        _botNames = _craftSheet.Select(r => OfficialNameToBotName(r.Item.Value.Name.ToString())).ToList();
+        _craftIds = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Where(o => o.Item.Value.RowId != 0).Select(o => o.Item.Value.RowId).ToList();
+        _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(ClientLanguage.English.ToLumina())!; // This doesn't return an english sheet. Accessing sub sheets must be done separately if English is required.
+        _itemSheet = Service.LuminaGameData.GetExcelSheet<Item>(ClientLanguage.English.ToLumina())!;
+        _botNames = _craftIds.Select(i => OfficialNameToBotName(_itemSheet.GetRow(i).Name.ExtractText())).ToList();
     }
 
     public void Update()
