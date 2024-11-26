@@ -1,4 +1,5 @@
-﻿using Dalamud.Common;
+﻿global using static visland.Plugin;
+using Dalamud.Common;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Windowing;
@@ -23,7 +24,6 @@ using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
 using visland.Workshop;
-global using static visland.Plugin;
 
 namespace visland;
 
