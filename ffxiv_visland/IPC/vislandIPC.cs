@@ -1,53 +1,28 @@
 ﻿using ECommons;
-using System;
-using System.Collections.Generic;
+using ECommons.EzIpcManager;
 using visland.Gathering;
 
 namespace visland.IPC;
 
 internal class VislandIPC
 {
-    private readonly List<Action> _disposeActions = [];
-
+    private readonly GatherWindow wndGather;
     public VislandIPC(GatherWindow _wndGather)
     {
-        Register("IsRouteRunning", () => _wndGather.Exec.CurrentRoute != null && !_wndGather.Exec.Paused);
-        Register("IsRoutePaused", () => _wndGather.Exec.Paused);
-        Register<bool>("SetRoutePaused", s => _wndGather.Exec.Paused = s);
-        Register("StopRoute", _wndGather.Exec.Finish);
-        Register("GatherItem", (uint itemId) => GatherItem(_wndGather, itemId));
+        wndGather = _wndGather;
+        EzIPC.Init(this);
     }
 
-    public void Dispose()
-    {
-        foreach (var a in _disposeActions)
-            a();
-    }
+    [EzIPC] public bool IsRouteRunning() => wndGather.Exec.CurrentRoute != null && !wndGather.Exec.Paused;
+    [EzIPC] public bool IsRoutePaused() => wndGather.Exec.Paused;
+    [EzIPC] public void SetRoutePaused(bool state) => wndGather.Exec.Paused = state;
+    [EzIPC] public void StopRoute() => wndGather.Exec.Finish();
+    [EzIPC] public void StartRoute(string route, bool once) => P.ExecuteTempRoute(route, once);
 
-    private static void GatherItem(GatherWindow _wndGather, uint itemId)
+    [EzIPC]
+    public void GatherItem(uint itemId)
     {
-        if (_wndGather.Exec.GatheringAM?.GatheredItems.TryGetFirst(x => x.ItemID == itemId, out var item) ?? false)
+        if (wndGather.Exec.GatheringAM?.GatheredItems.TryGetFirst(x => x.ItemID == itemId, out var item) ?? false)
             item.Gather();
-    }
-
-    private void Register<TRet>(string name, Func<TRet> func)
-    {
-        var p = Service.Interface.GetIpcProvider<TRet>($"{Plugin.Name}." + name);
-        p.RegisterFunc(func);
-        _disposeActions.Add(p.UnregisterFunc);
-    }
-
-    private void Register(string name, Action func)
-    {
-        var p = Service.Interface.GetIpcProvider<object>($"{Plugin.Name}." + name);
-        p.RegisterAction(func);
-        _disposeActions.Add(p.UnregisterAction);
-    }
-
-    private void Register<T1>(string name, Action<T1> func)
-    {
-        var p = Service.Interface.GetIpcProvider<T1, object>($"{Plugin.Name}." + name);
-        p.RegisterAction(func);
-        _disposeActions.Add(p.UnregisterAction);
     }
 }

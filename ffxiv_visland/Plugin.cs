@@ -23,6 +23,7 @@ using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
 using visland.Workshop;
+global using static visland.Plugin;
 
 namespace visland;
 
@@ -120,7 +121,6 @@ public sealed class Plugin : IDalamudPlugin
     {
         Svc.AddonLifecycle.UnregisterListener(GenerateAddonMasters);
         Svc.AddonLifecycle.UnregisterListener(ClearAddonMasters);
-        _vislandIPC.Dispose();
         WindowSystem.RemoveAllWindows();
         _wndGather.Dispose();
         _wndWorkshop.Dispose();
@@ -179,12 +179,12 @@ public sealed class Plugin : IDalamudPlugin
         }
     }
 
-    private void TryGather(string[] args)
+    internal void TryGather(string[] args)
     {
         throw new NotImplementedException();
     }
 
-    private void ExecuteTempRoute(string base64, bool once)
+    internal void ExecuteTempRoute(string base64, bool once)
     {
         var (IsBase64, Json) = Utils.FromCompressedBase64(base64);
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(Json);
@@ -194,7 +194,7 @@ public sealed class Plugin : IDalamudPlugin
             Svc.Log.Warning($"Failed to deserialize route from clipboard: {base64}");
     }
 
-    private void MoveToCommand(string[] args, bool relativeToPlayer)
+    internal void MoveToCommand(string[] args, bool relativeToPlayer)
     {
         var originActor = relativeToPlayer ? Service.ClientState.LocalPlayer : null;
         var origin = originActor?.Position ?? new();
@@ -204,7 +204,7 @@ public sealed class Plugin : IDalamudPlugin
         _wndGather.Exec.Start(route, 0, false, false);
     }
 
-    private void ExecuteCommand(string name, bool once)
+    internal void ExecuteCommand(string name, bool once)
     {
         var route = _wndGather.RouteDB.Routes.Find(r => r.Name == name);
         if (route != null)
