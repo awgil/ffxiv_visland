@@ -118,7 +118,7 @@ public class Retainers
             try
             {
                 return API.GetRegisteredCharacters().Where(c => API.GetOfflineCharacterData(c).Enabled)
-                .Any(c => API.GetOfflineCharacterData(c).OfflineSubmarineData.Any(x => x.ReturnTime <= DateTime.Now.ToUnixTimestamp()));
+                .Any(c => API.GetOfflineCharacterData(c).OfflineSubmarineData.Any(x => API.GetOfflineCharacterData(c).EnabledSubs.Contains(x.Name) && x.ReturnTime <= DateTime.Now.ToUnixTimestamp()));
             }
             catch (IpcNotReadyError)
             {
