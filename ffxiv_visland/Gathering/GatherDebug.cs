@@ -21,6 +21,40 @@ public unsafe class GatherDebug(GatherRouteExec exec)
         if (!child) return;
         if (!Player.Available) return;
 
+        if (exec.RouteDB.AutoRetainerIntegration)
+        {
+            Utils.DrawSection("AutoRetainer Integration", ImGuiColors.ParsedGold);
+            Utils.DrawSection($"Conditions to Begin", ImGuiColors.ParsedGold, drawSeparator: false);
+            ImGuiEx.Text($"One of:");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"Subs Ready: {Service.Retainers.HasSubsReady}");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"Retainers Ready: {Service.Retainers.HasRetainersReady}");
+            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
+            Utils.DrawSection($"Conditions to End", ImGuiColors.ParsedGold, drawSeparator: false);
+            ImGuiEx.Text($"Route paused: {exec.Paused}");
+            ImGuiEx.Text($"Retainers finished: {Service.Retainers.Finished}");
+            ImGuiEx.Text($"All of the below:");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"MultiMode Enabled: {Service.Retainers.IPC.GetMultiEnabled()}");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"Not Busy: {!Service.Retainers.IPC.IsBusy()}");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"Current Character == Starting Character: {Player.CID == Service.Retainers.StartingCharacter}");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"No Retainers Ready: {!Service.Retainers.HasRetainersReady}");
+            ImGui.Bullet();
+            ImGui.SameLine();
+            ImGuiEx.Text($"No Subs Ready: {!Service.Retainers.HasSubsReady}");
+            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
+        }
+
         if (Svc.Targets.Target != null)
         {
             Utils.DrawSection("Target", ImGuiColors.ParsedGold);
