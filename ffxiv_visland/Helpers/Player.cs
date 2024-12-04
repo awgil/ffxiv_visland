@@ -35,9 +35,7 @@ public unsafe static class Player
     public static bool Mounted => Service.Condition[ConditionFlag.Mounted];
     public static bool Mounting => Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
 
-    // TODO: find again
-    public static unsafe bool Dismounting => false;
-        //**(byte**)(Service.ClientState.LocalPlayer.Address + 1432) == 1;
+    public static unsafe bool Dismounting => **(byte**)(Service.ClientState.LocalPlayer.Address + 1400) == 1;
     public static bool Jumping => Service.Condition[ConditionFlag.Jumping] || Service.Condition[ConditionFlag.Jumping61];
     public static bool OnIsland => MJIManager.Instance()->IsPlayerInSanctuary == 1;
     public static bool Normal => Service.Condition[ConditionFlag.NormalConditions];
