@@ -97,7 +97,7 @@ public unsafe static class Player
     {
         if (Mounted) return;
 
-        if (OnIsland && SprintCD > 5)
+        if (OnIsland && SprintCD < 5)
             ExecuteActionSafe(ActionType.Action, 31314);
 
         if (!OnIsland && SprintCD == 0)

@@ -245,17 +245,17 @@ public class GatherRouteDB : Configuration.Node
                 { "iZ", wp.InteractWithPosition.Z },
                 { "showInteractions", wp.showInteractions },
                 { "Interaction", wp.Interaction.ToString() },
-                { "EmoteID", wp.EmoteID },
-                { "ActionID", wp.ActionID },
-                { "ItemID", wp.ItemID },
+                //{ "EmoteID", wp.EmoteID },
+                //{ "ActionID", wp.ActionID },
+                //{ "ItemID", wp.ItemID },
                 { "showWaits", wp.showWaits },
                 { "WaitTimeMs", wp.WaitTimeMs },
                 { "WaitForCondition", wp.WaitForCondition.ToString() },
                 { "Pathfind", wp.Pathfind },
-                { "MobID", wp.MobID },
-                { "QuestID", wp.QuestID },
+                //{ "MobID", wp.MobID },
+                //{ "QuestID", wp.QuestID },
                 { "RouteName", wp.RouteName },
-                { "ChatCommand", wp.ChatCommand }
+                //{ "ChatCommand", wp.ChatCommand }
             };
 
             jw.Add(wpObj);
