@@ -513,9 +513,9 @@ public class GatherWindow : Window, IDisposable
 
     private void DrawWaypoint(Waypoint wp)
     {
-        if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && Player.Available)
+        if (ImGuiEx.IconButton(FontAwesomeIcon.MapMarker) && PlayerEx.Available)
         {
-            wp.Position = Player.Object.Position;
+            wp.Position = PlayerEx.Object.Position;
             wp.ZoneID = Service.ClientState.TerritoryType;
             RouteDB.NotifyModified();
         }

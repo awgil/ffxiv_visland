@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "visland", "visland.csproj", "{FA9DC45A-93A0-4FAD-D4FB-CE97171BFF4E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA9DC45A-93A0-4FAD-D4FB-CE97171BFF4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA9DC45A-93A0-4FAD-D4FB-CE97171BFF4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA9DC45A-93A0-4FAD-D4FB-CE97171BFF4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA9DC45A-93A0-4FAD-D4FB-CE97171BFF4E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {394D761A-BBC2-43DF-83E4-CBA11CA6CC63}
+	EndGlobalSection
+EndGlobal

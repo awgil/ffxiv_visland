@@ -18,7 +18,7 @@ internal class CompatModule
 
         if (RouteDB.GatherModeOnStart)
         {
-            if (Player.OnIsland && MJIManager.Instance()->CurrentMode != 1)
+            if (PlayerEx.OnIsland && MJIManager.Instance()->CurrentMode != 1)
             {
                 // you can't just change the CurrentMode in MJIManager
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
@@ -26,7 +26,7 @@ internal class CompatModule
             }
 
             // the context menu doesn't respect the updateState for some reason
-            if (Player.OnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
+            if (PlayerEx.OnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
         }
 

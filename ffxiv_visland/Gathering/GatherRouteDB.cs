@@ -94,6 +94,7 @@ public class GatherRouteDB : Configuration.Node
         public int WaitTimeMs;
         public Vector2 WaitTimeET;
 
+        public bool NeedsMount => Movement == Movement.MountFly || Movement == Movement.MountNoFly;
         public uint GatheringType => IsNode ? GenericHelpers.GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
         public bool IsNode => GenericHelpers.GetSheet<GatheringPoint>().HasRow(InteractWithOID);
         public Job NodeJob

@@ -138,7 +138,7 @@ internal class GatheringActions
     {
         if (item.IsCollectable) return 0;
 
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
+        Actions actions = PlayerEx.Job == Job.MIN ? new MINActions() : new BTNActions();
 
         if (!item.IsEnabled && CanUse(actions.Luck))
             return actions.Luck.id;
@@ -195,7 +195,7 @@ internal class GatheringActions
 
     public static unsafe uint GetNextBestAction(AddonMaster.GatheringMasterpiece am)
     {
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
+        Actions actions = PlayerEx.Job == Job.MIN ? new MINActions() : new BTNActions();
 
         if (ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Scour.id) == 0 ||
             ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Collect) == 0)
@@ -210,7 +210,7 @@ internal class GatheringActions
             if (am.CurrentCollectability + am.ScourPower >= am.MaxCollectability)
                 return actions.Scour.id;
 
-            if (Player.Gp >= 200 && !scrutiny)
+            if (PlayerEx.Gp >= 200 && !scrutiny)
                 return actions.Scrutiny;
 
             if (scrutiny)
@@ -224,8 +224,8 @@ internal class GatheringActions
 
     public static uint GetCurrentSurveyAbility(bool highest = true)
     {
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
-        return Player.Job switch
+        Actions actions = PlayerEx.Job == Job.MIN ? new MINActions() : new BTNActions();
+        return PlayerEx.Job switch
         {
             Job.MIN => highest ? actions.SurveyII.id : actions.SurveyI.id,
             Job.BTN => highest ? actions.SurveyII.id : actions.SurveyI.id,
@@ -237,12 +237,12 @@ internal class GatheringActions
     private static unsafe bool CanUse((uint Id, ushort buff) action)
     {
         if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(GenericHelpers.GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
-        if (Player.Object.CurrentGp < ActionManager.GetActionCost(ActionType.Action, action.Id, 0, 0, 0, 0)) return false;
-        if (action.buff != 0 && Player.Status.Any(x => x.StatusId == action.buff)) return false;
+        if (PlayerEx.Object.CurrentGp < ActionManager.GetActionCost(ActionType.Action, action.Id, 0, 0, 0, 0)) return false;
+        if (action.buff != 0 && PlayerEx.Status.Any(x => x.StatusId == action.buff)) return false;
         return true;
     }
 
-    private static bool HasScrutiny() => Player.Status.Any(x => x.StatusId == Buffs.Scrutiny);
+    private static bool HasScrutiny() => PlayerEx.Status.Any(x => x.StatusId == Buffs.Scrutiny);
 
     private static bool ItemIsCrystal(uint itemId) => itemId >= 2 && itemId <= 19;
 }

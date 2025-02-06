@@ -132,6 +132,6 @@ internal class NavmeshIPC
     internal static float GetTolerance() => Execute(() => _pathGetTolerance!.InvokeFunc());
     internal static void SetTolerance(float tolerance) => Execute(_pathSetTolerance!.InvokeAction, tolerance);
 
-    internal static void PathfindAndMoveTo(Vector3 pos, bool fly) => Execute(() => _pathfindAndMoveTo!.InvokeFunc(pos, fly));
+    internal static bool PathfindAndMoveTo(Vector3 pos, bool fly) => Execute(() => _pathfindAndMoveTo!.InvokeFunc(pos, fly));
     internal static bool PathfindInProgress() => Execute(() => _pathfindInProgress!.InvokeFunc());
 }

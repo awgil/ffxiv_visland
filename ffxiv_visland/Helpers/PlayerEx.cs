@@ -16,7 +16,7 @@ using visland.Gathering;
 #nullable disable
 
 namespace visland.Helpers;
-public unsafe static class Player
+public unsafe static class PlayerEx
 {
     public static IPlayerCharacter Object => Service.ClientState.LocalPlayer;
     public static bool Available => Service.ClientState.LocalPlayer != null;

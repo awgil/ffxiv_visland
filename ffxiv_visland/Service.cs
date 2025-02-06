@@ -71,7 +71,7 @@ public class Retainers
         {
             try
             {
-                return IPC.GetMultiEnabled() && !IPC.IsBusy() && Player.CID == StartingCharacter && !HasRetainersReady && !HasSubsReady;
+                return IPC.GetMultiEnabled() && !IPC.IsBusy() && PlayerEx.CID == StartingCharacter && !HasRetainersReady && !HasSubsReady;
             }
             catch (IpcNotReadyError)
             {

@@ -1,4 +1,5 @@
 ﻿global using static visland.Plugin;
+global using static ECommons.GenericHelpers;
 using Dalamud.Common;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
@@ -24,6 +25,7 @@ using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
 using visland.Workshop;
+using visland.Tasks;
 
 namespace visland;
 
@@ -43,6 +45,7 @@ public sealed class Plugin : IDalamudPlugin
         $"/{Name} exectemponce <base64 route> → run unsaved route once";
 
     internal static Plugin P = null!;
+    internal Automation Automation;
     internal TaskManager TaskManager;
     internal DataStore DataStore;
     //internal ShoppingListDB ShoppingListsFile;
@@ -80,6 +83,7 @@ public sealed class Plugin : IDalamudPlugin
 
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
+        Automation = new();
         DataStore = new();
 
         //EzConfig.DefaultSerializationFactory = new YamlFactory();
