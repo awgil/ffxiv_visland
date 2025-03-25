@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net9.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
@@ -67,6 +67,10 @@
     <Reference Include="FFXIVClientStructs">
 	    <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
 	    <Private>false</Private>
+    </Reference>
+    <Reference Include="InteropGenerator.Runtime">
+	    <HintPath>$(DalamudLibPath)InteropGenerator.Runtime.dll</HintPath>
+	    <Private>False</Private>
     </Reference>
   </ItemGroup>
 

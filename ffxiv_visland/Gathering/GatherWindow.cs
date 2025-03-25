@@ -38,7 +38,7 @@ public class GatherWindow : Window, IDisposable
     private int selectedRouteIndex = -1;
     public static bool loop;
 
-    private readonly List<uint> Colours = GenericHelpers.GetSheet<UIColor>()!.Select(x => x.UIForeground).ToList();
+    private readonly List<uint> Colours = GenericHelpers.GetSheet<UIColor>()!.Select(x => x.Dark).ToList();
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
@@ -291,7 +291,7 @@ public class GatherWindow : Window, IDisposable
             if (ImGui.Checkbox("Check AutoRetainer during routes", ref RouteDB.AutoRetainerIntegration))
                 RouteDB.NotifyModified();
             ImGuiComponents.HelpMarker($"Will enable multi mode when you have any retainers or submarines returned across any enabled characters. Requires the current character to be set as the Preferred Character and the Teleport to FC config enabled in AutoRetainer.");
-            if (ExcelCombos.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {GenericHelpers.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
+            if (ImGuiEx.ExcelSheetCombo("##Foods", out Item i, _ => $"[{RouteDB.GlobalFood}] {GenericHelpers.GetRow<Item>((uint)RouteDB.GlobalFood)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
             {
                 RouteDB.GlobalFood = (int)i.RowId;
                 RouteDB.NotifyModified();
@@ -422,7 +422,7 @@ public class GatherWindow : Window, IDisposable
             {
                 ImGuiEx.TextV("Item Target: ");
                 ImGui.SameLine();
-                if (ExcelCombos.ExcelSheetCombo("##Gatherables", out GatheringItem gatherable, _ => $"[{route.TargetGatherItem}] {GenericHelpers.GetRow<Item>((uint)route.TargetGatherItem)?.Name.ToString()}", x => $"[{x.RowId}] {GenericHelpers.GetRow<Item>(x.Item.RowId)?.Name.ToString()}", x => x.Item.RowId != 0))
+                if (ImGuiEx.ExcelSheetCombo("##Gatherables", out GatheringItem gatherable, _ => $"[{route.TargetGatherItem}] {GenericHelpers.GetRow<Item>((uint)route.TargetGatherItem)?.Name.ToString()}", x => $"[{x.RowId}] {GenericHelpers.GetRow<Item>(x.Item.RowId)?.Name.ToString()}", x => x.Item.RowId != 0))
                 {
                     route.TargetGatherItem = (int)gatherable.Item.RowId;
                     RouteDB.NotifyModified();
@@ -461,7 +461,7 @@ public class GatherWindow : Window, IDisposable
         if (!popup) return;
 
         Utils.DrawSection("Route Settings", ImGuiColors.ParsedGold);
-        if (ExcelCombos.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {GenericHelpers.GetRow<Item>((uint)route.Food)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
+        if (ImGuiEx.ExcelSheetCombo("##Foods", out Item i, _ => $"[{route.Food}] {GenericHelpers.GetRow<Item>((uint)route.Food)?.Name}", x => $"[{x.RowId}] {x.Name}", x => x.ItemUICategory.RowId == 46))
         {
             route.Food = (int)i.RowId;
             RouteDB.NotifyModified();
