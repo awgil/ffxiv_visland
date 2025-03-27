@@ -24,9 +24,24 @@ jobs:
         with:
           dotnet-version: 8.0.x
           
+      - name: Download config.yaml
+        run: curl -L https://raw.githubusercontent.com/goatcorp/dalamud-declarative/main/config.yaml -o config.yaml
+
+      - name: Install yq
+        run: |
+          wget https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+
+      - name: Extract Latest Track Name
+        id: latest_track
+        run: |
+          latest_entry=$(yq eval '.tracks | to_entries | sort_by(.value.applicableGameVersion, .key | match("release.*") | . == "" | not) | .[-1]' config.yaml)
+          track_name=$(echo "$latest_entry" | yq eval '.key' -)
+          echo "result=$track_name" >> $GITHUB_OUTPUT
+
       - name: Download Dalamud Latest
         run: |
-          wget https://goatcorp.github.io/dalamud-distrib/stg/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
+          wget https://goatcorp.github.io/dalamud-distrib/${{ steps.latest_track.outputs.result }}/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
           unzip ${{ env.DALAMUD_HOME }}.zip -d ${{ env.DALAMUD_HOME }}
 
       - name: Restore Project
