@@ -1,5 +1,4 @@
-﻿using Dalamud.Game.ClientState.Objects.Types;
-using ECommons.GameHelpers;
+﻿using ECommons.GameHelpers;
 using Lumina.Excel.Sheets;
 using System;
 using System.Numerics;

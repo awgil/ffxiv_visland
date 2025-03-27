@@ -7,7 +7,6 @@ using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System.Linq;
 using visland.Helpers;
-using static visland.Plugin;
 
 namespace visland.Gathering;
 

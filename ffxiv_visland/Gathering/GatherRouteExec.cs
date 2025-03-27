@@ -19,7 +19,6 @@ using System.Linq;
 using System.Numerics;
 using visland.Helpers;
 using visland.IPC;
-using static visland.Plugin;
 using ObjectKind = Dalamud.Game.ClientState.Objects.Enums.ObjectKind;
 
 namespace visland.Gathering;
