@@ -505,8 +505,8 @@ public class GatherRouteExec : IDisposable
         if (!RouteDB.DisableOnErrors || type != XivChatType.ErrorMessage) return;
 
         PluginLog.Verbose($"ErrorMessage fired with string: {message}");
-        var msg = message.ExtractText();
-        if (logErrors.Any(x => msg == GenericHelpers.GetRow<LogMessage>(x)!.Value.Text.ExtractText()))
+        var msg = message.GetText();
+        if (logErrors.Any(x => msg == GetRow<LogMessage>(x)!.Value.Text.ExtractText()))
             Errors.PushBack(Environment.TickCount64);
         if (Errors.Count() >= 5 && Errors.All(x => x > Environment.TickCount64 - 30 * 1000)) // 5 errors within 30 seconds stops the route, can adjust this as necessary
         {
