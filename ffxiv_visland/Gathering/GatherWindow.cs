@@ -99,9 +99,6 @@ public class GatherWindow : Window, IDisposable
                         a();
                     _postDraw.Clear();
                 }
-            //using (var tab = ImRaii.TabItem("Shopping"))
-            //    if (tab)
-            //        _autoGather.Draw();
             using (var tab = ImRaii.TabItem("Log"))
                 if (tab)
                     InternalLog.PrintImgui();

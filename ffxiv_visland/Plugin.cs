@@ -1,6 +1,5 @@
-﻿global using static visland.Plugin;
-global using static ECommons.GenericHelpers;
-using Dalamud.Common;
+﻿global using static ECommons.GenericHelpers;
+global using static visland.Plugin;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Windowing;
@@ -16,7 +15,6 @@ using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using visland.Export;
 using visland.Farm;
 using visland.Gathering;
@@ -24,8 +22,8 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
-using visland.Workshop;
 using visland.Tasks;
+using visland.Workshop;
 
 namespace visland;
 
@@ -48,7 +46,6 @@ public sealed class Plugin : IDalamudPlugin
     internal Automation Automation;
     internal TaskManager TaskManager;
     internal DataStore DataStore;
-    //internal ShoppingListDB ShoppingListsFile;
 
     private VislandIPC _vislandIPC;
 
@@ -65,10 +62,6 @@ public sealed class Plugin : IDalamudPlugin
         var dir = dalamud.ConfigDirectory;
         if (!dir.Exists)
             dir.Create();
-        var dalamudRoot = dalamud.GetType().Assembly.
-                GetType("Dalamud.Service`1", true)!.MakeGenericType(dalamud.GetType().Assembly.GetType("Dalamud.Dalamud", true)!).
-                GetMethod("Get")!.Invoke(null, BindingFlags.Default, null, Array.Empty<object>(), null);
-        var dalamudStartInfo = dalamudRoot.GetFoP<DalamudStartInfo>("StartInfo");
 
         ECommonsMain.Init(dalamud, this, ECommons.Module.DalamudReflector);
         DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);
@@ -86,19 +79,7 @@ public sealed class Plugin : IDalamudPlugin
         Automation = new();
         DataStore = new();
 
-        //EzConfig.DefaultSerializationFactory = new YamlFactory();
-        //ShoppingListsFile = EzConfig.Init<ShoppingListDB>();
-        //ShoppingListsFile.ShoppingLists.CollectionChanged += OnChange;
-
         _wndGather = new GatherWindow();
-        //EzConfigGui.Init(_wndGather.Draw);
-        //_wndGather.Setup();
-
-        //EzConfigGui.WindowSystem.AddWindow(new WorkshopWindow());
-        //EzConfigGui.WindowSystem.AddWindow(new GranaryWindow());
-        //EzConfigGui.WindowSystem.AddWindow(new PastureWindow());
-        //EzConfigGui.WindowSystem.AddWindow(new FarmWindow());
-        //EzConfigGui.WindowSystem.AddWindow(new ExportWindow());
         _wndWorkshop = new WorkshopWindow();
         _wndGranary = new GranaryWindow();
         _wndPasture = new PastureWindow();
@@ -132,7 +113,6 @@ public sealed class Plugin : IDalamudPlugin
         _wndPasture.Dispose();
         _wndFarm.Dispose();
         _wndExports.Dispose();
-        //ShoppingListsFile.ShoppingLists.CollectionChanged -= OnChange;
         ECommonsMain.Dispose();
     }
 
