@@ -22,7 +22,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 9.0.x
           
       - name: Download config.yaml
         run: curl -L https://raw.githubusercontent.com/goatcorp/dalamud-declarative/main/config.yaml -o config.yaml
@@ -59,6 +59,6 @@ jobs:
           version_number: ${{ env.tag }}
           path: "ffxiv_visland/bin/Release/visland/latest.zip"
           type: "latest"
-          dalamud_version: "11"
+          dalamud_version: "12"
         env:
           PUBLISHER_KEY: ${{ secrets.PUBLISHER_KEY }}
