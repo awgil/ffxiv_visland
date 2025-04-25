@@ -35,13 +35,17 @@ jobs:
       - name: Extract Latest Track Name
         id: latest_track
         run: |
-          latest_entry=$(yq eval '.tracks | to_entries | sort_by(.value.applicableGameVersion, .key | match("release.*") | . == "" | not) | .[-1]' config.yaml)
+          latest_entry=$(yq eval '.tracks | to_entries | sort_by(.value.applicableGameVersion, (.key == "release")) | .[-1]' config.yaml)
           track_name=$(echo "$latest_entry" | yq eval '.key' -)
           echo "result=$track_name" >> $GITHUB_OUTPUT
 
       - name: Download Dalamud Latest
         run: |
-          wget https://goatcorp.github.io/dalamud-distrib/${{ steps.latest_track.outputs.result }}/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
+          if [ "${{ steps.latest_track.outputs.result }}" == "release" ]; then
+              wget https://goatcorp.github.io/dalamud-distrib/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
+          else
+              wget https://goatcorp.github.io/dalamud-distrib/${{ steps.latest_track.outputs.result }}/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
+          fi
           unzip ${{ env.DALAMUD_HOME }}.zip -d ${{ env.DALAMUD_HOME }}
 
       - name: Restore Project
