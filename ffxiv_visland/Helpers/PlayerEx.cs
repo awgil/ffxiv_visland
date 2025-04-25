@@ -43,6 +43,7 @@ public unsafe static class PlayerEx
     public static bool InclusiveFlying => Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
     public static bool InWater => Service.Condition[ConditionFlag.Swimming] || Service.Condition[ConditionFlag.Diving];
     public static float SprintCD => Status.FirstOrDefault(s => s.StatusId == 50)?.RemainingTime ?? 0;
+    public static bool StellarSprinting => Status.Any(x => x.StatusId == 4398);
     public static uint FlyingControlType
     {
         get => Svc.GameConfig.UiControl.GetUInt("FlyingControlType");
@@ -95,7 +96,7 @@ public unsafe static class PlayerEx
     public static void Jump() => ExecuteActionSafe(ActionType.GeneralAction, 2);
     public static void Sprint()
     {
-        if (Mounted) return;
+        if (Mounted || StellarSprinting) return;
 
         if (OnIsland && SprintCD < 5)
             ExecuteActionSafe(ActionType.Action, 31314);
