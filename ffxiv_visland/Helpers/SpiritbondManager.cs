@@ -122,7 +122,7 @@ public unsafe static class SpiritbondManager
                     if (materializePTR == IntPtr.Zero)
                         return;
 
-                    var materalizeWindow = (AtkUnitBase*)materializePTR;
+                    var materalizeWindow = (AtkUnitBase*)materializePTR.Address;
                     if (materalizeWindow == null)
                         return;
 

@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface.Windowing;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using System;
 using System.Numerics;
 
@@ -26,7 +26,7 @@ public abstract class UIAttachedWindow : Window, IDisposable
 
     public unsafe override void PreOpenCheck()
     {
-        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(_addon);
+        var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(_addon).Address;
         IsOpen = addon != null && addon->IsVisible;
         if (IsOpen)
         {

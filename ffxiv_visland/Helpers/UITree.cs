@@ -1,4 +1,4 @@
-﻿using ImGuiNET;
+﻿using Dalamud.Bindings.ImGui;
 using System;
 using System.Collections.Generic;
 
@@ -83,7 +83,7 @@ public class UITree
         }
         if (doubleClick != null && ImGui.IsItemHovered() && ImGui.IsMouseDoubleClicked(ImGuiMouseButton.Left))
             doubleClick();
-        if (contextMenu != null && ImGui.BeginPopupContextItem())
+        if (contextMenu != null && ImGui.BeginPopupContextItem($"ctx_{id}"))
         {
             contextMenu();
             ImGui.EndPopup();

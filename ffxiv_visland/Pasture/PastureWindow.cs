@@ -1,7 +1,7 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using visland.Helpers;
 using ECommons.ImGuiMethods;
 

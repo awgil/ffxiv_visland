@@ -21,13 +21,13 @@ internal class CompatModule
             if (PlayerEx.OnIsland && MJIManager.Instance()->CurrentMode != 1)
             {
                 // you can't just change the CurrentMode in MJIManager
-                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud"), false, 11, 0);
-                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, 0, 1, 82042, 0, 0);
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud").Address, false, 11, 0);
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu").Address, true, 0, 1, 82042, 0, 0);
             }
 
             // the context menu doesn't respect the updateState for some reason
             if (PlayerEx.OnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
-                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu"), true, -1);
+                Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu").Address, true, -1);
         }
 
         if (!PurificationManager.ListenersActive)

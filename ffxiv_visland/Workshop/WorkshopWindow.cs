@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using visland.Helpers;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace visland.Workshop;
