@@ -4,15 +4,21 @@
     "net9.0-windows7.0": {
       "DalamudPackager": {
         "type": "Direct",
-        "requested": "[13.0.0, )",
-        "resolved": "13.0.0",
-        "contentHash": "Mb3cUDSK/vDPQ8gQIeuCw03EMYrej1B4J44a1AvIJ9C759p9XeqdU9Hg4WgOmlnlPe0G7ILTD32PKSUpkQNa8w=="
+        "requested": "[12.0.0, )",
+        "resolved": "12.0.0",
+        "contentHash": "J5TJLV3f16T/E2H2P17ClWjtfEBPpq3yxvqW46eN36JCm6wR+EaoaYkqG9Rm5sHqs3/nK/vKjWWyvEs/jhKoXw=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
         "requested": "[1.2.25, )",
         "resolved": "1.2.25",
         "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
+      },
+      "ECommons": {
+        "type": "Direct",
+        "requested": "[3.0.1.3, )",
+        "resolved": "3.0.1.3",
+        "contentHash": "EmI3VUDSR8BOPFTCiEm0s/N3iSHg3u9iolyOys/lsJF0b3OtI3NvqxLLbrSlACOrtSSohOVVf7FnXupKKNLN/Q=="
       },
       "YamlDotNet": {
         "type": "Direct",
@@ -23,11 +29,8 @@
       "autoretainerapi": {
         "type": "Project",
         "dependencies": {
-          "ECommons": "[2.2.0.2, )"
+          "ECommons": "[3.0.1.3, )"
         }
-      },
-      "ecommons": {
-        "type": "Project"
       }
     }
   }
