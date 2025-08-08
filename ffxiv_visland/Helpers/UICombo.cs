@@ -1,6 +1,6 @@
 ﻿using Dalamud.Interface.Utility.Raii;
 using ECommons.DalamudServices;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel;
 using System;
 using System.Collections.Generic;
@@ -97,31 +97,38 @@ public static class UICombo
         Func<ExcelSheet<T>, string> getPreview,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, t => t.ToString() ?? string.Empty, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string, bool> searchPredicate,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, t => t.ToString() ?? string.Empty, searchPredicate, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, bool> preFilter,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, t => t.ToString() ?? string.Empty, preFilter, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string, bool> searchPredicate,
         Func<T, bool> preFilter, ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, t => t.ToString() ?? string.Empty, searchPredicate, preFilter, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string> toName,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, toName, (t, s) => toName(t).Contains(s, StringComparison.CurrentCultureIgnoreCase), flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string> toName,
         Func<T, string, bool> searchPredicate,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, toName, searchPredicate, _ => true, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string> toName,
         Func<T, bool> preFilter, ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T>
             => ExcelSheetCombo(id, out selected, getPreview, toName, (t, s) => toName(t).Contains(s, StringComparison.CurrentCultureIgnoreCase), preFilter, flags);
+    
     public static bool ExcelSheetCombo<T>(string id, [NotNullWhen(true)] out T selected,
         Func<ExcelSheet<T>, string> getPreview, Func<T, string> toName,
         Func<T, string, bool> searchPredicate,
@@ -145,11 +152,13 @@ public static class UICombo
         IEnumerable<T> possibilities, Func<T, string> toName,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : notnull
             => SearchableCombo(id, out selected, preview, possibilities, toName, (p, s) => toName.Invoke(p).Contains(s, StringComparison.InvariantCultureIgnoreCase), flags);
+    
     public static bool SearchableCombo<T>(string id, [NotNullWhen(true)] out T? selected, string preview,
         IEnumerable<T> possibilities, Func<T, string> toName,
         Func<T, string, bool> searchPredicate,
         ImGuiComboFlags flags = ImGuiComboFlags.None) where T : notnull
             => SearchableCombo(id, out selected, preview, possibilities, toName, searchPredicate, _ => true, flags);
+    
     public static bool SearchableCombo<T>(string id, [NotNullWhen(true)] out T? selected, string preview,
         IEnumerable<T> possibilities, Func<T, string> toName,
         Func<T, string, bool> searchPredicate,

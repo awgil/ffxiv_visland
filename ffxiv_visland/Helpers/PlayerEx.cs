@@ -33,11 +33,11 @@ public unsafe static class PlayerEx
     public static GameObject* GameObject => (GameObject*)Service.ClientState.LocalPlayer.Address;
     public static uint Territory => Service.ClientState.TerritoryType;
     public static bool Mounted => Service.Condition[ConditionFlag.Mounted];
-    public static bool Mounting => Service.Condition[ConditionFlag.Unknown57]; // condition 57 is set while mount up animation is playing
+    public static bool Mounting => Service.Condition[ConditionFlag.Mounting]; // condition 57 is set while mount up animation is playing
 
     public static unsafe bool Dismounting => **(byte**)(Service.ClientState.LocalPlayer.Address + 1400) == 1;
     public static bool Jumping => Service.Condition[ConditionFlag.Jumping] || Service.Condition[ConditionFlag.Jumping61];
-    public static bool OnIsland => MJIManager.Instance()->IsPlayerInSanctuary == 1;
+    public static bool OnIsland => MJIManager.Instance()->IsPlayerInSanctuary;
     public static bool Normal => Service.Condition[ConditionFlag.NormalConditions];
     public static bool ExclusiveFlying => Service.Condition[ConditionFlag.InFlight];
     public static bool InclusiveFlying => Service.Condition[ConditionFlag.InFlight] || Service.Condition[ConditionFlag.Diving];
@@ -55,7 +55,7 @@ public unsafe static class PlayerEx
     public static float ManualCD => Status.FirstOrDefault(s => s.StatusId == 49)?.RemainingTime ?? 0;
     //public static float CordialCD => ActionManager.Instance()->GetActionStatus(ActionType.Item, cordial.Id) == 0;
     public static float AnimationLock => ActionManager.Instance()->AnimationLock;
-    public static bool InGatheringAnimation => Svc.Condition[ConditionFlag.Gathering42];
+    public static bool InGatheringAnimation => Svc.Condition[ConditionFlag.ExecutingGatheringAction];
 
     public static uint Gp => Object.CurrentGp;
     public static uint MaxGp => Object.MaxGp;

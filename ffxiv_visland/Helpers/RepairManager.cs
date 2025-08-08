@@ -54,7 +54,7 @@ internal unsafe class RepairManager
 
     internal static void ConfirmYesNo(AddonEvent type, AddonArgs args)
     {
-        var addon = new AddonMaster.SelectYesno((AtkUnitBase*)args.Addon);
+        var addon = new AddonMaster.SelectYesno((AtkUnitBase*)args.Addon.Address);
         if (addon.Text.ContainsAny(_texts))
             addon.Yes();
     }

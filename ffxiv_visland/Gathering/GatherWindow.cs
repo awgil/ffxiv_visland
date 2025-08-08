@@ -9,7 +9,7 @@ using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using ECommons.Logging;
 using ECommons.SimpleGui;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
@@ -593,7 +593,7 @@ public class GatherWindow : Window, IDisposable
 
         if (wp.showWaits)
         {
-            if (ImGui.InputFloat2("Eorzean Time Wait", ref wp.WaitTimeET, "%.0f"))
+            if (ImGui.InputFloat2("Eorzean Time Wait", ref wp.WaitTimeET))
                 RouteDB.NotifyModified();
             if (ImGui.SliderInt("Wait (ms)", ref wp.WaitTimeMs, 0, 60000))
                 RouteDB.NotifyModified();

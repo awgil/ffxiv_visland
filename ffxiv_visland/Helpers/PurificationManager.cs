@@ -79,8 +79,8 @@ internal class PurificationManager
 
     private static unsafe void ResultsSetup(AddonEvent type, AddonArgs args)
     {
-        if (!GenericHelpers.IsAddonReady((AtkUnitBase*)args.Addon)) return;
-        new AddonMaster.PurifyResult((AtkUnitBase*)args.Addon).Close();
+        if (!GenericHelpers.IsAddonReady((AtkUnitBase*)args.Addon.Address)) return;
+        new AddonMaster.PurifyResult((AtkUnitBase*)args.Addon.Address).Close();
     }
 
     public static bool CanPurifyAny() => GetPurifyableItems().Count > 0;

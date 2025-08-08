@@ -7,7 +7,7 @@ using ECommons;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
@@ -182,7 +182,7 @@ public unsafe class WorkshopOCImport
                             var iconSize = ImGui.GetTextLineHeight() * 1.5f;
                             var iconSizeVec = new Vector2(iconSize, iconSize);
                             var craftworkItemIcon = _craftSheet.GetRow(rec.CraftObjectId)!.Item.Value!.Icon;
-                            ImGui.Image(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(craftworkItemIcon)).GetWrapOrEmpty().ImGuiHandle, iconSizeVec, Vector2.Zero, Vector2.One);
+                            ImGui.Image(Service.TextureProvider.GetFromGameIcon(new GameIconLookup(craftworkItemIcon)).GetWrapOrEmpty().Handle, iconSizeVec, Vector2.Zero, Vector2.One);
 
                             ImGui.TableNextColumn();
                             ImGui.TextUnformatted(_botNames[(int)rec.CraftObjectId]);
@@ -426,7 +426,7 @@ public unsafe class WorkshopOCImport
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
     {
         var mji = MJIManager.Instance();
-        if (mji->IsPlayerInSanctuary == 0) return [];
+        if (!mji->IsPlayerInSanctuary) return [];
         var state = new WorkshopSolver.FavorState();
         var offset = nextWeek ? 6 : 3;
         for (var i = 0; i < 3; ++i)
