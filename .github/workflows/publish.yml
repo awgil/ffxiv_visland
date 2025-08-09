@@ -63,6 +63,6 @@ jobs:
           version_number: ${{ env.tag }}
           path: "ffxiv_visland/bin/Release/visland/latest.zip"
           type: "latest"
-          dalamud_version: "12"
+          dalamud_version: "13"
         env:
           PUBLISHER_KEY: ${{ secrets.PUBLISHER_KEY }}
