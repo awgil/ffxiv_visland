@@ -1,5 +1,10 @@
 ﻿global using static ECommons.GenericHelpers;
 global using static visland.Plugin;
+using System;
+using System.Collections.Specialized;
+using System.Globalization;
+using System.Linq;
+using System.Numerics;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Windowing;
@@ -10,11 +15,6 @@ using ECommons.Configuration;
 using ECommons.DalamudServices;
 using ECommons.Reflection;
 using ECommons.UIHelpers.AddonMasterImplementations;
-using System;
-using System.Collections.Specialized;
-using System.Globalization;
-using System.Linq;
-using System.Numerics;
 using visland.Export;
 using visland.Farm;
 using visland.Gathering;
@@ -22,7 +22,6 @@ using visland.Granary;
 using visland.Helpers;
 using visland.IPC;
 using visland.Pasture;
-using visland.Tasks;
 using visland.Workshop;
 
 namespace visland;
@@ -43,7 +42,6 @@ public sealed class Plugin : IDalamudPlugin
         $"/{Name} exectemponce <base64 route> → run unsaved route once";
 
     internal static Plugin P = null!;
-    internal Automation Automation;
     internal TaskManager TaskManager;
     internal DataStore DataStore;
 
@@ -76,7 +74,6 @@ public sealed class Plugin : IDalamudPlugin
 
         P = this;
         TaskManager = new() { AbortOnTimeout = true, TimeLimitMS = 20000 };
-        Automation = new();
         DataStore = new();
 
         _wndGather = new GatherWindow();
@@ -180,7 +177,7 @@ public sealed class Plugin : IDalamudPlugin
 
     internal void MoveToCommand(string[] args, bool relativeToPlayer)
     {
-        var originActor = relativeToPlayer ? Service.ClientState.LocalPlayer : null;
+        var originActor = relativeToPlayer ? Service.ObjectTable.LocalPlayer : null;
         var origin = originActor?.Position ?? new();
         var offset = new Vector3(float.Parse(args[1], CultureInfo.InvariantCulture), float.Parse(args[2], CultureInfo.InvariantCulture), float.Parse(args[3], CultureInfo.InvariantCulture));
         var route = new GatherRouteDB.Route { Name = "Temporary", Waypoints = [] };

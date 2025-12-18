@@ -1,5 +1,6 @@
 ﻿using ECommons;
 using ECommons.Automation;
+using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using visland.Helpers;
@@ -18,7 +19,7 @@ internal class CompatModule
 
         if (RouteDB.GatherModeOnStart)
         {
-            if (PlayerEx.OnIsland && MJIManager.Instance()->CurrentMode != 1)
+            if (Player.IsOnIsland && MJIManager.Instance()->CurrentMode != 1)
             {
                 // you can't just change the CurrentMode in MJIManager
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("MJIHud").Address, false, 11, 0);
@@ -26,7 +27,7 @@ internal class CompatModule
             }
 
             // the context menu doesn't respect the updateState for some reason
-            if (PlayerEx.OnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
+            if (Player.IsOnIsland && GenericHelpers.TryGetAddonByName<AtkUnitBase>("ContextIconMenu", out var cim) && cim->IsVisible)
                 Callback.Fire((AtkUnitBase*)Service.GameGui.GetAddonByName("ContextIconMenu").Address, true, -1);
         }
 

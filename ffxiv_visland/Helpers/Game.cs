@@ -48,7 +48,7 @@ public static unsafe class Game
         return (0, default);
     }
 
-    public static ulong? FindInteractable(uint id) => Svc.Objects.FirstOrDefault(o => o?.DataId == id && (o.Position - Player.Position).LengthSquared() < 1 && o.IsTargetable, null)?.GameObjectId;
+    public static ulong? FindInteractable(uint id) => Svc.Objects.FirstOrDefault(o => o?.BaseId == id && (o.Position - Player.Position).LengthSquared() < 1 && o.IsTargetable, null)?.GameObjectId;
 
     public static int NumItemsInInventory(uint itemId, short minCollectibility) => InventoryManager.Instance()->GetInventoryItemCount(itemId, false, false, false, minCollectibility);
 

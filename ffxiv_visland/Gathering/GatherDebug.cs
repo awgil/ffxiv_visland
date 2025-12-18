@@ -8,6 +8,7 @@ using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Linq;
 using visland.Helpers;
+using ECommons.GameHelpers;
 
 namespace visland.Gathering;
 public unsafe class GatherDebug(GatherRouteExec exec)
@@ -19,7 +20,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
     {
         using var child = ImRaii.Child("child");
         if (!child) return;
-        if (!PlayerEx.Available) return;
+        if (!Player.Available) return;
 
         if (exec.RouteDB.AutoRetainerIntegration)
         {
@@ -32,7 +33,7 @@ public unsafe class GatherDebug(GatherRouteExec exec)
             ImGui.Bullet();
             ImGui.SameLine();
             ImGuiEx.Text($"Retainers Ready: {Service.Retainers.HasRetainersReady}");
-            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == PlayerEx.CID}");
+            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
             Utils.DrawSection($"Conditions to End", ImGuiColors.ParsedGold, drawSeparator: false);
             ImGuiEx.Text($"Route paused: {exec.Paused}");
             ImGuiEx.Text($"Retainers finished: {Service.Retainers.Finished}");
@@ -45,22 +46,22 @@ public unsafe class GatherDebug(GatherRouteExec exec)
             ImGuiEx.Text($"Not Busy: {!Service.Retainers.IPC.IsBusy()}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"Current Character == Starting Character: {PlayerEx.CID == Service.Retainers.StartingCharacter}");
+            ImGuiEx.Text($"Current Character == Starting Character: {Player.CID == Service.Retainers.StartingCharacter}");
             ImGui.Bullet();
             ImGui.SameLine();
             ImGuiEx.Text($"No Retainers Ready: {!Service.Retainers.HasRetainersReady}");
             ImGui.Bullet();
             ImGui.SameLine();
             ImGuiEx.Text($"No Subs Ready: {!Service.Retainers.HasSubsReady}");
-            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == PlayerEx.CID}");
+            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
         }
 
         if (Svc.Targets.Target != null)
         {
             Utils.DrawSection("Target", ImGuiColors.ParsedGold);
             var t = Svc.Targets.Target;
-            ImGuiEx.Text($"IsNode: {GenericHelpers.GetRow<GatheringPoint>(t.DataId)}");
-            ImGuiEx.Text($"GatheringType: {GenericHelpers.GetRow<GatheringPoint>(t.DataId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
+            ImGuiEx.Text($"IsNode: {GenericHelpers.GetRow<GatheringPoint>(t.BaseId)}");
+            ImGuiEx.Text($"GatheringType: {GenericHelpers.GetRow<GatheringPoint>(t.BaseId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
         }
         if (exec.CurrentRoute != null && exec.CurrentRoute.TargetGatherItem != default)
         {

@@ -1,12 +1,11 @@
-﻿using AutoRetainerAPI;
-using Dalamud.Game;
-using Dalamud.Game.ClientState.Objects;
+﻿using System;
+using System.Linq;
+using AutoRetainerAPI;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc.Exceptions;
 using Dalamud.Plugin.Services;
-using System;
-using System.Linq;
+using ECommons.GameHelpers;
 using visland.Helpers;
 using visland.IPC;
 
@@ -71,7 +70,7 @@ public class Retainers
         {
             try
             {
-                return IPC.GetMultiEnabled() && !IPC.IsBusy() && PlayerEx.CID == StartingCharacter && !HasRetainersReady && !HasSubsReady;
+                return IPC.GetMultiEnabled() && !IPC.IsBusy() && Player.CID == StartingCharacter && !HasRetainersReady && !HasSubsReady;
             }
             catch (IpcNotReadyError)
             {
