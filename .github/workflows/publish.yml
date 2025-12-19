@@ -1,68 +1,17 @@
-name: Build & Publish to Dynamis
-
 on:
   push:
     tags:
-      - "v*.*.*.*"
+      - 'v*.*.*.*'
+
+permissions:
+  contents: read
 
 jobs:
-  Build:
+  publish:
     runs-on: ubuntu-latest
-    env:
-        DALAMUD_HOME: /tmp/dalamud
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Build and publish
+        uses: Jaksuhn/DynamisPublishAction@master
         with:
-          submodules: true
-
-      - name: Get Tag Name
-        run: echo "tag=$(echo ${{ github.ref }} | sed 's/refs\/tags\/v//')" >> $GITHUB_ENV
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 9.0.x
-          
-      - name: Download config.yaml
-        run: curl -L https://raw.githubusercontent.com/goatcorp/dalamud-declarative/main/config.yaml -o config.yaml
-
-      - name: Install yq
-        run: |
-          wget https://github.com/mikefarah/yq/releases/download/v4.34.1/yq_linux_amd64 -O /usr/local/bin/yq
-          chmod +x /usr/local/bin/yq
-
-      - name: Extract Latest Track Name
-        id: latest_track
-        run: |
-          latest_entry=$(yq eval '.tracks | to_entries | sort_by(.value.applicableGameVersion, (.key == "release")) | .[-1]' config.yaml)
-          track_name=$(echo "$latest_entry" | yq eval '.key' -)
-          echo "result=$track_name" >> $GITHUB_OUTPUT
-
-      - name: Download Dalamud Latest
-        run: |
-          if [ "${{ steps.latest_track.outputs.result }}" == "release" ]; then
-              wget https://goatcorp.github.io/dalamud-distrib/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
-          else
-              wget https://goatcorp.github.io/dalamud-distrib/${{ steps.latest_track.outputs.result }}/latest.zip -O ${{ env.DALAMUD_HOME }}.zip
-          fi
-          unzip ${{ env.DALAMUD_HOME }}.zip -d ${{ env.DALAMUD_HOME }}
-
-      - name: Restore Project
-        run: dotnet restore
-
-      - name: Build Project
-        run: dotnet build --configuration Release ffxiv_visland/visland.csproj -p:AssemblyVersion=${{ env.tag }}
-
-      - name: Publish Version
-        uses: PunishXIV/dynamis-action@v1
-        id: dynamis
-        with:
-          plugin_id: 28
-          internal_name: "visland"
-          version_number: ${{ env.tag }}
-          path: "ffxiv_visland/bin/Release/visland/latest.zip"
-          type: "latest"
-          dalamud_version: "13"
-        env:
-          PUBLISHER_KEY: ${{ secrets.PUBLISHER_KEY }}
+          plugin_id: '28'
+          publisher_key: ${{ secrets.PUBLISHER_KEY }}
