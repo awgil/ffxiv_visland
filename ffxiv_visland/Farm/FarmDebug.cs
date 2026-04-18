@@ -25,7 +25,7 @@ public unsafe class FarmDebug
                 for (var i = 0; i < 20; ++i)
                 {
                     var name = sheetCrop.TryGetRow(mgr->FarmState->SeedType[i], out var crop) ? crop.Name.Value.Singular : $"Unknown#{mgr->FarmState->SeedType[i]}";
-					_tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{sheetCrop.GetRow(mgr->FarmState->SeedType[i]).Name.Value.Singular}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
+					_tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{name}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }
             foreach (var n2 in _tree.Node("Seeds"))
