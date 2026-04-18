@@ -22,14 +22,14 @@ public unsafe class PastureDebug
             {
                 foreach (var (k, v) in mgr->PastureHandler->AnimalToLeavingItemIds)
                 {
-                    _tree.LeafNode($"{k} = {v.Item1} '{sheetItem.GetRow(v.Item1).Name}' / {v.Item2} '{sheetItem.GetRow(v.Item2).Name}'");
+                    _tree.LeafNode($"{k} = {v.Item1} '{Item.GetRef(v.Item1).ValueNullable?.Name ?? $"Unknown#{v.Item1}"}' / {v.Item2} '{Item.GetRef(v.Item2).ValueNullable?.Name ?? $"Unknown#{v.Item2}"}'");
                 }
             }
             foreach (var n2 in _tree.Node("Available Leavings"))
             {
                 foreach (var (k, v) in mgr->PastureHandler->AvailableMammetLeavings)
                 {
-                    _tree.LeafNode($"{k} '{sheetItem.GetRow(k).Name}' = {v}");
+                    _tree.LeafNode($"{k} '{Item.GetRef(k).ValueNullable?.Name ?? $"Unknown#{k}"}' = {v}");
                 }
             }
             foreach (var n2 in _tree.Node("Animals"))
@@ -38,18 +38,22 @@ public unsafe class PastureDebug
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
                 foreach (ref var a in mgr->PastureHandler->MJIAnimals)
                 {
-                    var baseName = sheetName.GetRow(a.BNPCNameId).Singular;
+                    if (!sheetName.TryGetRow(a.BNPCNameId, out var baseName)) {
+                        _tree.LeafNode($"Unknown animal type {a.AnimalType} '{a.NicknameString}'");
+                        continue;
+                    }
                     var pa = (byte*)Unsafe.AsPointer(ref a);
-                    foreach (var n3 in _tree.Node($"{a.SlotId} '{baseName}'"))
+                    foreach (var n3 in _tree.Node($"{a.SlotId} '{baseName.Singular}'"))
                     {
-                        var food = sheetItem.GetRow(a.AutoFoodItemId);
                         _tree.LeafNode($"Nickname: '{MemoryHelper.ReadString((nint)pa + 1, 24)}'");
                         _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"MJIAnimal row id: {a.AnimalType}");
                         _tree.LeafNode($"Mood={a.Mood}, food={a.FoodLevel} hours");
                         _tree.LeafNode($"Have leavings: {a.ManualLeavingsAvailable}");
                         _tree.LeafNode($"Care: cared={a.UnderCare}, paid={a.WasUnderCare}, halted={a.CareHalted}");
-                        _tree.LeafNode($"Mammet Food: {food.RowId} '{food.Name}");
+                        if (sheetItem.TryGetRow(a.AutoFoodItemId, out var food)) {
+                            _tree.LeafNode($"Mammet Food: {food.RowId} '{food.Name}");
+                        }
                         _tree.LeafNode($"Mammet Collect: {a.AutoAvailableLeavings1} / {a.AutoAvailableLeavings2}");
                     }
                 }
@@ -76,7 +80,9 @@ public unsafe class PastureDebug
                         _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"Rarity: {a.Desc.Rarity}");
                         _tree.LeafNode($"Sort: {a.Desc.Sort}");
-                        _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{sheetItem.GetRow(a.Desc.Leaving1ItemId).Name}' / {a.Desc.Leaving2ItemId} '{sheetItem.GetRow(a.Desc.Leaving2ItemId).Name}'");
+                        if (sheetItem.TryGetRow(a.Desc.Leaving1ItemId, out var r1) && sheetItem.TryGetRow(a.Desc.Leaving2ItemId, out var r2)) {
+                            _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{r1.Name}' / {a.Desc.Leaving2ItemId} '{r2.Name}'");
+                        }
                         _tree.LeafNode($"Food: {a.FoodItemId} '{a.FoodName}' ({a.FoodLink}) {a.FoodItemCategoryId} {a.FoodCount}");
                         _tree.LeafNode($"Tail: leavings={a.HaveUngatheredLeavings} cared={a.UnderCare}, paid={a.WasCared}, halted={a.CareHalted}");
                     }
@@ -87,11 +93,17 @@ public unsafe class PastureDebug
                 var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
                 foreach (ref readonly var a in agent->AnimalDescs.AsSpan())
                 {
-                    foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{sheetName.GetRow(a.BNpcNameId).Singular}"))
+                    if (!sheetName.TryGetRow(a.BNpcNameId, out var baseName)) {
+                        _tree.LeafNode($"Unknown animal type {a.AnimalRowId} '{a.Nickname}'");
+                        continue;
+                    }
+                    foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{baseName.Singular}"))
                     {
                         _tree.LeafNode($"Rarity: {a.Rarity}");
                         _tree.LeafNode($"Sort: {a.Sort}");
-                        _tree.LeafNode($"Rewards: {a.Leaving1ItemId} '{sheetItem.GetRow(a.Leaving1ItemId).Name}' / {a.Leaving2ItemId} '{sheetItem.GetRow(a.Leaving2ItemId).Name}'");
+                        if (sheetItem.TryGetRow(a.Leaving1ItemId, out var r1) && sheetItem.TryGetRow(a.Leaving2ItemId, out var r2)) {
+                            _tree.LeafNode($"Rewards: {a.Leaving1ItemId} '{r1.Name}' / {a.Leaving2ItemId} '{r2.Name}'");
+                        }
                     }
                 }
             }
