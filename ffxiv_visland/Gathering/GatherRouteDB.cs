@@ -68,7 +68,7 @@ public class GatherRouteDB : Configuration.Node
     public class Waypoint
     {
         public Vector3 Position;
-        public int ZoneID;
+        public uint ZoneID;
         public float Radius;
         public Movement Movement;
         public bool Pathfind = true;
@@ -283,7 +283,7 @@ public class GatherRouteDB : Configuration.Node
                         jweObj["Y"]?.Value<float>() ?? 0,
                         jweObj["Z"]?.Value<float>() ?? 0
                     ),
-                    ZoneID = jweObj["ZoneID"]?.Value<int>() ?? 0,
+                    ZoneID = jweObj["ZoneID"]?.Value<uint>() ?? 0,
                     Radius = jweObj["Radius"]?.Value<float>() ?? 0,
                     InteractWithName = jweObj["InteractWithName"]?.Value<string>() ?? "",
                     Movement = Enum.TryParse<Movement>(jweObj["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,

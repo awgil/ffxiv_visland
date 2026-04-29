@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using visland.Helpers;
-using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace visland.Export;
 

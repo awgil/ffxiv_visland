@@ -5,7 +5,6 @@ using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using visland.Helpers;
-using AtkValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
 
 namespace visland;
 

@@ -448,7 +448,7 @@ public class GatherWindow : Window, IDisposable
 
 
     private bool pathfind;
-    private int zoneID;
+    private uint zoneID;
     private float radius;
     private InteractionType interaction;
     private void DrawMassEditContextMenu(Route route)
@@ -482,7 +482,7 @@ public class GatherWindow : Window, IDisposable
             RouteDB.NotifyModified();
         }
 
-        ImGui.InputInt("Zone", ref zoneID);
+        ImGui.InputUInt("Zone", ref zoneID);
         ImGui.SameLine();
         if (ImGui.Button("Apply All###Zone"))
         {
@@ -520,7 +520,7 @@ public class GatherWindow : Window, IDisposable
         if (ImGui.InputFloat3("Position", ref wp.Position))
             RouteDB.NotifyModified();
 
-        if (ImGui.InputInt("Zone ID", ref wp.ZoneID))
+        if (ImGui.InputUInt("Zone ID", ref wp.ZoneID))
             RouteDB.NotifyModified();
 
         if (ImGui.InputFloat("Radius (yalms)", ref wp.Radius))

@@ -25,7 +25,7 @@ internal class Coordinates
         return (float)((((pos / 1000f * num) + 1024.0) / 2048.0 * 41.0 / num) + 1.0);
     }
 
-    public static uint GetNearestAetheryte(int zoneID, Vector3 pos)
+    public static uint GetNearestAetheryte(uint zoneID, Vector3 pos)
     {
         var aetheryte = 0u;
         double distance = 0;
@@ -34,7 +34,7 @@ internal class Coordinates
             if (!data.IsAetheryte) continue;
             if (data.Territory.Value.RowId == zoneID)
             {
-                var mapMarker = GenericHelpers.FindRow<MapMarker>(m => m!.DataType == 3 && m.DataKey.RowId == data.RowId);
+                var mapMarker = GenericHelpers.FindSubrow<MapMarker>(m => m!.DataType == 3 && m.DataKey.RowId == data.RowId);
                 if (mapMarker == null)
                 {
                     PluginLog.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
