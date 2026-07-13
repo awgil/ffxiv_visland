@@ -7,12 +7,10 @@ using System.Numerics;
 namespace visland.Helpers;
 
 // window attached to the addon
-public abstract class UIAttachedWindow : Window, IDisposable
-{
-    private string _addon;
+public abstract class UIAttachedWindow : Window, IDisposable {
+    private readonly string _addon;
 
-    public UIAttachedWindow(string name, string addon, Vector2 initialSize) : base(name)
-    {
+    public UIAttachedWindow(string name, string addon, Vector2 initialSize) : base(name) {
         _addon = addon;
         RespectCloseHotkey = false; // don't steal esc focus
         ShowCloseButton = false; // opened/closed automatically
@@ -24,12 +22,10 @@ public abstract class UIAttachedWindow : Window, IDisposable
 
     public virtual void Dispose() { }
 
-    public unsafe override void PreOpenCheck()
-    {
+    public unsafe override void PreOpenCheck() {
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(_addon).Address;
         IsOpen = addon != null && addon->IsVisible;
-        if (IsOpen)
-        {
+        if (IsOpen) {
             Position = new Vector2(addon->X + addon->GetScaledWidth(true), addon->Y);
         }
     }

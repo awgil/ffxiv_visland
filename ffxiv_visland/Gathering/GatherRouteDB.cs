@@ -1,5 +1,4 @@
 ﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using Dalamud.Bindings.ImGui;
@@ -16,17 +15,14 @@ using static visland.Gathering.GatherRouteDB;
 
 namespace visland.Gathering;
 
-public class GatherRouteDB : Configuration.Node
-{
-    public enum Movement
-    {
+public class GatherRouteDB : Configuration.Node {
+    public enum Movement {
         Normal = 0,
         MountFly = 1,
         MountNoFly = 2,
     }
 
-    public enum InteractionType
-    {
+    public enum InteractionType {
         None = 0,
         Standard = 1,
         //Emote = 2,
@@ -42,16 +38,14 @@ public class GatherRouteDB : Configuration.Node
         NodeScan = 12,
     }
 
-    public enum GrindStopConditions
-    {
+    public enum GrindStopConditions {
         None = 0,
         Kills = 1,
         QuestSequence = 2,
         QuestComplete = 3,
     }
 
-    public enum NodeType : byte
-    {
+    public enum NodeType : byte {
         Unknown = 0xFF,
         Regular = 0,
         Unspoiled = 1,
@@ -59,14 +53,12 @@ public class GatherRouteDB : Configuration.Node
         Legendary = 3,
     }
 
-    public class Node
-    {
+    public class Node {
         public NodeType Type;
         public int GpThreshold;
     }
 
-    public class Waypoint
-    {
+    public class Waypoint {
         public Vector3 Position;
         public uint ZoneID;
         public float Radius;
@@ -95,15 +87,12 @@ public class GatherRouteDB : Configuration.Node
         public Vector2 WaitTimeET;
 
         public bool NeedsMount => Movement == Movement.MountFly || Movement == Movement.MountNoFly;
-        public uint GatheringType => IsNode ? GenericHelpers.GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
-        public bool IsNode => GenericHelpers.GetSheet<GatheringPoint>().HasRow(InteractWithOID);
-        public Job NodeJob
-        {
-            get
-            {
+        public uint GatheringType => IsNode ? GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
+        public bool IsNode => GetSheet<GatheringPoint>().HasRow(InteractWithOID);
+        public Job NodeJob {
+            get {
                 if (!IsNode) return Job.ADV;
-                return GatheringType switch
-                {
+                return GatheringType switch {
                     0 or 1 => Job.MIN,
                     2 or 3 => Job.BTN,
                     4 or 5 => Job.FSH,
@@ -115,8 +104,7 @@ public class GatherRouteDB : Configuration.Node
         public List<Vector3>? Path;
     }
 
-    public class Route
-    {
+    public class Route {
         public string Name = "";
         public string Group = "";
         public int Food = 0;
@@ -147,20 +135,16 @@ public class GatherRouteDB : Configuration.Node
     public int PathFindCancellationTime = 5;
     public bool AutoGather = false;
 
-    public override void Deserialize(JObject j, JsonSerializer ser)
-    {
+    public override void Deserialize(JObject j, JsonSerializer ser) {
         Routes.Clear();
-        if (j["Routes"] is JArray ja)
-        {
-            foreach (var jr in ja)
-            {
+        if (j["Routes"] is JArray ja) {
+            foreach (var jr in ja) {
                 var jn = jr["Name"]?.Value<string>();
                 var jg = jr["Group"]?.Value<string>();
                 var jf = jr["Food"]?.Value<int>();
                 var jm = jr["Manual"]?.Value<int>();
                 var ji = jr["TargetGatherItem"]?.Value<int>();
-                if (jn != null && jr["Waypoints"] is JArray jw)
-                {
+                if (jn != null && jr["Waypoints"] is JArray jw) {
                     if (jg != null)
                         Routes.Add(new Route() { Name = jn, Group = jg, Food = jf ?? 0, Manual = jm ?? 0, TargetGatherItem = ji ?? 0, Waypoints = LoadFromJSONWaypoints(jw) });
                     else
@@ -189,11 +173,9 @@ public class GatherRouteDB : Configuration.Node
         GlobalManual = (int?)j["GlobalManual"] ?? 0;
     }
 
-    public override JObject Serialize(JsonSerializer ser)
-    {
+    public override JObject Serialize(JsonSerializer ser) {
         JArray res = [];
-        foreach (var r in Routes)
-        {
+        foreach (var r in Routes) {
             res.Add(new JObject()
             {
                 { "Name", r.Name },
@@ -224,12 +206,10 @@ public class GatherRouteDB : Configuration.Node
         };
     }
 
-    public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints)
-    {
+    public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints) {
         JArray jw = [];
 
-        foreach (var wp in waypoints)
-        {
+        foreach (var wp in waypoints) {
             if (wp.IsPhantom) continue;
             var wpObj = new JObject
             {
@@ -265,19 +245,15 @@ public class GatherRouteDB : Configuration.Node
         return jw;
     }
 
-    public static List<Waypoint> LoadFromJSONWaypoints(JArray j)
-    {
+    public static List<Waypoint> LoadFromJSONWaypoints(JArray j) {
         List<Waypoint> res = [];
 
-        try
-        {
-            foreach (var jwe in j)
-            {
+        try {
+            foreach (var jwe in j) {
                 if (jwe is not JObject jweObj)
                     continue;
 
-                res.Add(new()
-                {
+                res.Add(new() {
                     Position = new Vector3(
                         jweObj["X"]?.Value<float>() ?? 0,
                         jweObj["Y"]?.Value<float>() ?? 0,
@@ -309,19 +285,16 @@ public class GatherRouteDB : Configuration.Node
                 });
             }
         }
-        catch (Exception)
-        {
+        catch (Exception) {
             Svc.Log.Error($"Failed to load waypoints from JSON.");
         }
 
         return res;
     }
 
-    public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort = false)
-    {
+    public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort = false) {
         List<string> groups = ["Ungrouped"];
-        for (var g = 0; g < gatherRouteDB.Routes.Count; g++)
-        {
+        for (var g = 0; g < gatherRouteDB.Routes.Count; g++) {
             var routeSource = gatherRouteDB.Routes;
             if (string.IsNullOrEmpty(routeSource[g].Group))
                 routeSource[g].Group = "Ungrouped";
@@ -334,48 +307,39 @@ public class GatherRouteDB : Configuration.Node
         return groups;
     }
 
-    public static void TryImport(GatherRouteDB RouteDB)
-    {
-        try
-        {
+    public static void TryImport(GatherRouteDB RouteDB) {
+        try {
             var data = ImGui.GetClipboardText();
-            var (IsBase64, Json) = Utils.FromCompressedBase64(data);
+            (bool IsBase64, string? Json) = Utils.FromCompressedBase64(data);
             Route? import = null;
             if (IsBase64)
                 import = JsonConvert.DeserializeObject<Route>(Json);
             else if (Utils.IsJson(data))
                 import = JsonConvert.DeserializeObject<Route>(data);
-            if (import != null)
-            {
+            if (import != null) {
                 if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !NavmeshIPC.IsEnabled))
-                    Svc.Chat.Print($"[{Plugin.Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Plugin.Name} ({Plugin.Repo}).");
+                    Svc.Chat.Print($"[{Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Name} ({Repo}).");
 
                 RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Food = import.Food, Manual = import.Manual, TargetGatherItem = import.TargetGatherItem, Waypoints = import.Waypoints });
                 RouteDB.NotifyModified();
             }
         }
-        catch (JsonReaderException ex)
-        {
+        catch (JsonReaderException ex) {
             Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
             Service.Log.Error(ex, "Failed to import route");
         }
     }
 }
 
-public static class WaypointExtensions
-{
-    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, bool loop, out Waypoint? nextWaypoint)
-    {
+public static class WaypointExtensions {
+    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, bool loop, out Waypoint? nextWaypoint) {
         var index = route.Waypoints.IndexOf(waypoint);
-        if (index >= 0 && index < route.Waypoints.Count - 1)
-        {
+        if (index >= 0 && index < route.Waypoints.Count - 1) {
             nextWaypoint = route.Waypoints[index + 1];
             return true;
         }
-        else
-        {
-            if (loop)
-            {
+        else {
+            if (loop) {
                 nextWaypoint = route.Waypoints.First();
                 return true;
             }
@@ -384,8 +348,7 @@ public static class WaypointExtensions
         }
     }
 
-    public static void AddWaypointsAfter(this Waypoint waypoint, Route route, List<Waypoint> waypoints)
-    {
+    public static void AddWaypointsAfter(this Waypoint waypoint, Route route, List<Waypoint> waypoints) {
         var index = route.Waypoints.IndexOf(waypoint);
         route.Waypoints.InsertRange(index + 1, waypoints);
     }

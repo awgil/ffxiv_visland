@@ -7,40 +7,32 @@ using ECommons.ImGuiMethods;
 
 namespace visland.Pasture;
 
-unsafe class PastureWindow : UIAttachedWindow
-{
-    private PastureConfig _config;
-    private PastureDebug _debug = new();
+unsafe class PastureWindow : UIAttachedWindow {
+    private readonly PastureConfig _config;
+    private readonly PastureDebug _debug = new();
 
-    public PastureWindow() : base("Pasture Automation", "MJIAnimalManagement", new(400, 600))
-    {
+    public PastureWindow() : base("Pasture Automation", "MJIAnimalManagement", new(400, 600)) {
         _config = Service.Config.Get<PastureConfig>();
     }
 
-    public override void PreOpenCheck()
-    {
+    public override void PreOpenCheck() {
         base.PreOpenCheck();
         var agent = AgentMJIAnimalManagement.Instance();
         IsOpen &= agent != null && !agent->UpdateNeeded;
     }
 
-    public override void OnOpen()
-    {
-        if (_config.Collect != CollectStrategy.Manual)
-        {
+    public override void OnOpen() {
+        if (_config.Collect != CollectStrategy.Manual) {
             var state = CalculateCollectResult();
-            if (state == CollectResult.CanCollectSafely || _config.Collect == CollectStrategy.FullAuto && state == CollectResult.CanCollectWithOvercap)
-            {
+            if (state == CollectResult.CanCollectSafely || _config.Collect == CollectStrategy.FullAuto && state == CollectResult.CanCollectWithOvercap) {
                 CollectAll();
             }
         }
     }
 
-    public override void Draw()
-    {
+    public override void Draw() {
         using var tabs = ImRaii.TabBar("Tabs");
-        if (tabs)
-        {
+        if (tabs) {
             using (var tab = ImRaii.TabItem("Main"))
                 if (tab)
                     DrawMain();
@@ -50,16 +42,14 @@ unsafe class PastureWindow : UIAttachedWindow
         }
     }
 
-    private void DrawMain()
-    {
+    private void DrawMain() {
         if (UICombo.Enum("Auto Collect", ref _config.Collect))
             _config.NotifyModified();
         ImGui.Separator();
 
         var mji = MJIManager.Instance();
         var agent = AgentMJIAnimalManagement.Instance();
-        if (mji == null || mji->PastureHandler == null || mji->IslandState.Pasture.EligibleForCare == 0 || agent == null)
-        {
+        if (mji == null || mji->PastureHandler == null || mji->IslandState.Pasture.EligibleForCare == 0 || agent == null) {
             ImGui.TextUnformatted("Mammets not available!");
             return;
         }
@@ -67,33 +57,27 @@ unsafe class PastureWindow : UIAttachedWindow
         DrawGlobalOperations();
     }
 
-    private void DrawGlobalOperations()
-    {
+    private void DrawGlobalOperations() {
         var res = CalculateCollectResult();
-        if (res != CollectResult.NothingToCollect)
-        {
+        if (res != CollectResult.NothingToCollect) {
             // if there's uncollected stuff - propose to collect everything
-            using (ImRaii.Disabled(res == CollectResult.EverythingCapped))
-            {
+            using (ImRaii.Disabled(res == CollectResult.EverythingCapped)) {
                 if (ImGui.Button("Collect all"))
                     CollectAll();
-                if (res != CollectResult.CanCollectSafely)
-                {
+                if (res != CollectResult.CanCollectSafely) {
                     ImGui.SameLine();
                     using (ImRaii.PushColor(ImGuiCol.Text, 0xff0000ff))
                         ImGuiEx.TextV(res == CollectResult.EverythingCapped ? "Inventory is full!" : "Warning: some resources will overcap!");
                 }
             }
         }
-        else
-        {
+        else {
             // TODO: think about any other global operations?
             ImGuiEx.TextV("Nothing to collect!");
         }
     }
 
-    private CollectResult CalculateCollectResult()
-    {
+    private CollectResult CalculateCollectResult() {
         var mji = MJIManager.Instance();
         if (mji == null || mji->PastureHandler == null)
             return CollectResult.NothingToCollect;
@@ -101,8 +85,7 @@ unsafe class PastureWindow : UIAttachedWindow
         var haveNone = true;
         var anyOvercap = false;
         var allFull = true;
-        foreach (var (itemId, count) in mji->PastureHandler->AvailableMammetLeavings)
-        {
+        foreach ((uint itemId, int count) in mji->PastureHandler->AvailableMammetLeavings) {
             if (count <= 0)
                 continue;
             haveNone = false;
@@ -114,11 +97,9 @@ unsafe class PastureWindow : UIAttachedWindow
         return haveNone ? CollectResult.NothingToCollect : allFull ? CollectResult.EverythingCapped : anyOvercap ? CollectResult.CanCollectWithOvercap : CollectResult.CanCollectSafely;
     }
 
-    private void CollectAll()
-    {
+    private void CollectAll() {
         var mji = MJIManager.Instance();
-        if (mji != null && mji->PastureHandler != null)
-        {
+        if (mji != null && mji->PastureHandler != null) {
             Service.Log.Info("Collecting everything from pasture");
             mji->PastureHandler->CollectLeavingsAll();
         }

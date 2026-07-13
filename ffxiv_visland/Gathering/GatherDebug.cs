@@ -1,7 +1,6 @@
 ﻿using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
-using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using Dalamud.Bindings.ImGui;
@@ -11,19 +10,16 @@ using visland.Helpers;
 using ECommons.GameHelpers;
 
 namespace visland.Gathering;
-public unsafe class GatherDebug(GatherRouteExec exec)
-{
-    private readonly UITree _tree = new();
-    private GatherRouteExec exec = exec;
 
-    public void Draw()
-    {
+public unsafe class GatherDebug(GatherRouteExec exec) {
+    private readonly GatherRouteExec exec = exec;
+
+    public void Draw() {
         using var child = ImRaii.Child("child");
         if (!child) return;
         if (!Player.Available) return;
 
-        if (exec.RouteDB.AutoRetainerIntegration)
-        {
+        if (exec.RouteDB.AutoRetainerIntegration) {
             Utils.DrawSection("AutoRetainer Integration", ImGuiColors.ParsedGold);
             Utils.DrawSection($"Conditions to Begin", ImGuiColors.ParsedGold, drawSeparator: false);
             ImGuiEx.Text($"One of:");
@@ -56,39 +52,38 @@ public unsafe class GatherDebug(GatherRouteExec exec)
             ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
         }
 
-        if (Svc.Targets.Target != null)
-        {
+        if (Svc.Targets.Target != null) {
             Utils.DrawSection("Target", ImGuiColors.ParsedGold);
             var t = Svc.Targets.Target;
-            ImGuiEx.Text($"IsNode: {GenericHelpers.GetRow<GatheringPoint>(t.BaseId)}");
-            ImGuiEx.Text($"GatheringType: {GenericHelpers.GetRow<GatheringPoint>(t.BaseId)!.Value.GatheringPointBase.Value.GatheringType.RowId}");
+            if (TryGetRow(t.BaseId, out GatheringPoint gp)) {
+                ImGuiEx.Text($"IsNode: {gp}");
+                if (gp.GatheringPointBase.IsValid)
+                    ImGuiEx.Text($"GatheringType: {gp.GatheringPointBase.Value.GatheringType.RowId}");
+            }
+            else
+                ImGuiEx.Text($"Not a GatheringPoint (BaseId={t.BaseId})");
         }
-        if (exec.CurrentRoute is { TargetGatherItem: not 0 } && TryGetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem, out var item))
-        {
+        if (exec.CurrentRoute is { TargetGatherItem: not 0 } && TryGetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem, out var item)) {
             Utils.DrawSection("Target Item", ImGuiColors.ParsedGold);
             var wp = exec.CurrentRoute.Waypoints[exec.CurrentWaypoint];
             ImGuiEx.Text($"[{exec.CurrentRoute.TargetGatherItem}] {item.Name}");
             ImGuiEx.Text($"Waypoint: IsNode: {wp.IsNode} Type: {wp.GatheringType} NodeJob: {wp.NodeJob}");
         }
-        if (exec.GatheringAM != null)
-        {
+        if (exec.GatheringAM != null) {
             Utils.DrawSection("Gathering Addon", ImGuiColors.ParsedGold);
             ImGuiEx.Text($"Integrity: {exec.GatheringAM.CurrentIntegrity}/{exec.GatheringAM.TotalIntegrity}");
-            foreach (var gatherable in exec.GatheringAM.GatheredItems.Where(x => x.IsEnabled))
-            {
+            foreach (var gatherable in exec.GatheringAM.GatheredItems.Where(x => x.IsEnabled)) {
                 ImGuiEx.TextV($@"[{gatherable.ItemID}] Lv{gatherable.ItemLevel} {gatherable.GatherChance}% {gatherable.ItemName} {(gatherable.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
                 ImGui.SameLine();
                 if (ImGuiEx.IconButton(Dalamud.Interface.FontAwesomeIcon.BoreHole, $"###{gatherable.ItemID}"))
                     gatherable.Gather();
             }
         }
-        if (exec.GatheredItem != null)
-        {
+        if (exec.GatheredItem != null) {
             Utils.DrawSection("Gathered Item", ImGuiColors.ParsedGold);
             ImGuiEx.Text($"[{exec.GatheredItem.ItemID}] {exec.GatheredItem.ItemName} {(exec.GatheredItem.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
         }
-        if (exec.GatheringCollectableAM != null)
-        {
+        if (exec.GatheringCollectableAM != null) {
             Utils.DrawSection("Gathering Collectable Addon", ImGuiColors.ParsedGold);
             ImGuiEx.Text($"Item: [{exec.GatheringCollectableAM.ItemID}] {exec.GatheringCollectableAM.ItemName}");
             ImGuiEx.Text($"Integrity: {exec.GatheringCollectableAM.CurrentIntegrity}/{exec.GatheringCollectableAM.TotalIntegrity}");

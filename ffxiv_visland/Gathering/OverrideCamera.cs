@@ -7,8 +7,7 @@ using visland.Helpers;
 namespace visland.Gathering;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x2B0)]
-public unsafe struct CameraEx
-{
+public unsafe struct CameraEx {
     // Updated FieldOffsets borrowed from navmesh
     [FieldOffset(0x140)] public float DirH; // 0 is north, increases CW
     [FieldOffset(0x144)] public float DirV; // 0 is horizontal, positive is looking up, negative looking down
@@ -20,13 +19,10 @@ public unsafe struct CameraEx
     [FieldOffset(0x15C)] public float DirVMax; // +45deg by default
 }
 
-public unsafe class OverrideCamera
-{
-    public bool Enabled
-    {
+public unsafe class OverrideCamera {
+    public bool Enabled {
         get => RMICameraHook.IsEnabled;
-        set
-        {
+        set {
             if (value)
                 RMICameraHook.Enable();
             else
@@ -42,17 +38,15 @@ public unsafe class OverrideCamera
 
     private delegate void RMICameraDelegate(CameraEx* self, int inputMode, float speedH, float speedV);
     [EzHook("48 8B C4 53 48 81 EC ?? ?? ?? ?? 44 0F 29 50 ??", false)]
-    private EzHook<RMICameraDelegate> RMICameraHook = null!;
+    private readonly EzHook<RMICameraDelegate> RMICameraHook = null!;
 
-    public OverrideCamera()
-    {
+    public OverrideCamera() {
         EzSignatureHelper.Initialize(this);
         Service.Hook.InitializeFromAttributes(this);
         Service.Log.Information($"RMICamera address: 0x{RMICameraHook.Address:X}");
     }
 
-    private void RMICameraDetour(CameraEx* self, int inputMode, float speedH, float speedV)
-    {
+    private void RMICameraDetour(CameraEx* self, int inputMode, float speedH, float speedV) {
         RMICameraHook.Original(self, inputMode, speedH, speedV);
         if (IgnoreUserInput || inputMode == 0) // let user override...
         {

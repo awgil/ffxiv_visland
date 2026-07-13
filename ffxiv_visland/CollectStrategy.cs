@@ -2,8 +2,7 @@
 
 namespace visland;
 
-public enum CollectStrategy
-{
+public enum CollectStrategy {
     [Description("Manual")]
     Manual,
 

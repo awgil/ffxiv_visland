@@ -8,8 +8,7 @@ using visland.Helpers;
 namespace visland.Gathering;
 
 [StructLayout(LayoutKind.Explicit, Size = 0x18)]
-public unsafe struct PlayerMoveControllerFlyInput
-{
+public unsafe struct PlayerMoveControllerFlyInput {
     [FieldOffset(0x0)] public float Forward;
     [FieldOffset(0x4)] public float Left;
     [FieldOffset(0x8)] public float Up;
@@ -19,20 +18,15 @@ public unsafe struct PlayerMoveControllerFlyInput
     [FieldOffset(0x15)] public byte HaveBackwardOrStrafe;
 }
 
-public unsafe class OverrideMovement
-{
-    public bool Enabled
-    {
+public unsafe class OverrideMovement {
+    public bool Enabled {
         get => RMIWalkHook.IsEnabled;
-        set
-        {
-            if (value)
-            {
+        set {
+            if (value) {
                 RMIWalkHook.Enable();
                 RMIFlyHook.Enable();
             }
-            else
-            {
+            else {
                 RMIWalkHook.Disable();
                 RMIFlyHook.Disable();
             }
@@ -46,19 +40,18 @@ public unsafe class OverrideMovement
     private bool _legacyMode;
 
     private delegate bool RMIWalkIsInputEnabled(void* self);
-    private RMIWalkIsInputEnabled _rmiWalkIsInputEnabled1;
-    private RMIWalkIsInputEnabled _rmiWalkIsInputEnabled2;
+    private readonly RMIWalkIsInputEnabled _rmiWalkIsInputEnabled1;
+    private readonly RMIWalkIsInputEnabled _rmiWalkIsInputEnabled2;
 
     private delegate void RMIWalkDelegate(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk);
     [EzHook("E8 ?? ?? ?? ?? 80 7B 3E 00 48 8D 3D", false)]
-    private EzHook<RMIWalkDelegate> RMIWalkHook = null!;
+    private readonly EzHook<RMIWalkDelegate> RMIWalkHook = null!;
 
     private delegate void RMIFlyDelegate(void* self, PlayerMoveControllerFlyInput* result);
     [EzHook("E8 ?? ?? ?? ?? 0F B6 0D ?? ?? ?? ?? B8", false)]
-    private EzHook<RMIFlyDelegate> RMIFlyHook = null!;
+    private readonly EzHook<RMIFlyDelegate> RMIFlyHook = null!;
 
-    public OverrideMovement()
-    {
+    public OverrideMovement() {
         EzSignatureHelper.Initialize(this);
         Service.Log.Information($"RMIWalk address: 0x{RMIWalkHook.Address:X}");
         Service.Log.Information($"RMIFly address: 0x{RMIFlyHook.Address:X}");
@@ -74,30 +67,25 @@ public unsafe class OverrideMovement
         UpdateLegacyMode();
     }
 
-    public void Dispose()
-    {
+    public void Dispose() {
         Service.GameConfig.UiControlChanged -= OnConfigChanged;
     }
 
-    private void RMIWalkDetour(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk)
-    {
+    private void RMIWalkDetour(void* self, float* sumLeft, float* sumForward, float* sumTurnLeft, byte* haveBackwardOrStrafe, byte* a6, byte bAdditiveUnk) {
         RMIWalkHook.Original(self, sumLeft, sumForward, sumTurnLeft, haveBackwardOrStrafe, a6, bAdditiveUnk);
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
         var movementAllowed = bAdditiveUnk == 0 && _rmiWalkIsInputEnabled1(self) && _rmiWalkIsInputEnabled2(self); //&& !Service.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BeingMoved];
-        if (movementAllowed && (IgnoreUserInput || *sumLeft == 0 && *sumForward == 0) && DirectionToDestination(false) is var relDir && relDir != null)
-        {
+        if (movementAllowed && (IgnoreUserInput || *sumLeft == 0 && *sumForward == 0) && DirectionToDestination(false) is var relDir && relDir != null) {
             var dir = relDir.Value.h.ToDirection();
             *sumLeft = dir.X;
             *sumForward = dir.Y;
         }
     }
 
-    private void RMIFlyDetour(void* self, PlayerMoveControllerFlyInput* result)
-    {
+    private void RMIFlyDetour(void* self, PlayerMoveControllerFlyInput* result) {
         RMIFlyHook.Original(self, result);
         // TODO: we really need to introduce some extra checks that PlayerMoveController::readInput does - sometimes it skips reading input, and returning something non-zero breaks stuff...
-        if ((IgnoreUserInput || result->Forward == 0 && result->Left == 0 && result->Up == 0) && DirectionToDestination(true) is var relDir && relDir != null)
-        {
+        if ((IgnoreUserInput || result->Forward == 0 && result->Left == 0 && result->Up == 0) && DirectionToDestination(true) is var relDir && relDir != null) {
             var dir = relDir.Value.h.ToDirection();
             result->Forward = dir.Y;
             result->Left = dir.X;
@@ -105,8 +93,7 @@ public unsafe class OverrideMovement
         }
     }
 
-    private (Angle h, Angle v)? DirectionToDestination(bool allowVertical)
-    {
+    private (Angle h, Angle v)? DirectionToDestination(bool allowVertical) {
         var player = Service.ObjectTable.LocalPlayer;
         if (player == null)
             return null;
@@ -125,8 +112,7 @@ public unsafe class OverrideMovement
     }
 
     private void OnConfigChanged(object? sender, ConfigChangeEvent evt) => UpdateLegacyMode();
-    private void UpdateLegacyMode()
-    {
+    private void UpdateLegacyMode() {
         _legacyMode = Service.GameConfig.UiControl.TryGetUInt("MoveMode", out var mode) && mode == 1;
         Service.Log.Debug($"Legacy mode is now {(_legacyMode ? "enabled" : "disabled")}");
     }

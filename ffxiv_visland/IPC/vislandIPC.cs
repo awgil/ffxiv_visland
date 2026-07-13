@@ -4,11 +4,9 @@ using visland.Gathering;
 
 namespace visland.IPC;
 
-internal class VislandIPC
-{
+internal class VislandIPC {
     private readonly GatherWindow wndGather;
-    public VislandIPC(GatherWindow _wndGather)
-    {
+    public VislandIPC(GatherWindow _wndGather) {
         wndGather = _wndGather;
         EzIPC.Init(this);
     }
@@ -20,8 +18,7 @@ internal class VislandIPC
     [EzIPC] public void StartRoute(string route, bool once) => P.ExecuteTempRoute(route, once);
 
     [EzIPC]
-    public void GatherItem(uint itemId)
-    {
+    public void GatherItem(uint itemId) {
         if (wndGather.Exec.GatheringAM?.GatheredItems.TryGetFirst(x => x.ItemID == itemId, out var item) ?? false)
             item.Gather();
     }

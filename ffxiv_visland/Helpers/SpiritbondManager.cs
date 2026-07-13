@@ -6,8 +6,8 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 
 namespace visland.Helpers;
-public unsafe static class SpiritbondManager
-{
+
+public unsafe static class SpiritbondManager {
     public static bool UseMateriaExtraction() => ActionManager.Instance()->UseAction(ActionType.GeneralAction, 14);
     public static ushort Weapon { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[0].SpiritbondOrCollectability; }
     public static ushort Offhand { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[1].SpiritbondOrCollectability; }
@@ -22,8 +22,7 @@ public unsafe static class SpiritbondManager
     public static ushort Ring1 { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[11].SpiritbondOrCollectability; }
     public static ushort Ring2 { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[12].SpiritbondOrCollectability; }
 
-    public static bool IsSpiritbondReadyAny()
-    {
+    public static bool IsSpiritbondReadyAny() {
         if (!QuestManager.IsQuestComplete(66174)) return false; // doesn't have materia extraction unlocked so doesn't matter
 
         if (Weapon == 10000) return true;
@@ -45,55 +44,45 @@ public unsafe static class SpiritbondManager
     public static bool IsMateriaMenuOpen() => Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero;
 
     public static bool IsMateriaMenuDialogOpen() => Svc.GameGui.GetAddonByName("MaterializeDialog", 1) != IntPtr.Zero;
-    public unsafe static void OpenMateriaMenu()
-    {
+    public unsafe static void OpenMateriaMenu() {
         if (Svc.GameGui.GetAddonByName("Materialize", 1) == IntPtr.Zero)
             UseMateriaExtraction();
     }
 
-    public unsafe static void CloseMateriaMenu()
-    {
+    public unsafe static void CloseMateriaMenu() {
         if (Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
             UseMateriaExtraction();
     }
 
-    public unsafe static void ConfirmMateriaDialog()
-    {
-        try
-        {
-            if (GenericHelpers.TryGetAddonByName<AtkUnitBase>("MaterializeDialog", out var addon))
+    public unsafe static void ConfirmMateriaDialog() {
+        try {
+            if (TryGetAddonByName("MaterializeDialog", out AtkUnitBase* addon))
                 new AddonMaster.MaterializeDialog(addon).Materialize();
         }
-        catch
-        {
+        catch {
 
         }
     }
 
     private static DateTime _nextRetry;
 
-    public unsafe static bool ExtractMateriaTask()
-    {
-        if (IsMateriaMenuOpen() && !IsSpiritbondReadyAny())
-        {
+    public unsafe static bool ExtractMateriaTask() {
+        if (IsMateriaMenuOpen() && !IsSpiritbondReadyAny()) {
             if (DateTime.Now < _nextRetry) return false;
             CloseMateriaMenu();
             _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
             return false;
         }
 
-        if (IsSpiritbondReadyAny())
-        {
+        if (IsSpiritbondReadyAny()) {
             if (DateTime.Now < _nextRetry) return false;
-            if (!IsMateriaMenuOpen())
-            {
+            if (!IsMateriaMenuOpen()) {
                 OpenMateriaMenu();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
                 return false;
             }
 
-            if (IsMateriaMenuOpen() && !GenericHelpers.IsOccupied())
-            {
+            if (IsMateriaMenuOpen() && !IsOccupied()) {
                 ExtractFirstMateria();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
                 return false;
@@ -106,18 +95,13 @@ public unsafe static class SpiritbondManager
         return true;
     }
 
-    public unsafe static void ExtractFirstMateria()
-    {
-        try
-        {
-            if (IsSpiritbondReadyAny())
-            {
-                if (IsMateriaMenuDialogOpen())
-                {
+    public unsafe static void ExtractFirstMateria() {
+        try {
+            if (IsSpiritbondReadyAny()) {
+                if (IsMateriaMenuDialogOpen()) {
                     ConfirmMateriaDialog();
                 }
-                else
-                {
+                else {
                     var materializePTR = Svc.GameGui.GetAddonByName("Materialize", 1);
                     if (materializePTR == IntPtr.Zero)
                         return;
@@ -129,13 +113,11 @@ public unsafe static class SpiritbondManager
                     var list = (AtkComponentList*)materalizeWindow->UldManager.NodeList[5];
 
                     var values = stackalloc AtkValue[2];
-                    values[0] = new()
-                    {
+                    values[0] = new() {
                         Type = AtkValueType.Int,
                         Int = 2,
                     };
-                    values[1] = new()
-                    {
+                    values[1] = new() {
                         Type = AtkValueType.UInt,
                         UInt = 0,
                     };
@@ -144,8 +126,7 @@ public unsafe static class SpiritbondManager
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             e.Log();
         }
     }

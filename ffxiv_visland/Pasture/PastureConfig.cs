@@ -2,7 +2,6 @@
 
 namespace visland.Pasture;
 
-public class PastureConfig : Configuration.Node
-{
+public class PastureConfig : Configuration.Node {
     public CollectStrategy Collect = CollectStrategy.Manual;
 }

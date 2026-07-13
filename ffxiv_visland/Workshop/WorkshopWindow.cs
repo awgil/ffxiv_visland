@@ -5,20 +5,17 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace visland.Workshop;
 
-unsafe class WorkshopWindow : UIAttachedWindow
-{
-    private WorkshopConfig _config;
-    private WorkshopManual _manual = new();
-    private WorkshopOCImport _oc = new();
-    private WorkshopDebug _debug = new();
+unsafe class WorkshopWindow : UIAttachedWindow {
+    private readonly WorkshopConfig _config;
+    private readonly WorkshopManual _manual = new();
+    private readonly WorkshopOCImport _oc = new();
+    private readonly WorkshopDebug _debug = new();
 
-    public WorkshopWindow() : base("Workshop automation", "MJICraftSchedule", new(500, 650))
-    {
+    public WorkshopWindow() : base("Workshop automation", "MJICraftSchedule", new(500, 650)) {
         _config = Service.Config.Get<WorkshopConfig>();
     }
 
-    public override void PreOpenCheck()
-    {
+    public override void PreOpenCheck() {
         base.PreOpenCheck();
         var agent = AgentMJICraftSchedule.Instance();
         IsOpen &= agent != null && agent->Data != null;
@@ -26,11 +23,9 @@ unsafe class WorkshopWindow : UIAttachedWindow
         _oc.Update();
     }
 
-    public override void Draw()
-    {
+    public override void Draw() {
         using var tabs = ImRaii.TabBar("Tabs");
-        if (tabs)
-        {
+        if (tabs) {
             using (var tab = ImRaii.TabItem("OC import"))
                 if (tab)
                     _oc.Draw();
@@ -46,20 +41,16 @@ unsafe class WorkshopWindow : UIAttachedWindow
         }
     }
 
-    public override void OnOpen()
-    {
-        if (_config.AutoOpenNextDay)
-        {
+    public override void OnOpen() {
+        if (_config.AutoOpenNextDay) {
             WorkshopUtils.SetCurrentCycle(AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 1);
         }
-        if (_config.AutoImport)
-        {
+        if (_config.AutoImport) {
             _oc.ImportRecsFromClipboard(true);
         }
     }
 
-    private void DrawSettings()
-    {
+    private void DrawSettings() {
         if (ImGui.Checkbox("Automatically select next cycle on open", ref _config.AutoOpenNextDay))
             _config.NotifyModified();
         if (ImGui.Checkbox("Automatically import base recs on open", ref _config.AutoImport))

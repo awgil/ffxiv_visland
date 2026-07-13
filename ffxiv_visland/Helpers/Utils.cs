@@ -23,10 +23,8 @@ using System.Text;
 
 namespace visland.Helpers;
 
-public static unsafe class Utils
-{
-    public static Vector4 ConvertToVector4(uint color)
-    {
+public static unsafe class Utils {
+    public static Vector4 ConvertToVector4(uint color) {
         var r = (byte)(color >> 24);
         var g = (byte)(color >> 16);
         var b = (byte)(color >> 8);
@@ -35,8 +33,7 @@ public static unsafe class Utils
         return new Vector4(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
     }
 
-    public static uint ToHex(this Vector4 color)
-    {
+    public static uint ToHex(this Vector4 color) {
         var r = (byte)(color.X * 255);
         var g = (byte)(color.Y * 255);
         var b = (byte)(color.Z * 255);
@@ -49,8 +46,7 @@ public static unsafe class Utils
     public static bool HasPlugin(string name) => DalamudReflector.TryGetDalamudPlugin(name, out var _, false, true);
 
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
-    public static bool DangerousItem(Func<bool> item)
-    {
+    public static bool DangerousItem(Func<bool> item) {
         var disabled = !ImGui.IsKeyDown(ImGuiKey.ModShift);
         ImGui.BeginDisabled(disabled);
         var res = item();
@@ -63,8 +59,7 @@ public static unsafe class Utils
     public static bool DangerousMenuItem(string label) => DangerousItem(() => ImGui.MenuItem(label));
 
     private static Vector2 size = new(24);
-    public static void WorkInProgressIcon()
-    {
+    public static void WorkInProgressIcon() {
         const uint iconID = 60073;
         var texture = Svc.Texture?.GetFromGameIcon(iconID).GetWrapOrEmpty();
         if (texture != null)
@@ -76,8 +71,7 @@ public static unsafe class Utils
     }
 
     private static float startTime;
-    public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration)
-    {
+    public static void FlashText(string text, Vector4 colour1, Vector4 colour2, float duration) {
         var currentTime = (float)ImGui.GetTime();
         var elapsedTime = currentTime - startTime;
 
@@ -95,14 +89,12 @@ public static unsafe class Utils
         ImGui.Text(text);
         ImGui.PopStyleColor();
 
-        if (elapsedTime >= duration)
-        {
+        if (elapsedTime >= duration) {
             startTime = currentTime;
         }
     }
 
-    public static void DrawSection(string Label, Vector4 colour, bool PushDown = true, bool drawSeparator = true)
-    {
+    public static void DrawSection(string Label, Vector4 colour, bool PushDown = true, bool drawSeparator = true) {
         var style = ImGui.GetStyle();
 
         // push down a bit
@@ -112,8 +104,7 @@ public static unsafe class Utils
         using (ImRaii.PushColor(ImGuiCol.Text, colour))
             ImGui.TextUnformatted(Label);
 
-        if (drawSeparator)
-        {
+        if (drawSeparator) {
             // pull up the separator
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - style.ItemSpacing.Y + 3);
             ImGui.Separator();
@@ -122,8 +113,7 @@ public static unsafe class Utils
     }
 
     // note: argument should really be any AtkEventInterface
-    public static AtkValue SynthesizeEvent(AgentInterface* receiver, ulong eventKind, Span<AtkValue> args)
-    {
+    public static AtkValue SynthesizeEvent(AgentInterface* receiver, ulong eventKind, Span<AtkValue> args) {
         AtkValue res = new();
         receiver->ReceiveEvent(&res, args.GetPointer(0), (uint)args.Length, eventKind);
         return res;
@@ -141,49 +131,39 @@ public static unsafe class Utils
     public static void Swap<T>(ref T l, ref T r) => (r, l) = (l, r);
 
     // get all types defined in specified assembly
-    public static IEnumerable<Type?> GetAllTypes(Assembly asm)
-    {
-        try
-        {
+    public static IEnumerable<Type?> GetAllTypes(Assembly asm) {
+        try {
             return asm.DefinedTypes;
         }
-        catch (ReflectionTypeLoadException e)
-        {
+        catch (ReflectionTypeLoadException e) {
             return e.Types;
         }
     }
 
     // get all types derived from specified type in specified assembly
-    public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm)
-    {
+    public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm) {
         var b = typeof(Base);
         return GetAllTypes(asm).Where(t => t?.IsSubclassOf(b) ?? false).Select(t => t!);
     }
 
-    public static unsafe string ToCompressedBase64<T>(T data)
-    {
-        try
-        {
+    public static unsafe string ToCompressedBase64<T>(T data) {
+        try {
             var json = JsonConvert.SerializeObject(data, Formatting.None);
             var bytes = Encoding.UTF8.GetBytes(json);
             using var compressedStream = new MemoryStream();
-            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
-            {
+            using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress)) {
                 zipStream.Write(bytes, 0, bytes.Length);
             }
 
             return Convert.ToBase64String(compressedStream.ToArray());
         }
-        catch
-        {
+        catch {
             return string.Empty;
         }
     }
 
-    public static (bool IsBase64, string Json) FromCompressedBase64(this string compressedBase64)
-    {
-        try
-        {
+    public static (bool IsBase64, string Json) FromCompressedBase64(this string compressedBase64) {
+        try {
             var data = Convert.FromBase64String(compressedBase64);
             using var compressedStream = new MemoryStream(data);
             using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
@@ -191,27 +171,22 @@ public static unsafe class Utils
             zipStream.CopyTo(resultStream);
             return (true, Encoding.UTF8.GetString(resultStream.ToArray()));
         }
-        catch (FormatException)
-        {
+        catch (FormatException) {
             return (false, string.Empty);
         }
     }
 
-    public static bool IsJson(string text)
-    {
-        try
-        {
+    public static bool IsJson(string text) {
+        try {
             JToken.Parse(text);
             return true;
         }
-        catch (JsonReaderException)
-        {
+        catch (JsonReaderException) {
             return false;
         }
     }
 
-    public static bool EditNumberField(string labelBefore, float fieldWidth, ref int refValue, string labelAfter = "", string helpText = "")
-    {
+    public static bool EditNumberField(string labelBefore, float fieldWidth, ref int refValue, string labelAfter = "", string helpText = "") {
         ImGuiEx.TextV(labelBefore);
 
         ImGui.SameLine();
@@ -220,8 +195,7 @@ public static unsafe class Utils
         var clicked = ImGui.DragInt($"##{labelBefore}###", ref refValue);
         ImGui.PopItemWidth();
 
-        if (labelAfter != string.Empty)
-        {
+        if (labelAfter != string.Empty) {
             ImGui.SameLine();
             ImGuiEx.TextV(labelAfter);
         }
@@ -236,8 +210,7 @@ public static unsafe class Utils
     public static int EorzeanMinute() => DateTimeOffset.FromUnixTimeSeconds(Framework.Instance()->ClientTime.EorzeaTime).Minute;
 }
 
-public static class Extensions
-{
+public static class Extensions {
     //public static string GetItemName(this ILazyRow row)
     //{
     //    if (Utils.GetSheet<Item>()!.HasRow(row.Row))

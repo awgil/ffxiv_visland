@@ -1,14 +1,12 @@
-﻿using ECommons;
-using Lumina.Excel.Sheets;
+﻿using Lumina.Excel.Sheets;
 using System;
 using System.Linq;
 
 namespace visland;
-public class DataStore
-{
-    public DataStore()
-    {
-        rawCordialsData = GenericHelpers.GetSheet<Item>()
+
+public class DataStore {
+    public DataStore() {
+        rawCordialsData = GetSheet<Item>()
                 .Where(row => Enum.GetValues<CordialIDs>().Any(num => (uint)num == row.RowId))
                 .Select(row => (
                     Name: row.Name.ToString(),
@@ -31,8 +29,7 @@ public class DataStore
                 }).OrderByDescending(cordial => cordial.GP)];
     }
 
-    private enum CordialIDs : uint
-    {
+    private enum CordialIDs : uint {
         Hi = 12669,
         Regular = 6141,
         Watered = 16911,

@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using visland.Helpers;
 
 namespace visland.IPC;
-internal class NavmeshIPC
-{
+
+internal class NavmeshIPC {
     internal static readonly string Name = "vnavmesh";
     internal static bool IsEnabled => Utils.HasPlugin(Name);
     // nav
@@ -41,12 +41,9 @@ internal class NavmeshIPC
     private static ICallGateSubscriber<Vector3, bool, bool>? _pathfindAndMoveTo;
     private static ICallGateSubscriber<bool>? _pathfindInProgress;
 
-    internal static void Init()
-    {
-        if (Utils.HasPlugin(Name))
-        {
-            try
-            {
+    internal static void Init() {
+        if (Utils.HasPlugin(Name)) {
+            try {
                 _navIsReady = Service.Interface.GetIpcSubscriber<bool>($"{Name}.Nav.IsReady");
                 _navBuildProgress = Service.Interface.GetIpcSubscriber<float>($"{Name}.Nav.BuildProgress");
                 _navReload = Service.Interface.GetIpcSubscriber<bool>($"{Name}.Nav.Reload");
@@ -77,12 +74,9 @@ internal class NavmeshIPC
         }
     }
 
-    internal static T? Execute<T>(Func<T> func)
-    {
-        if (Utils.HasPlugin(Name))
-        {
-            try
-            {
+    internal static T? Execute<T>(Func<T> func) {
+        if (Utils.HasPlugin(Name)) {
+            try {
                 if (func != null)
                     return func();
             }
@@ -92,22 +86,19 @@ internal class NavmeshIPC
         return default;
     }
 
-    internal static void Execute(Action action)
-    {
+    internal static void Execute(Action action) {
         if (Utils.HasPlugin(Name))
-            GenericHelpers.TryExecute(() => action?.Invoke());
+            TryExecute(() => action?.Invoke());
     }
 
-    internal static void Execute<T>(Action<T> action, T param)
-    {
+    internal static void Execute<T>(Action<T> action, T param) {
         if (Utils.HasPlugin(Name))
-            GenericHelpers.TryExecute(() => action?.Invoke(param));
+            TryExecute(() => action?.Invoke(param));
     }
 
-    internal static void Execute<T1, T2>(Action<T1, T2> action, T1 p1, T2 p2)
-    {
+    internal static void Execute<T1, T2>(Action<T1, T2> action, T1 p1, T2 p2) {
         if (Utils.HasPlugin(Name))
-            GenericHelpers.TryExecute(() => action?.Invoke(p1, p2));
+            TryExecute(() => action?.Invoke(p1, p2));
     }
 
     internal static bool IsReady() => Execute(() => _navIsReady!.InvokeFunc());

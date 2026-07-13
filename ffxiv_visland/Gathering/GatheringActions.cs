@@ -1,5 +1,4 @@
-﻿using ECommons;
-using ECommons.ExcelServices;
+﻿using ECommons.ExcelServices;
 using ECommons.GameHelpers;
 using ECommons.Logging;
 using ECommons.UIHelpers.AddonMasterImplementations;
@@ -11,8 +10,7 @@ using visland.Helpers;
 
 namespace visland.Gathering;
 
-internal abstract class Actions
-{
+internal abstract class Actions {
     // collectables
     public abstract (uint id, ushort buff) Scour { get; set; }
     public abstract uint Collect { get; set; }
@@ -40,10 +38,8 @@ internal abstract class Actions
     public abstract (uint id, ushort buff) SurveyII { get; set; }
 }
 
-internal class GatheringActions
-{
-    internal class BTNActions : Actions
-    {
+internal class GatheringActions {
+    internal class BTNActions : Actions {
         public override (uint id, ushort buff) Scour { get; set; } = (22186, Buffs.Scrutiny);
         public override uint Collect { get; set; } = 815;
         public override uint Meticulous { get; set; } = 22188;
@@ -70,8 +66,7 @@ internal class GatheringActions
         public override (uint id, ushort buff) SurveyII { get; set; } = (290, Buffs.ArborCallII);
     }
 
-    internal class MINActions : Actions
-    {
+    internal class MINActions : Actions {
         public override (uint id, ushort buff) Scour { get; set; } = (22182, Buffs.Scrutiny);
         public override uint Collect { get; set; } = 240;
         public override uint Meticulous { get; set; } = 22184;
@@ -98,8 +93,7 @@ internal class GatheringActions
         public override (uint id, ushort buff) SurveyII { get; set; } = (291, Buffs.LayOfTheLandII);
     }
 
-    internal static class Buffs
-    {
+    internal static class Buffs {
         public const ushort None = 0;
         public const ushort Scrutiny = 757;
         public const ushort GivingLand = 1802;
@@ -118,27 +112,22 @@ internal class GatheringActions
         public const ushort ArborCallII = 242;
     }
 
-    public static unsafe void UseNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item)
-    {
+    public static unsafe void UseNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item) {
         if (P.TaskManager.IsBusy) return;
         var action = GetNextBestAction(am, item);
-        if (action == 0)
-        {
+        if (action == 0) {
             PluginLog.Information($"Gathering {item.ItemName}");
             item.Gather();
         }
-        else
-        {
-            if (ActionManager.Instance()->GetActionStatus(ActionType.Action, action) == 0)
-            {
-                PluginLog.Information($"Using {GenericHelpers.GetRow<Action>(action)?.Name}");
+        else {
+            if (ActionManager.Instance()->GetActionStatus(ActionType.Action, action) == 0) {
+                PluginLog.Information($"Using {GetRow<Action>(action)?.Name}");
                 P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
             }
         }
     }
 
-    public static unsafe uint GetNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item)
-    {
+    public static unsafe uint GetNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item) {
         if (item.IsCollectable) return 0;
         if (am.CurrentIntegrity is 0) return 0;
 
@@ -147,8 +136,7 @@ internal class GatheringActions
         if (!item.IsEnabled && CanUse(actions.Luck))
             return actions.Luck.id;
 
-        if (ItemIsCrystal(item.ItemID))
-        {
+        if (ItemIsCrystal(item.ItemID)) {
             if (CanUse(actions.GivingLand))
                 return actions.GivingLand.id;
             if (CanUse(actions.TwelvesBounty))
@@ -187,23 +175,20 @@ internal class GatheringActions
         return 0;
     }
 
-    public static unsafe void UseNextBestAction(AddonMaster.GatheringMasterpiece am)
-    {
+    public static unsafe void UseNextBestAction(AddonMaster.GatheringMasterpiece am) {
         if (P.TaskManager.IsBusy) return;
         var action = GetNextBestAction(am);
         if (action == 0) return;
 
-        PluginLog.Information($"Using {GenericHelpers.GetRow<Action>(action)?.Name}");
+        PluginLog.Information($"Using {GetRow<Action>(action)?.Name}");
         P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
     }
 
-    public static unsafe uint GetNextBestAction(AddonMaster.GatheringMasterpiece am)
-    {
+    public static unsafe uint GetNextBestAction(AddonMaster.GatheringMasterpiece am) {
         Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
 
         if (ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Scour.id) == 0 ||
-            ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Collect) == 0)
-        {
+            ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Collect) == 0) {
             bool scrutiny = HasScrutiny();
             if (am.CurrentCollectability == 1000 || am.CurrentIntegrity == 1)
                 return actions.Collect;
@@ -226,11 +211,9 @@ internal class GatheringActions
         return 0;
     }
 
-    public static uint GetCurrentSurveyAbility(bool highest = true)
-    {
+    public static uint GetCurrentSurveyAbility(bool highest = true) {
         Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
-        return Player.Job switch
-        {
+        return Player.Job switch {
             Job.MIN => highest ? actions.SurveyII.id : actions.SurveyI.id,
             Job.BTN => highest ? actions.SurveyII.id : actions.SurveyI.id,
             Job.FSH => highest ? 7905u : 7904u,
@@ -238,9 +221,8 @@ internal class GatheringActions
         };
     }
 
-    private static unsafe bool CanUse((uint Id, ushort buff) action)
-    {
-        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(GenericHelpers.GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
+    private static unsafe bool CanUse((uint Id, ushort buff) action) {
+        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
         if (Player.Gp < ActionManager.GetActionCost(ActionType.Action, action.Id, 0, 0, 0, 0)) return false;
         if (action.buff != 0 && Player.Status.Any(x => x.StatusId == action.buff)) return false;
         return true;

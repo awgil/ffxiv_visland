@@ -5,10 +5,8 @@ using System.Numerics;
 
 namespace visland.Helpers;
 
-public static class Coords
-{
-    public static Vector3 PixelCoordsToWorldCoords(int x, int z, uint mapId)
-    {
+public static class Coords {
+    public static Vector3 PixelCoordsToWorldCoords(int x, int z, uint mapId) {
         var map = Service.LuminaRow<Lumina.Excel.Sheets.Map>(mapId);
         var scale = (map?.SizeFactor ?? 100) * 0.01f;
         var wx = PixelCoordToWorldCoord(x, scale, map?.OffsetX ?? 0);
@@ -18,8 +16,7 @@ public static class Coords
 
     // see: https://github.com/xivapi/ffxiv-datamining/blob/master/docs/MapCoordinates.md
     // see: dalamud MapLinkPayload class
-    public static float PixelCoordToWorldCoord(float coord, float scale, short offset)
-    {
+    public static float PixelCoordToWorldCoord(float coord, float scale, short offset) {
         // +1 - networkAdjustment == 0
         // (coord / scale * 2) * (scale / 100) = coord / 50
         // * 2048 / 41 / 50 = 0.999024
@@ -27,10 +24,8 @@ public static class Coords
         return (coord * factor - 1024f) / scale - offset * 0.001f;
     }
 
-    public static uint FindClosestAetheryte(uint territoryTypeId, Vector3 worldPos)
-    {
-        if (territoryTypeId == 886)
-        {
+    public static uint FindClosestAetheryte(uint territoryTypeId, Vector3 worldPos) {
+        if (territoryTypeId == 886) {
             // firmament special case - just return ishgard main aetheryte
             // firmament aetherytes are special (see 
             return 70;
@@ -39,8 +34,7 @@ public static class Coords
         return aetherytes.Count > 0 ? aetherytes.MinBy(a => (worldPos - AetherytePosition(a)).LengthSquared()).RowId : 0;
     }
 
-    public static Vector3 AetherytePosition(Aetheryte a)
-    {
+    public static Vector3 AetherytePosition(Aetheryte a) {
         // stolen from HTA, uses pixel coordinates
         var level = a.Level[0].ValueNullable;
         if (level != null)
@@ -51,8 +45,7 @@ public static class Coords
     }
 
     // if aetheryte is 'primary' (i.e. can be teleported to), return it; otherwise (i.e. aethernet shard) find and return primary aetheryte from same group
-    public static uint FindPrimaryAetheryte(uint aetheryteId)
-    {
+    public static uint FindPrimaryAetheryte(uint aetheryteId) {
         if (aetheryteId == 0)
             return 0;
         var row = Service.LuminaRow<Aetheryte>(aetheryteId)!.Value;

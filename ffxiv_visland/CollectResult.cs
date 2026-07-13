@@ -1,7 +1,6 @@
 ﻿namespace visland;
 
-public enum CollectResult
-{
+public enum CollectResult {
     NothingToCollect,
     CanCollectSafely,
     CanCollectWithOvercap,

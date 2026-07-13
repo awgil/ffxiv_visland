@@ -6,29 +6,24 @@ using System.Numerics;
 
 namespace visland.Workshop;
 
-public class WorkshopSolver
-{
-    public struct SlotRec(int slot, uint craftObjectId)
-    {
+public class WorkshopSolver {
+    public struct SlotRec(int slot, uint craftObjectId) {
         public int Slot = slot;
         public uint CraftObjectId = craftObjectId;
     }
 
-    public class WorkshopRec
-    {
+    public class WorkshopRec {
         public List<SlotRec> Slots = [];
 
         public void Add(int slot, uint craftObjectId) => Slots.Add(new(slot, craftObjectId));
     }
 
-    public class DayRec
-    {
+    public class DayRec {
         public List<WorkshopRec> Workshops = [];
 
         public bool Empty => Workshops.Count == 0;
 
-        public IEnumerable<(int workshop, WorkshopRec rec)> Enumerate(int maxWorkshops)
-        {
+        public IEnumerable<(int workshop, WorkshopRec rec)> Enumerate(int maxWorkshops) {
             if (Workshops.Count == 0)
                 yield break;
             // first schedule is duplicated if we have less schedules than workshops to fill: numDuplicates + (Count-1) == maxWorkshops
@@ -41,16 +36,14 @@ public class WorkshopSolver
         }
     }
 
-    public class Recs
-    {
-        private List<DayRec> _schedules = [];
+    public class Recs {
+        private readonly List<DayRec> _schedules = [];
         public uint CyclesMask { get; private set; } // num bits set equal to num schedules
         public IReadOnlyList<DayRec> Schedules => _schedules;
 
         public bool Empty => Schedules.Count == 0;
 
-        public void Add(int cycle, DayRec schedule)
-        {
+        public void Add(int cycle, DayRec schedule) {
             if (schedule.Empty)
                 return; // don't care, rest day or something
 
@@ -66,32 +59,27 @@ public class WorkshopSolver
             CyclesMask |= mask;
         }
 
-        public IEnumerable<(int cycle, DayRec rec)> Enumerate()
-        {
+        public IEnumerable<(int cycle, DayRec rec)> Enumerate() {
             var m = CyclesMask;
-            foreach (var r in Schedules)
-            {
+            foreach (var r in Schedules) {
                 var c = BitOperations.TrailingZeroCount(m);
                 yield return (c + 1, r);
                 m &= ~(1u << c);
             }
         }
 
-        public void Clear()
-        {
+        public void Clear() {
             _schedules.Clear();
             CyclesMask = 0;
         }
     }
 
-    public class Popularity
-    {
+    public class Popularity {
         private int[] _values = { };
 
         public float Multiplier(uint objId) => objId < _values.Length ? 0.01f * _values[objId] : 1;
 
-        public void Set(uint rowId)
-        {
+        public void Set(uint rowId) {
             var popRow = Service.LuminaRow<MJICraftworksPopularity>(rowId);
             _values = popRow != null ? new int[popRow.Value.Popularity.Count] : [];
             for (var i = 0; i < _values.Length; ++i)
@@ -99,21 +87,18 @@ public class WorkshopSolver
         }
     }
 
-    public struct FavorState
-    {
+    public struct FavorState {
         public uint[] CraftObjectIds;
         public int[] CompletedCounts;
         public Popularity Popularity;
 
-        public FavorState()
-        {
+        public FavorState() {
             CraftObjectIds = new uint[3];
             CompletedCounts = new int[3];
             Popularity = new();
         }
 
-        public FavorState(uint favor4Id, uint favor6Id, uint favor8Id, int complete4 = 0, int complete6 = 0, int complete8 = 0) : this()
-        {
+        public FavorState(uint favor4Id, uint favor6Id, uint favor8Id, int complete4 = 0, int complete6 = 0, int complete8 = 0) : this() {
             CraftObjectIds[0] = favor4Id;
             CraftObjectIds[1] = favor6Id;
             CraftObjectIds[2] = favor8Id;
@@ -123,8 +108,7 @@ public class WorkshopSolver
         }
     }
 
-    public static bool IsLinked(MJICraftworksObject l, MJICraftworksObject r)
-    {
+    public static bool IsLinked(MJICraftworksObject l, MJICraftworksObject r) {
         if (l.RowId == r.RowId)
             return false; // object is never linked with itself
         var l1 = l.Theme[0].Value.RowId;

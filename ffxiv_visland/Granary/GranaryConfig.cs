@@ -3,10 +3,8 @@ using visland.Helpers;
 
 namespace visland.Granary;
 
-public class GranaryConfig : Configuration.Node
-{
-    public enum UpdateStrategy
-    {
+public class GranaryConfig : Configuration.Node {
+    public enum UpdateStrategy {
         [Description("Manual")]
         Manual,
 

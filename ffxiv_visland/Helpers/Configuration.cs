@@ -9,33 +9,26 @@ using System.Reflection;
 
 namespace visland.Helpers;
 
-public class Configuration
-{
+public class Configuration {
     // base class for configuration nodes
-    public abstract class Node
-    {
+    public abstract class Node {
         public event EventHandler? Modified;
 
         // notify that configuration node was modified; should be called by derived classes whenever they make any modifications
         // implementation dispatches modification event
         // root subscribes to modification event to save updated configuration
-        public void NotifyModified()
-        {
+        public void NotifyModified() {
             Modified?.Invoke(this, EventArgs.Empty);
         }
 
         // deserialize fields from json; default implementation should work fine for most cases
-        public virtual void Deserialize(JObject j, JsonSerializer ser)
-        {
+        public virtual void Deserialize(JObject j, JsonSerializer ser) {
             var type = GetType();
-            foreach (var (f, data) in j)
-            {
+            foreach ((string? f, var data) in j) {
                 var field = type.GetField(f);
-                if (field != null)
-                {
+                if (field != null) {
                     var value = data?.ToObject(field.FieldType, ser);
-                    if (value != null)
-                    {
+                    if (value != null) {
                         field.SetValue(this, value);
                     }
                 }
@@ -43,8 +36,7 @@ public class Configuration
         }
 
         // serialize node to json; default implementation should work fine for most cases
-        public virtual JObject Serialize(JsonSerializer ser)
-        {
+        public virtual JObject Serialize(JsonSerializer ser) {
             return JObject.FromObject(this, ser);
         }
     }
@@ -52,16 +44,13 @@ public class Configuration
     private const int _version = 3;
 
     public event EventHandler? Modified;
-    private Dictionary<Type, Node> _nodes = [];
+    private readonly Dictionary<Type, Node> _nodes = [];
 
     public IEnumerable<Node> Nodes => _nodes.Values;
 
-    public void Initialize()
-    {
-        foreach (var t in Utils.GetDerivedTypes<Node>(Assembly.GetExecutingAssembly()).Where(t => !t.IsAbstract))
-        {
-            if (Activator.CreateInstance(t) is not Node inst)
-            {
+    public void Initialize() {
+        foreach (var t in Utils.GetDerivedTypes<Node>(Assembly.GetExecutingAssembly()).Where(t => !t.IsAbstract)) {
+            if (Activator.CreateInstance(t) is not Node inst) {
                 Service.Log.Error($"[Config] Failed to create an instance of {t}");
                 continue;
             }
@@ -73,45 +62,35 @@ public class Configuration
     public T Get<T>() where T : Node => (T)_nodes[typeof(T)];
     public T Get<T>(Type derived) where T : Node => (T)_nodes[derived];
 
-    public void LoadFromFile(FileInfo file)
-    {
-        try
-        {
+    public void LoadFromFile(FileInfo file) {
+        try {
             var contents = File.ReadAllText(file.FullName);
             var json = JObject.Parse(contents);
             var version = (int?)json["Version"] ?? 0;
-            if (json["Payload"] is JObject payload)
-            {
+            if (json["Payload"] is JObject payload) {
                 payload = ConvertConfig(payload, version);
                 var ser = BuildSerializer();
-                foreach (var (t, j) in payload)
-                {
+                foreach ((string? t, var j) in payload) {
                     var type = Type.GetType(t);
                     var node = type != null ? _nodes.GetValueOrDefault(type) : null;
-                    if (node != null && j is JObject jObj)
-                    {
+                    if (node != null && j is JObject jObj) {
                         node.Deserialize(jObj, ser);
                     }
                 }
             }
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Service.Log.Error($"[Config] Failed to load config from {file.FullName}: {e}");
         }
     }
 
-    public void SaveToFile(FileInfo file)
-    {
-        try
-        {
+    public void SaveToFile(FileInfo file) {
+        try {
             var ser = BuildSerializer();
             JObject payload = [];
-            foreach (var (t, n) in _nodes)
-            {
+            foreach ((var t, var n) in _nodes) {
                 var jNode = n.Serialize(ser);
-                if (jNode.Count > 0)
-                {
+                if (jNode.Count > 0) {
                     payload.Add(t.FullName!, jNode);
                 }
             }
@@ -122,45 +101,34 @@ public class Configuration
             };
             File.WriteAllText(file.FullName, jContents.ToString());
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             Service.Log.Error($"[Config] Failed to save config to {file.FullName}: {e}");
         }
     }
 
-    public static JsonSerializer BuildSerializer()
-    {
+    public static JsonSerializer BuildSerializer() {
         var res = new JsonSerializer();
         res.Converters.Add(new StringEnumConverter());
         return res;
     }
 
-    private static JObject ConvertConfig(JObject payload, int version)
-    {
+    private static JObject ConvertConfig(JObject payload, int version) {
         // v2: backported vbm config framework
-        if (version < 2)
-        {
+        if (version < 2) {
             var routes = payload["RouteDB"];
             payload = new() { { "visland.Gathering.GatherRouteDB", new JObject() { { "Routes", routes } } } };
         }
         // v3: turned waypoints into an array of jobjects
-        if (version < 3)
-        {
+        if (version < 3) {
             //var routes = payload["RouteDB"];
-            if (payload["visland.Gathering.GatherRouteDB"] is JObject gatherRouteDB)
-            {
-                if (gatherRouteDB["Routes"] is JArray routes)
-                {
+            if (payload["visland.Gathering.GatherRouteDB"] is JObject gatherRouteDB) {
+                if (gatherRouteDB["Routes"] is JArray routes) {
                     JArray newRoutes = [];
-                    foreach (var route in routes)
-                    {
-                        if (route is JObject routeObj && routeObj["Waypoints"] is JArray waypoints)
-                        {
+                    foreach (var route in routes) {
+                        if (route is JObject routeObj && routeObj["Waypoints"] is JArray waypoints) {
                             var newWaypoints = new JArray();
-                            foreach (var waypoint in waypoints)
-                            {
-                                if (waypoint is JArray oldWaypoint)
-                                {
+                            foreach (var waypoint in waypoints) {
+                                if (waypoint is JArray oldWaypoint) {
                                     var newWaypoint = new JObject
                                     {
                                         { "X", oldWaypoint.Count > 0 ? oldWaypoint[0] : 0 },

@@ -5,8 +5,7 @@ namespace visland.Helpers;
 
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
-public struct Angle
-{
+public struct Angle {
     public const float RadToDeg = 180 / MathF.PI;
     public const float DegToRad = MathF.PI / 180;
 
@@ -34,8 +33,7 @@ public struct Angle
     public static Angle Asin(float x) => new(MathF.Asin(x));
     public static Angle Acos(float x) => new(MathF.Acos(x));
 
-    public Angle Normalized()
-    {
+    public Angle Normalized() {
         var r = Rad;
         while (r < -MathF.PI)
             r += 2 * MathF.PI;
@@ -53,8 +51,7 @@ public struct Angle
     public override string ToString() => Deg.ToString("f0");
 }
 
-public static class AngleExtensions
-{
+public static class AngleExtensions {
     public static Angle Radians(this float radians) => new(radians);
     public static Angle Degrees(this float degrees) => new(degrees * Angle.DegToRad);
     public static Angle Degrees(this int degrees) => new(degrees * Angle.DegToRad);
