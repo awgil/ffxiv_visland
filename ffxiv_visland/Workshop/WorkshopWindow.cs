@@ -46,6 +46,8 @@ unsafe class WorkshopWindow : UIAttachedWindow {
         if (_config.AutoOpenNextDay) {
             WorkshopUtils.SetCurrentCycle(AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 1);
         }
+        if (_config.FavorMode == WorkshopFavorMode.MinMaxFreeRestDay)
+            WorkshopUtils.VoidSecondRestThisWeek();
         if (_config.AutoImport) {
             _oc.LoadSeasonRecs(false, silent: true);
         }

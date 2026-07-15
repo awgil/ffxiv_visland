@@ -75,7 +75,7 @@ public class WorkshopSolver {
     }
 
     public class Popularity {
-        private int[] _values = { };
+        private int[] _values = [];
 
         public float Multiplier(uint objId) => objId < _values.Length ? 0.01f * _values[objId] : 1;
 

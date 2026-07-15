@@ -29,7 +29,7 @@ public static unsafe class WorkshopUtils {
 
     public static void ClearCurrentCycleSchedule() {
         Service.Log.Info($"Clearing current cycle schedule");
-        Utils.SynthesizeEvent(&AgentMJICraftSchedule.Instance()->AgentInterface, 6, new AtkValue[] { new() { Type = AtkValueType.Int, Int = 0 } });
+        Utils.SynthesizeEvent(&AgentMJICraftSchedule.Instance()->AgentInterface, 6, [new() { Type = AtkValueType.Int, Int = 0 }]);
     }
 
     public static void ScheduleItemToWorkshop(uint objId, int startingHour, int cycle, int workshop) {
@@ -54,7 +54,19 @@ public static unsafe class WorkshopUtils {
         Service.Log.Info($"Setting rest: {mask:X}");
         var agent = AgentMJICraftSchedule.Instance();
         agent->Data->NewRestCycles = mask;
-        Utils.SynthesizeEvent(&agent->AgentInterface, 5, new AtkValue[] { new() { Type = AtkValueType.Int, Int = 0 } });
+        Utils.SynthesizeEvent(&agent->AgentInterface, 5, [new() { Type = AtkValueType.Int, Int = 0 }]);
+    }
+
+    public static bool VoidSecondRestThisWeek() {
+        const uint voidThisWeek = 0x2081u; // this=C1 (0x01), next=C1+C7 (0x41 << 7)
+        var agent = AgentMJICraftSchedule.Instance();
+        if (agent == null || agent->Data == null)
+            return false;
+        if (agent->Data->RestCycles == voidThisWeek)
+            return false;
+        Service.Log.Info($"Voiding this week's second rest: 0x{agent->Data->RestCycles:X} → 0x{voidThisWeek:X}");
+        SetRestCycles(voidThisWeek);
+        return true;
     }
 
     public static void RequestDemandFavors() {

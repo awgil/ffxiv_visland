@@ -30,6 +30,10 @@ public unsafe class WorkshopDebug {
         if (ImGui.Button("Refresh favors/demand"))
             WorkshopUtils.RequestDemandFavors();
 
+        ImGui.SameLine();
+        if (ImGui.Button("Void 2nd rest (this week)"))
+            WorkshopUtils.VoidSecondRestThisWeek();
+
         var curWeek = WorkshopUtils.CurrentWeek();
         _tree.LeafNode($"Current week: #{curWeek.index}, started at {curWeek.startTime}");
 
@@ -45,6 +49,7 @@ public unsafe class WorkshopDebug {
             _tree.LeafNode($"rest mask={ad->RestCycles:X}, proposed={ad->NewRestCycles:X}, prompt={ad->ConfirmPrompt}");
             _tree.LeafNode($"flags1={ad->Flags1}");
             _tree.LeafNode($"flags2={ad->Flags2}");
+            _tree.LeafNode($"CraftworksRestDays: [{string.Join(", ", WorkshopUtils.GetCurrentRestCycles())}]");
 
             var i = 0;
             foreach (ref var w in ad->WorkshopSchedules)
