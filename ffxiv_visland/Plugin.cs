@@ -60,7 +60,6 @@ public sealed class Plugin : IDalamudPlugin {
             dir.Create();
 
         ECommonsMain.Init(dalamud, this, Module.DalamudReflector);
-        DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);
         Service.Init(dalamud);
 
         dalamud.Create<Service>();
@@ -83,6 +82,7 @@ public sealed class Plugin : IDalamudPlugin {
 
         _vislandIPC = new(_wndGather);
         NavmeshIPC.Init();
+        DalamudReflector.RegisterOnInstalledPluginsChangedEvents(CheckIPC);
 
         WindowSystem.AddWindow(_wndGather);
         WindowSystem.AddWindow(_wndWorkshop);

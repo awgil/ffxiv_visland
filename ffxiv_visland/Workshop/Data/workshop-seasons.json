@@ -1,0 +1,8107 @@
+{
+  "source": "Overseas Casuals #Archive",
+  "range": [
+    104,
+    203
+  ],
+  "cycleLength": 100,
+  "seasons": {
+    "104": {
+      "date": "Aug 13 - 19",
+      "cycles": {
+        "2": {
+          "main": [
+            "Squid Ink",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Runner Bean Saute",
+            "Sweet Popoto Pie",
+            "Parsnip Salad",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Runner Bean Saute",
+            "Onion Soup",
+            "Runner Bean Saute",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Crook",
+            "Spruce Round Shield",
+            "Crook"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Earrings",
+            "Sheepfluff Rug",
+            "Earrings"
+          ]
+        },
+        "7": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Powdered Paprika",
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ]
+        }
+      }
+    },
+    "105": {
+      "date": "Aug 20 - 26",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Baked Pumpkin",
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Dressing",
+            "Isleberry Jam",
+            "Dressing",
+            "Isleberry Jam",
+            "Dressing"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Natron",
+            "Growth Formula",
+            "Natron",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Butter",
+            "Culinary Knife",
+            "Natron",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Scale Fingers",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Crook",
+            "Garnet Rapier",
+            "Crook"
+          ]
+        }
+      }
+    },
+    "106": {
+      "date": "Aug 27 - Sep 2",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "3": {
+          "main": [
+            "Culinary Knife",
+            "Boiled Egg",
+            "Sheepfluff Rug",
+            "Boiled Egg",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brush",
+            "Culinary Knife",
+            "Horn",
+            "Boiled Egg",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Beet Soup",
+            "Sweet Popoto Pie",
+            "Beet Soup"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Culinary Knife",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Shark Oil",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "107": {
+      "date": "Sep 3 - 9",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Isloaf",
+            "Vegetable Juice",
+            "Isloaf",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Necklace",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Dressing",
+            "Butter",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Butter",
+            "Hora",
+            "Butter",
+            "Hora",
+            "Butter"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Crook",
+            "Garnet Rapier",
+            "Crook"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Runner Bean Saute"
+          ]
+        },
+        "7": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "108": {
+      "date": "Sep 10 - 16",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Runner Bean Saute"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch"
+          ]
+        },
+        "3": {
+          "main": [
+            "Culinary Knife",
+            "Earrings",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "4": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Culinary Knife"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Horn",
+            "Cawl Cennin",
+            "Horn",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Shark Oil",
+            "Horn",
+            "Cawl Cennin"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Shark Oil",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "109": {
+      "date": "Sep 17 - 23",
+      "cycles": {
+        "2": {
+          "main": [
+            "Baked Pumpkin",
+            "Bouillabaisse",
+            "Baked Pumpkin",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Bouillabaisse"
+          ]
+        },
+        "3": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ]
+        },
+        "4": {
+          "main": [
+            "Pumpkin Pudding",
+            "Sweet Popoto",
+            "Pumpkin Pudding",
+            "Sweet Popoto"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Scale Fingers",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Hora",
+            "Scale Fingers",
+            "Sheepfluff Rug"
+          ]
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "110": {
+      "date": "Sep 24 - 30",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Isloaf",
+            "Vegetable Juice",
+            "Isloaf",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Earrings",
+            "Boiled Egg",
+            "Beet Soup",
+            "Isloaf",
+            "Vegetable Juice"
+          ]
+        },
+        "3": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Squid Ink",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Butter",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Garnet Rapier",
+            "Crook",
+            "Garnet Rapier"
+          ]
+        },
+        "6": {
+          "main": [
+            "Grilled Clam",
+            "Shark Oil",
+            "Islefish Pie",
+            "Caramels"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "111": {
+      "date": "Oct 1 - 7",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Peperoncino",
+            "Parsnip Salad",
+            "Peperoncino",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Parsnip Salad",
+            "Onion Soup",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Dressing",
+            "Butter",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Onion Soup"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Spectacles",
+            "Cavalier's Hat"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Runner Bean Saute",
+            "Isloaf",
+            "Bouillabaisse",
+            "Shark Oil"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "112": {
+      "date": "Oct 8 - 14",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Baked Pumpkin",
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "5": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        },
+        "6": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Beet Soup",
+            "Onion Soup",
+            "Beet Soup",
+            "Onion Soup"
+          ]
+        },
+        "7": {
+          "main": [
+            "Horn",
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "113": {
+      "date": "Oct 15 - 21",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Earrings",
+            "Horn",
+            "Boiled Egg",
+            "Horn"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Butter",
+            "Cawl Cennin",
+            "Boiled Egg",
+            "Horn"
+          ]
+        },
+        "3": {
+          "main": [
+            "Sauerkraut",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Scale Fingers",
+            "Sheepfluff Rug"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "main": [
+            "Onion Soup",
+            "Imam Bayildi",
+            "Onion Soup",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Tomato Relish",
+            "Squid Ink",
+            "Tomato Relish",
+            "Squid Ink",
+            "Tomato Relish"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "114": {
+      "date": "Oct 22 - 28",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Boiled Egg",
+            "Isloaf",
+            "Boiled Egg",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Boiled Egg",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Squid Ink",
+            "Tomato Relish",
+            "Squid Ink",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Runner Bean Saute",
+            "Bouillabaisse",
+            "Runner Bean Saute",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Potion",
+            "Growth Formula",
+            "Runner Bean Saute",
+            "Bouillabaisse"
+          ]
+        },
+        "6": {
+          "main": [
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        }
+      }
+    },
+    "115": {
+      "date": "Oct 29 - Nov 4",
+      "cycles": {
+        "2": {
+          "main": [
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Butter",
+            "Boiled Egg",
+            "Butter"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Butter"
+          ]
+        },
+        "3": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Growth Formula"
+          ]
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Rope",
+            "Culinary Knife",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Sweet Popoto",
+            "Islefish Pie",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Onion Soup",
+            "Parsnip Salad",
+            "Onion Soup",
+            "Buffalo Bean Salad"
+          ],
+          "ws4": [
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels"
+          ]
+        }
+      }
+    },
+    "116": {
+      "date": "Nov 5 - 11",
+      "cycles": {
+        "2": {
+          "main": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Imam Bayildi",
+            "Runner Bean Saute",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Rope",
+            "Brush",
+            "Rope",
+            "Brush",
+            "Rope",
+            "Brush"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Onion Soup",
+            "Isloaf",
+            "Onion Soup"
+          ]
+        },
+        "5": {
+          "main": [
+            "Earrings",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ],
+          "ws4": [
+            "Crook",
+            "Garnet Rapier",
+            "Crook"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "117": {
+      "date": "Nov 12 - 18",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Isloaf",
+            "Natron",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "3": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Necklace",
+            "Crook",
+            "Necklace",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Runner Bean Saute",
+            "Onion Soup",
+            "Runner Bean Saute",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Growth Formula",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Earrings",
+            "Cawl Cennin",
+            "Growth Formula",
+            "Vegetable Juice"
+          ]
+        }
+      }
+    },
+    "118": {
+      "date": "Nov 19 - 25",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brass Serving Dish",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Hora",
+            "Scale Fingers",
+            "Hora"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Peperoncino",
+            "Isloaf",
+            "Peperoncino",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "main": [
+            "Boiled Egg",
+            "Bouillabaisse",
+            "Boiled Egg",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Bouillabaisse"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "119": {
+      "date": "Nov 26 - Dec 2",
+      "cycles": {
+        "2": {
+          "main": [
+            "Grilled Clam",
+            "Isloaf",
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Parsnip Salad"
+          ],
+          "ws4": [
+            "Grilled Clam",
+            "Runner Bean Saute",
+            "Grilled Clam",
+            "Runner Bean Saute",
+            "Baked Pumpkin",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Onion Soup",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Caramels",
+            "Sweet Popoto Pie",
+            "Caramels"
+          ]
+        }
+      }
+    },
+    "120": {
+      "date": "Dec 3 - 9",
+      "cycles": {
+        "2": {
+          "main": [
+            "Culinary Knife",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Sweet Popoto Pie",
+            "Baked Pumpkin",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "5": {
+          "main": [
+            "Islefish Pie",
+            "Caramels",
+            "Islefish Pie",
+            "Caramels"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Onion Soup",
+            "Sweet Popoto Pie",
+            "Caramels"
+          ]
+        },
+        "6": {
+          "main": [
+            "Crook",
+            "Garnet Rapier",
+            "Crook"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Necklace",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "121": {
+      "date": "Dec 10 - 16",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Popoto Salad",
+            "Isloaf",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Butter",
+            "Culinary Knife",
+            "Butter",
+            "Powdered Paprika",
+            "Isloaf",
+            "Popoto Salad"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Isloaf",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "5": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Honey",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Earrings",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Earrings",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        }
+      }
+    },
+    "122": {
+      "date": "Dec 17 - 23",
+      "cycles": {
+        "2": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "3": {
+          "main": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Popoto Salad"
+          ]
+        },
+        "4": {
+          "main": [
+            "Necklace",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Firesand",
+            "Garnet Rapier",
+            "Crook"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Squid Ink",
+            "Bouillabaisse",
+            "Squid Ink",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Brush",
+            "Garden Scythe",
+            "Brush"
+          ]
+        }
+      }
+    },
+    "123": {
+      "date": "Dec 24 - 30",
+      "cycles": {
+        "2": {
+          "main": [
+            "Natron",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Horn",
+            "Hora",
+            "Horn",
+            "Hora"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Horn",
+            "Hora"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "main": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Shark Oil",
+            "Islefish Pie"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Shark Oil",
+            "Islefish Pie"
+          ]
+        }
+      }
+    },
+    "124": {
+      "date": "Dec 31 - Jan 6",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Baked Pumpkin"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Sweet Popoto Pie",
+            "Popoto Salad",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "6": {
+          "main": [
+            "Sweet Popoto Pie",
+            "Bouillabaisse",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Brick Counter",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "125": {
+      "date": "Jan 7 - 13",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Powdered Paprika",
+            "Coconut Juice",
+            "Powdered Paprika",
+            "Coconut Juice",
+            "Powdered Paprika"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Runner Bean Saute"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Butter",
+            "Cawl Cennin",
+            "Scale Fingers",
+            "Cawl Cennin"
+          ]
+        },
+        "5": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Butter",
+            "Sheepfluff Rug",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        },
+        "6": {
+          "main": [
+            "Baked Pumpkin",
+            "Sweet Popoto Pie",
+            "Baked Pumpkin",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "126": {
+      "date": "Jan 14 - 20",
+      "cycles": {
+        "2": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Butter",
+            "Isleberry Jam",
+            "Powdered Paprika",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Buffalo Bean Salad",
+            "Cawl Cennin",
+            "Powdered Paprika",
+            "Isleberry Jam"
+          ]
+        },
+        "4": {
+          "main": [
+            "Coconut Juice",
+            "Growth Formula",
+            "Coconut Juice",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Islefish Pie",
+            "Caramels",
+            "Islefish Pie",
+            "Caramels"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "127": {
+      "date": "Jan 21 - 27",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Butter",
+            "Squid Ink",
+            "Dressing",
+            "Butter",
+            "Earrings"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ]
+        },
+        "3": {
+          "main": [
+            "Isloaf",
+            "Bouillabaisse",
+            "Isloaf",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Sweet Popoto Pie",
+            "Isloaf",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Garnet Rapier",
+            "Crook",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Fossil Display",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Horn",
+            "Shark Oil"
+          ]
+        }
+      }
+    },
+    "128": {
+      "date": "Jan 28 - Feb 3",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Rope",
+            "Brush",
+            "Rope",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Sweet Popoto Pie",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Bed",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Bed",
+            "Cavalier's Hat"
+          ]
+        }
+      }
+    },
+    "129": {
+      "date": "Feb 4 - 10",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Dressing",
+            "Butter",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Boiled Egg",
+            "Bouillabaisse",
+            "Boiled Egg",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Culinary Knife",
+            "Boiled Egg",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Isloaf",
+            "Onion Soup",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Peperoncino",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ]
+        },
+        "7": {
+          "main": [
+            "Butter",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "130": {
+      "date": "Feb 11 - 17",
+      "cycles": {
+        "2": {
+          "main": [
+            "Squid Ink",
+            "Dressing",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "3": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Beet Soup",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Horn",
+            "Buffalo Bean Salad",
+            "Horn",
+            "Buffalo Bean Salad"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Cawl Cennin",
+            "Culinary Knife",
+            "Horn",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spruce Round Shield",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ],
+          "ws4": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spruce Round Shield",
+            "Tunic"
+          ]
+        }
+      }
+    },
+    "131": {
+      "date": "Feb 18 - 24",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Honey",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Isloaf",
+            "Popoto Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brass Serving Dish",
+            "Shark Oil",
+            "Brass Serving Dish",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Horn",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Islefish Pie",
+            "Bouillabaisse",
+            "Islefish Pie"
+          ]
+        },
+        "7": {
+          "main": [
+            "Tomato Relish",
+            "Honey",
+            "Caramels",
+            "Honey",
+            "Caramels"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Honey",
+            "Caramels"
+          ]
+        }
+      }
+    },
+    "132": {
+      "date": "Feb 25 - Mar 3",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "4": {
+          "main": [
+            "Butter",
+            "Horn",
+            "Shark Oil",
+            "Horn"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Horn"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Butter",
+            "Sheepfluff Rug",
+            "Hora",
+            "Crook"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ]
+        }
+      }
+    },
+    "133": {
+      "date": "Mar 4 - 10",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Coconut Juice",
+            "Isloaf",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Isloaf",
+            "Vegetable Juice",
+            "Natron",
+            "Vegetable Juice"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "5": {
+          "main": [
+            "Coconut Juice",
+            "Islefish Pie",
+            "Bouillabaisse",
+            "Islefish Pie"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        },
+        "6": {
+          "main": [
+            "Coconut Juice",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "134": {
+      "date": "Mar 11 - 17",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Isloaf",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe",
+            "Horn"
+          ],
+          "ws4": [
+            "Honey",
+            "Tomato Relish",
+            "Honey",
+            "Tomato Relish",
+            "Honey",
+            "Tomato Relish"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Cawl Cennin",
+            "Scale Fingers",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Horn",
+            "Cawl Cennin"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Grinding Wheel",
+            "Horn",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "main": [
+            "Sauerkraut",
+            "Pickled Radish",
+            "Sauerkraut",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Powdered Paprika"
+          ]
+        }
+      }
+    },
+    "135": {
+      "date": "Mar 18 - 24",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Earrings",
+            "Butter",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ]
+        },
+        "3": {
+          "main": [
+            "Tunic",
+            "Cavalier's Hat",
+            "Tunic",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Horn",
+            "Cawl Cennin",
+            "Horn",
+            "Cawl Cennin"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Butter",
+            "Boiled Egg",
+            "Imam Bayildi",
+            "Parsnip Salad",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "main": [
+            "Boiled Egg",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Fruit Punch",
+            "Islefish Pie",
+            "Fruit Punch"
+          ]
+        }
+      }
+    },
+    "136": {
+      "date": "Mar 25 - 31",
+      "cycles": {
+        "2": {
+          "main": [
+            "Butter",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Isloaf",
+            "Imam Bayildi",
+            "Parsnip Salad",
+            "Imam Bayildi"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Vegetable Juice",
+            "Cawl Cennin",
+            "Vegetable Juice",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Pumpkin Pudding",
+            "Islefish Pie"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Butter",
+            "Honey",
+            "Butter",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Butter",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "137": {
+      "date": "Apr 1 - 7",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Natron",
+            "Growth Formula",
+            "Natron",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Dressing",
+            "Isleberry Jam",
+            "Dressing",
+            "Isleberry Jam",
+            "Dressing"
+          ]
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Culinary Knife",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Earrings",
+            "Hora",
+            "Culinary Knife",
+            "Garden Scythe"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Brush",
+            "Horn",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Sheepfluff Rug",
+            "Stove",
+            "Silver Ear Cuffs"
+          ]
+        }
+      }
+    },
+    "138": {
+      "date": "Apr 8 - 14",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Honey",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Honey",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Butter",
+            "Tomato Relish",
+            "Butter",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Baked Pumpkin",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Honey",
+            "Fruit Punch",
+            "Coconut Juice",
+            "Fruit Punch",
+            "Honey",
+            "Fruit Punch"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Islefish Pie",
+            "Caramels",
+            "Islefish Pie",
+            "Caramels"
+          ]
+        },
+        "7": {
+          "main": [
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Vegetable Juice",
+            "Powdered Paprika",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ]
+        }
+      }
+    },
+    "139": {
+      "date": "Apr 15 - 21",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Necklace",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Earrings",
+            "Boiled Egg",
+            "Earrings",
+            "Necklace",
+            "Spruce Round Shield"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Isloaf",
+            "Imam Bayildi",
+            "Isloaf",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Onion Soup",
+            "Isloaf",
+            "Imam Bayildi"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Isloaf",
+            "Bouillabaisse"
+          ]
+        },
+        "6": {
+          "main": [
+            "Honey",
+            "Sweet Popoto Pie",
+            "Honey",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Bouillabaisse",
+            "Boiled Egg",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Horn",
+            "Scale Fingers",
+            "Horn"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Scale Fingers",
+            "Horn"
+          ]
+        }
+      }
+    },
+    "140": {
+      "date": "Apr 22 - 28",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Sweet Popoto Pie",
+            "Runner Bean Saute",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "3": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Popoto Salad",
+            "Isloaf",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "6": {
+          "main": [
+            "Islefish Pie",
+            "Caramels",
+            "Islefish Pie",
+            "Caramels"
+          ],
+          "ws4": [
+            "Natron",
+            "Shark Oil",
+            "Islefish Pie",
+            "Caramels"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ]
+        }
+      }
+    },
+    "141": {
+      "date": "Apr 29 - May 5",
+      "cycles": {
+        "2": {
+          "main": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Runner Bean Saute"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Runner Bean Saute"
+          ]
+        },
+        "3": {
+          "main": [
+            "Crook",
+            "Spruce Round Shield",
+            "Crook"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Sweet Popoto Pie",
+            "Isloaf",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Pickled Radish",
+            "Sauerkraut",
+            "Pickled Radish"
+          ]
+        },
+        "5": {
+          "main": [
+            "Butter",
+            "Sheepfluff Rug",
+            "Mammet Award",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ]
+        },
+        "6": {
+          "main": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Bouillabaisse",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "142": {
+      "date": "May 6 - 12",
+      "cycles": {
+        "2": {
+          "main": [
+            "Baked Pumpkin",
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Boiled Egg",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut"
+          ]
+        },
+        "3": {
+          "main": [
+            "Grinding Wheel",
+            "Garden Scythe",
+            "Grinding Wheel",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Dressing",
+            "Butter",
+            "Dressing",
+            "Butter",
+            "Dressing",
+            "Butter"
+          ]
+        },
+        "4": {
+          "main": [
+            "Runner Bean Saute",
+            "Bouillabaisse",
+            "Runner Bean Saute",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Butter",
+            "Dressing",
+            "Butter",
+            "Dressing",
+            "Butter",
+            "Dressing"
+          ]
+        },
+        "5": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Pickled Radish",
+            "Sauerkraut",
+            "Pickled Radish"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "143": {
+      "date": "May 13 - 19",
+      "cycles": {
+        "2": {
+          "rest": true
+        },
+        "3": {
+          "main": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Dressing",
+            "Powdered Paprika",
+            "Dressing",
+            "Powdered Paprika",
+            "Dressing"
+          ]
+        },
+        "4": {
+          "main": [
+            "Coconut Juice",
+            "Pumpkin Pudding",
+            "Sweet Popoto Pie",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Butter",
+            "Dressing",
+            "Powdered Paprika",
+            "Isloaf",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Parsnip Salad",
+            "Imam Bayildi",
+            "Isloaf",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Brush",
+            "Garden Scythe",
+            "Brush"
+          ]
+        },
+        "6": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Earrings",
+            "Necklace",
+            "Crook",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "144": {
+      "date": "May 20 - 26",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Beet Soup",
+            "Parsnip Salad",
+            "Beet Soup"
+          ]
+        },
+        "3": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Dressing",
+            "Butter",
+            "Dressing",
+            "Butter",
+            "Scale Fingers"
+          ]
+        },
+        "4": {
+          "main": [
+            "Coconut Juice",
+            "Growth Formula",
+            "Coconut Juice",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Horn",
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Horn",
+            "Garden Scythe"
+          ]
+        }
+      }
+    },
+    "145": {
+      "date": "May 27 - Jun 2",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "main": [
+            "Popoto Salad",
+            "Isloaf",
+            "Bouillabaisse",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "main": [
+            "Isloaf",
+            "Vegetable Juice",
+            "Growth Formula",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Growth Formula",
+            "Vegetable Juice"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Natron",
+            "Cawl Cennin",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "146": {
+      "date": "Jun 3 - 9",
+      "cycles": {
+        "2": {
+          "main": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Isloaf",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Culinary Knife",
+            "Brass Serving Dish",
+            "Natron",
+            "Isloaf",
+            "Popoto Salad"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Buffalo Bean Salad",
+            "Imam Bayildi",
+            "Buffalo Bean Salad",
+            "Imam Bayildi"
+          ]
+        },
+        "5": {
+          "main": [
+            "Natron",
+            "Growth Formula",
+            "Natron",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Natron",
+            "Garden Scythe",
+            "Horn",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "main": [
+            "Horn",
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe"
+          ]
+        }
+      }
+    },
+    "147": {
+      "date": "Jun 10 - 16",
+      "cycles": {
+        "2": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Coconut Juice",
+            "Isloaf",
+            "Cawl Cennin",
+            "Coconut Juice",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Shark Oil",
+            "Islefish Pie"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "main": [
+            "Isloaf",
+            "Bouillabaisse",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Earrings",
+            "Horn",
+            "Earrings",
+            "Horn",
+            "Earrings"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Butter",
+            "Horn",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "148": {
+      "date": "Jun 17 - 23",
+      "cycles": {
+        "2": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Natron",
+            "Horn",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Onion Soup",
+            "Buffalo Bean Salad",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Earrings",
+            "Boiled Egg",
+            "Beet Soup",
+            "Buffalo Bean Salad",
+            "Onion Soup"
+          ]
+        },
+        "5": {
+          "main": [
+            "Runner Bean Saute",
+            "Sweet Popoto Pie",
+            "Runner Bean Saute",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Runner Bean Saute",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Bouillabaisse",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "149": {
+      "date": "Jun 24 - 30",
+      "cycles": {
+        "2": {
+          "main": [
+            "Powdered Paprika",
+            "Honey",
+            "Islefish Pie",
+            "Fruit Punch",
+            "Islefish Pie"
+          ],
+          "ws4": [
+            "Butter",
+            "Powdered Paprika",
+            "Butter",
+            "Powdered Paprika",
+            "Butter",
+            "Powdered Paprika"
+          ]
+        },
+        "3": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Brush",
+            "Horn",
+            "Brush",
+            "Horn",
+            "Brush"
+          ]
+        },
+        "4": {
+          "main": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Sweet Popoto Pie",
+            "Popoto Salad",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "6": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "150": {
+      "date": "Jul 1 - 7",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Butter",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing"
+          ]
+        },
+        "3": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Dressing",
+            "Butter",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Butter",
+            "Buffalo Bean Salad",
+            "Butter",
+            "Buffalo Bean Salad",
+            "Butter",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Brush",
+            "Culinary Knife",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Horn",
+            "Sheepfluff Rug",
+            "Bed"
+          ]
+        }
+      }
+    },
+    "151": {
+      "date": "Jul 8 - 14",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brush",
+            "Rope",
+            "Tunic",
+            "Rope",
+            "Tunic"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "3": {
+          "main": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Mammet Award",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ]
+        },
+        "4": {
+          "main": [
+            "Honey",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Sweet Popoto Pie",
+            "Grilled Clam",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Isloaf",
+            "Vegetable Juice",
+            "Growth Formula",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Islefish Pie",
+            "Sweet Popoto Pie",
+            "Islefish Pie"
+          ]
+        }
+      }
+    },
+    "152": {
+      "date": "Jul 15 - 21",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Butter",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Butter"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Butter"
+          ]
+        },
+        "3": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Bouillabaisse",
+            "Islefish Pie"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Butter",
+            "Hora",
+            "Horn",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "main": [
+            "Runner Bean Saute",
+            "Isloaf",
+            "Onion Soup",
+            "Runner Bean Saute",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Vegetable Juice",
+            "Growth Formula",
+            "Vegetable Juice"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Cawl Cennin",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Butter",
+            "Earrings",
+            "Cawl Cennin",
+            "Earrings",
+            "Sheepfluff Rug"
+          ]
+        }
+      }
+    },
+    "153": {
+      "date": "Jul 22 - 28",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Brush",
+            "Crook",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Dressing",
+            "Powdered Paprika",
+            "Isloaf",
+            "Popoto Salad",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Brush",
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Culinary Knife",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Runner Bean Saute",
+            "Sweet Popoto Pie",
+            "Isloaf",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Islefish Pie",
+            "Caramels",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Brush",
+            "Rope",
+            "Cavalier's Hat",
+            "Rope",
+            "Garden Scythe"
+          ]
+        },
+        "6": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Potion",
+            "Growth Formula",
+            "Potion",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "154": {
+      "date": "Jul 29 - Aug 4",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Sheepfluff Rug",
+            "Earrings",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Culinary Knife"
+          ]
+        },
+        "5": {
+          "main": [
+            "Culinary Knife",
+            "Horn",
+            "Scale Fingers",
+            "Horn"
+          ],
+          "ws4": [
+            "Grilled Clam",
+            "Bouillabaisse",
+            "Grilled Clam",
+            "Bouillabaisse"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Cavalier's Hat",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "main": [
+            "Dressing",
+            "Squid Ink",
+            "Dressing",
+            "Squid Ink",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Natron",
+            "Shark Oil",
+            "Squid Ink",
+            "Bouillabaisse"
+          ]
+        }
+      }
+    },
+    "155": {
+      "date": "Aug 5 - 11",
+      "cycles": {
+        "2": {
+          "main": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Butter",
+            "Earrings"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Dressing",
+            "Tomato Relish",
+            "Butter",
+            "Earrings"
+          ]
+        },
+        "3": {
+          "main": [
+            "Vegetable Juice",
+            "Cawl Cennin",
+            "Vegetable Juice",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Essential Draught",
+            "Cawl Cennin"
+          ]
+        },
+        "4": {
+          "main": [
+            "Sweet Popoto",
+            "Caramels",
+            "Sweet Popoto",
+            "Caramels"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Corn Flakes",
+            "Pickled Radish"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Onion Soup",
+            "Sweet Popoto Pie",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ]
+        }
+      }
+    },
+    "156": {
+      "date": "Aug 12 - 18",
+      "cycles": {
+        "2": {
+          "main": [
+            "Butter",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Culinary Knife",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Butter",
+            "Powdered Paprika"
+          ]
+        },
+        "3": {
+          "main": [
+            "Squid Ink",
+            "Bouillabaisse",
+            "Squid Ink",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        },
+        "5": {
+          "main": [
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "157": {
+      "date": "Aug 19 - 25",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Spruce Round Shield",
+            "Crook",
+            "Spruce Round Shield"
+          ]
+        },
+        "4": {
+          "main": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Honey",
+            "Sweet Popoto Pie",
+            "Bouillabaisse"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Honey",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels"
+          ]
+        },
+        "6": {
+          "main": [
+            "Cawl Cennin",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Potion",
+            "Growth Formula",
+            "Cawl Cennin",
+            "Sheepfluff Rug"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "158": {
+      "date": "Aug 26 - Sep 1",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brass Serving Dish",
+            "Brush",
+            "Garden Scythe",
+            "Brush",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Powdered Paprika"
+          ]
+        },
+        "3": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ]
+        },
+        "4": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Bed",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Hora",
+            "Garnet Rapier"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Spruce Round Shield",
+            "Crook",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "159": {
+      "date": "Sep 2 - 8",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ]
+        },
+        "3": {
+          "main": [
+            "Grinding Wheel",
+            "Garden Scythe",
+            "Grinding Wheel",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ]
+        },
+        "4": {
+          "main": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "5": {
+          "main": [
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Growth Formula",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Natron",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "main": [
+            "Necklace",
+            "Crook",
+            "Necklace",
+            "Crook"
+          ],
+          "ws4": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "160": {
+      "date": "Sep 9 - 15",
+      "cycles": {
+        "2": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ]
+        },
+        "3": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "4": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Horn",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ]
+        },
+        "5": {
+          "main": [
+            "Necklace",
+            "Crook",
+            "Necklace",
+            "Crook"
+          ],
+          "ws4": [
+            "Natron",
+            "Garden Scythe",
+            "Durium Tathlums",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Popoto Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "161": {
+      "date": "Sep 16 - 22",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Fruit Punch",
+            "Honey",
+            "Isleberry Jam",
+            "Honey",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Honey",
+            "Isleberry Jam"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "main": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "7": {
+          "main": [
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Boiled Egg"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Sheepfluff Rug",
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Boiled Egg"
+          ]
+        }
+      }
+    },
+    "162": {
+      "date": "Sep 23 - 29",
+      "cycles": {
+        "2": {
+          "main": [
+            "Cawl Cennin",
+            "Vegetable Juice",
+            "Cawl Cennin",
+            "Vegetable Juice"
+          ],
+          "ws4": [
+            "Earrings",
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Isloaf",
+            "Vegetable Juice"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Brush",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "main": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Coconut Juice",
+            "Sweet Popoto",
+            "Fruit Punch",
+            "Caramels"
+          ]
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "163": {
+      "date": "Sep 30 - Oct 6",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Tomato Relish",
+            "Butter",
+            "Tomato Relish",
+            "Butter",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Isloaf",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Butter",
+            "Tomato Relish"
+          ]
+        },
+        "3": {
+          "main": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Honey",
+            "Pumpkin Pudding",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Popoto Salad",
+            "Peperoncino",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ]
+        },
+        "6": {
+          "main": [
+            "Horn",
+            "Cawl Cennin",
+            "Horn",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Horn",
+            "Cawl Cennin"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        }
+      }
+    },
+    "164": {
+      "date": "Oct 7 - 13",
+      "cycles": {
+        "2": {
+          "main": [
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Isloaf",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Barbut",
+            "Cavalier's Hat",
+            "Tunic",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Beet Soup",
+            "Isloaf",
+            "Beet Soup",
+            "Isloaf"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Boiled Egg",
+            "Horn",
+            "Natron",
+            "Horn",
+            "Natron"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "main": [
+            "Coconut Juice",
+            "Islefish Pie",
+            "Bouillabaisse",
+            "Islefish Pie"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Stove",
+            "Silver Ear Cuffs"
+          ]
+        }
+      }
+    },
+    "165": {
+      "date": "Oct 14 - 20",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Isloaf",
+            "Popoto Salad",
+            "Isloaf",
+            "Popoto Salad"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ]
+        },
+        "3": {
+          "main": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ],
+          "ws4": [
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe",
+            "Horn"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Rope",
+            "Bed"
+          ]
+        },
+        "5": {
+          "main": [
+            "Dressing",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Shark Oil",
+            "Horn",
+            "Sheepfluff Rug"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Scale Fingers"
+          ]
+        }
+      }
+    },
+    "166": {
+      "date": "Oct 21 - 27",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Boiled Egg",
+            "Beet Soup",
+            "Runner Bean Saute",
+            "Beet Soup"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Boiled Egg",
+            "Onion Soup",
+            "Runner Bean Saute",
+            "Beet Soup"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Butter",
+            "Tomato Relish",
+            "Butter",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Coconut Juice",
+            "Vegetable Juice",
+            "Coconut Juice",
+            "Vegetable Juice"
+          ]
+        },
+        "6": {
+          "main": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ]
+        },
+        "7": {
+          "main": [
+            "Coconut Juice",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Bouillabaisse",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "167": {
+      "date": "Oct 28 - Nov 3",
+      "cycles": {
+        "2": {
+          "main": [
+            "Coconut Juice",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Natron",
+            "Shark Oil",
+            "Natron",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Onion Soup",
+            "Baked Pumpkin",
+            "Onion Soup",
+            "Baked Pumpkin"
+          ]
+        },
+        "5": {
+          "main": [
+            "Islefish Pie",
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Islefish Pie",
+            "Pumpkin Pudding"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Durium Tathlums",
+            "Garden Scythe"
+          ]
+        },
+        "7": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Hora",
+            "Crook",
+            "Hora"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ]
+        }
+      }
+    },
+    "168": {
+      "date": "Nov 4 - 10",
+      "cycles": {
+        "2": {
+          "main": [
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Hora",
+            "Buffalo Bean Salad",
+            "Hora"
+          ],
+          "ws4": [
+            "Dressing",
+            "Isleberry Jam",
+            "Dressing",
+            "Isleberry Jam",
+            "Powdered Paprika"
+          ]
+        },
+        "3": {
+          "main": [
+            "Isloaf",
+            "Bouillabaisse",
+            "Isloaf",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Potion",
+            "Isloaf",
+            "Sweet Popoto Pie",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spruce Round Shield",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Necklace",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Scale Fingers",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brush",
+            "Horn",
+            "Scale Fingers",
+            "Sheepfluff Rug"
+          ]
+        }
+      }
+    },
+    "169": {
+      "date": "Nov 11 - 17",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Butter",
+            "Isleberry Jam",
+            "Dressing",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Earrings",
+            "Hora",
+            "Earrings",
+            "Hora",
+            "Earrings"
+          ]
+        },
+        "3": {
+          "main": [
+            "Cawl Cennin",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Earrings",
+            "Cawl Cennin",
+            "Earrings",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Peperoncino",
+            "Beet Soup",
+            "Bouillabaisse"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "170": {
+      "date": "Nov 18 - 24",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spectacles",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "main": [
+            "Boiled Egg",
+            "Onion Soup",
+            "Bouillabaisse",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Bouillabaisse",
+            "Imam Bayildi",
+            "Onion Soup"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ]
+        }
+      }
+    },
+    "171": {
+      "date": "Nov 25 - Dec 1",
+      "cycles": {
+        "2": {
+          "main": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Beet Soup",
+            "Popoto Salad",
+            "Beet Soup"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Runner Bean Saute"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch"
+          ]
+        },
+        "4": {
+          "main": [
+            "Grilled Clam",
+            "Shark Oil",
+            "Grilled Clam",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Butter",
+            "Hora",
+            "Horn",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "main": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Parsnip Salad",
+            "Sweet Popoto Pie",
+            "Fruit Punch",
+            "Sweet Popoto Pie"
+          ],
+          "ws4": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Fruit Punch",
+            "Sweet Popoto Pie"
+          ]
+        }
+      }
+    },
+    "172": {
+      "date": "Dec 2 - 8",
+      "cycles": {
+        "2": {
+          "main": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Brass Serving Dish",
+            "Garden Scythe"
+          ]
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Hora",
+            "Sheepfluff Rug",
+            "Bed"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Imam Bayildi",
+            "Parsnip Salad",
+            "Imam Bayildi",
+            "Parsnip Salad"
+          ]
+        }
+      }
+    },
+    "173": {
+      "date": "Dec 9 - 15",
+      "cycles": {
+        "2": {
+          "main": [
+            "Rope",
+            "Brush",
+            "Natron",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "5": {
+          "main": [
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Sweet Popoto Pie",
+            "Caramels",
+            "Pumpkin Pudding"
+          ]
+        },
+        "6": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Natron",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "174": {
+      "date": "Dec 16 - 22",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Boiled Egg",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Baked Pumpkin"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Boiled Egg",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Baked Pumpkin"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "4": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "5": {
+          "main": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Culinary Knife",
+            "Garden Scythe"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Onion Soup",
+            "Boiled Egg",
+            "Onion Soup",
+            "Boiled Egg"
+          ]
+        }
+      }
+    },
+    "175": {
+      "date": "Dec 23 - 29",
+      "cycles": {
+        "2": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Isloaf",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Coconut Juice",
+            "Growth Formula",
+            "Coconut Juice",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Hora",
+            "Garnet Rapier",
+            "Hora"
+          ]
+        },
+        "6": {
+          "main": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad"
+          ]
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        }
+      }
+    },
+    "176": {
+      "date": "Dec 30 - Jan 5",
+      "cycles": {
+        "2": {
+          "main": [
+            "Runner Bean Saute",
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Coconut Juice",
+            "Fruit Punch"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Coconut Juice",
+            "Fruit Punch",
+            "Coconut Juice",
+            "Fruit Punch"
+          ]
+        },
+        "3": {
+          "main": [
+            "Tomato Relish",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Butter",
+            "Buffalo Bean Salad",
+            "Horn",
+            "Butter",
+            "Sheepfluff Rug"
+          ]
+        },
+        "4": {
+          "main": [
+            "Potion",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Honey",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "main": [
+            "Crook",
+            "Spruce Round Shield",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Culinary Knife"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "177": {
+      "date": "Jan 6 - 12",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Powdered Paprika",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad"
+          ],
+          "ws4": [
+            "Dressing",
+            "Powdered Paprika",
+            "Dressing",
+            "Powdered Paprika",
+            "Isloaf",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug",
+            "Buffalo Bean Salad",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Brush",
+            "Culinary Knife",
+            "Brush",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Sauerkraut",
+            "Pickled Zucchini",
+            "Sauerkraut",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Scale Fingers"
+          ]
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Sweet Popoto Pie",
+            "Fruit Punch",
+            "Sweet Popoto Pie"
+          ]
+        }
+      }
+    },
+    "178": {
+      "date": "Jan 13 - 19",
+      "cycles": {
+        "2": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Dressing",
+            "Powdered Paprika",
+            "Dressing",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "3": {
+          "main": [
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Pumpkin Pudding",
+            "Islefish Pie"
+          ],
+          "ws4": [
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels"
+          ]
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Isloaf",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Culinary Knife",
+            "Garden Scythe",
+            "Lantern",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ]
+        },
+        "6": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Rope",
+            "Bed"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "179": {
+      "date": "Jan 20 - 26",
+      "cycles": {
+        "2": {
+          "main": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Baked Pumpkin",
+            "Popoto Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Culinary Knife",
+            "Cawl Cennin",
+            "Culinary Knife"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Rope",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Beet Soup",
+            "Runner Bean Saute",
+            "Beet Soup",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "5": {
+          "main": [
+            "Sweet Popoto",
+            "Caramels",
+            "Sweet Popoto",
+            "Caramels"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Sweet Popoto",
+            "Sweet Popoto Pie",
+            "Caramels"
+          ]
+        },
+        "6": {
+          "main": [
+            "Natron",
+            "Horn",
+            "Scale Fingers",
+            "Horn"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Garden Scythe",
+            "Horn"
+          ]
+        },
+        "7": {
+          "main": [
+            "Dressing",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Popoto Salad",
+            "Boiled Egg",
+            "Popoto Salad"
+          ]
+        }
+      }
+    },
+    "180": {
+      "date": "Jan 27 - Feb 2",
+      "cycles": {
+        "2": {
+          "main": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Isloaf",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ]
+        },
+        "3": {
+          "main": [
+            "Dressing",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Sweet Popoto Pie",
+            "Boiled Egg",
+            "Sweet Popoto Pie"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Sweet Popoto",
+            "Fruit Punch",
+            "Sweet Popoto"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ]
+        },
+        "6": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Honey",
+            "Islefish Pie",
+            "Sweet Popoto Pie",
+            "Islefish Pie"
+          ]
+        }
+      }
+    },
+    "181": {
+      "date": "Feb 3 - 9",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Garden Scythe",
+            "Brush",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Imam Bayildi",
+            "Isloaf",
+            "Imam Bayildi",
+            "Isloaf"
+          ]
+        },
+        "4": {
+          "main": [
+            "Dressing",
+            "Squid Ink",
+            "Dressing",
+            "Squid Ink",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch"
+          ]
+        },
+        "5": {
+          "main": [
+            "Butter",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Corn Flakes",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ]
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Fruit Punch",
+            "Coconut Juice",
+            "Fruit Punch",
+            "Coconut Juice",
+            "Fruit Punch"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "182": {
+      "date": "Feb 10 - 16",
+      "cycles": {
+        "2": {
+          "main": [
+            "Butter",
+            "Powdered Paprika",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Runner Bean Saute"
+          ]
+        },
+        "3": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Boiled Egg",
+            "Scale Fingers"
+          ]
+        },
+        "4": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Necklace",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "5": {
+          "main": [
+            "Necklace",
+            "Crook",
+            "Necklace",
+            "Crook"
+          ],
+          "ws4": [
+            "Rope",
+            "Bed",
+            "Necklace",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Rope",
+            "Cavalier's Hat",
+            "Bed",
+            "Cavalier's Hat"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "183": {
+      "date": "Feb 17 - 23",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Earrings",
+            "Culinary Knife",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Rope",
+            "Brass Serving Dish",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Firesand",
+            "Seashine Opal",
+            "Garnet Rapier"
+          ]
+        },
+        "5": {
+          "main": [
+            "Boiled Egg",
+            "Cawl Cennin",
+            "Growth Formula",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Imam Bayildi",
+            "Beet Soup",
+            "Imam Bayildi",
+            "Beet Soup"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Fruit Punch",
+            "Sweet Popoto",
+            "Sweet Popoto Pie",
+            "Sweet Popoto"
+          ],
+          "ws4": [
+            "Squid Ink",
+            "Islefish Pie",
+            "Sweet Popoto Pie",
+            "Sweet Popoto"
+          ]
+        }
+      }
+    },
+    "184": {
+      "date": "Feb 24 - Mar 2",
+      "cycles": {
+        "2": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Scale Fingers"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes"
+          ]
+        },
+        "4": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Vegetable Juice",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        },
+        "5": {
+          "main": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Bouillabaisse",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Onion Soup",
+            "Bouillabaisse",
+            "Imam Bayildi"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Sheepfluff Rug",
+            "Dried Flowers",
+            "Shark Oil"
+          ]
+        }
+      }
+    },
+    "185": {
+      "date": "Mar 3 - 9",
+      "cycles": {
+        "2": {
+          "main": [
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Butter",
+            "Powdered Paprika",
+            "Butter",
+            "Powdered Paprika",
+            "Butter",
+            "Powdered Paprika"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        },
+        "6": {
+          "main": [
+            "Powdered Paprika",
+            "Cawl Cennin",
+            "Scale Fingers",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Necklace",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "186": {
+      "date": "Mar 10 - 16",
+      "cycles": {
+        "2": {
+          "main": [
+            "Tomato Relish",
+            "Dressing",
+            "Powdered Paprika",
+            "Isloaf",
+            "Buffalo Bean Salad",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Brass Serving Dish",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Bed",
+            "Tunic"
+          ]
+        },
+        "5": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "main": [
+            "Dressing",
+            "Butter",
+            "Horn",
+            "Butter",
+            "Horn"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Buffalo Bean Salad",
+            "Bouillabaisse"
+          ]
+        }
+      }
+    },
+    "187": {
+      "date": "Mar 17 - 23",
+      "cycles": {
+        "2": {
+          "main": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Isloaf",
+            "Runner Bean Saute",
+            "Isloaf"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "main": [
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Onion Soup",
+            "Runner Bean Saute",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Hora",
+            "Scale Fingers",
+            "Hora"
+          ]
+        },
+        "4": {
+          "main": [
+            "Tomato Relish",
+            "Butter",
+            "Sheepfluff Rug",
+            "Culinary Knife",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Bed",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Sweet Popoto Pie",
+            "Coconut Juice",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "188": {
+      "date": "Mar 24 - 30",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Isloaf",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Scale Fingers",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ]
+        },
+        "4": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Peperoncino",
+            "Onion Soup",
+            "Imam Bayildi",
+            "Onion Soup"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Bouillabaisse",
+            "Isloaf",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Honey",
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Bouillabaisse"
+          ]
+        },
+        "6": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "189": {
+      "date": "Mar 31 - Apr 6",
+      "cycles": {
+        "2": {
+          "main": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Boiled Egg",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "4": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Pickled Radish"
+          ]
+        },
+        "5": {
+          "main": [
+            "Pumpkin Pudding",
+            "Sweet Popoto",
+            "Pumpkin Pudding",
+            "Sweet Popoto"
+          ],
+          "ws4": [
+            "Dressing",
+            "Honey",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Sweet Popoto"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Isloaf",
+            "Popoto Salad",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "190": {
+      "date": "Apr 7 - 13",
+      "cycles": {
+        "2": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Isloaf",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "main": [
+            "Honey",
+            "Fruit Punch",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Onion Soup",
+            "Bouillabaisse",
+            "Onion Soup"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "main": [
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish",
+            "Isleberry Jam",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Isloaf"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "191": {
+      "date": "Apr 14 - 20",
+      "cycles": {
+        "2": {
+          "rest": true
+        },
+        "3": {
+          "main": [
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Imam Bayildi",
+            "Runner Bean Saute",
+            "Imam Bayildi"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Squid Ink",
+            "Powdered Paprika",
+            "Squid Ink",
+            "Powdered Paprika"
+          ]
+        },
+        "4": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Butter",
+            "Sheepfluff Rug",
+            "Butter",
+            "Sheepfluff Rug"
+          ]
+        },
+        "5": {
+          "main": [
+            "Isloaf",
+            "Cawl Cennin",
+            "Horn",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "main": [
+            "Boiled Egg",
+            "Scale Fingers",
+            "Boiled Egg",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Coconut Juice",
+            "Caramels",
+            "Coconut Juice",
+            "Caramels",
+            "Coconut Juice"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "192": {
+      "date": "Apr 21 - 27",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "3": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Bed",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Bed",
+            "Cavalier's Hat"
+          ]
+        },
+        "4": {
+          "main": [
+            "Butter",
+            "Scale Fingers",
+            "Butter",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Cawl Cennin",
+            "Sheepfluff Rug",
+            "Scale Fingers"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Necklace",
+            "Silver Ear Cuffs",
+            "Necklace",
+            "Spruce Round Shield"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Sweet Popoto",
+            "Islefish Pie",
+            "Shark Oil"
+          ]
+        }
+      }
+    },
+    "193": {
+      "date": "Apr 28 - May 4",
+      "cycles": {
+        "2": {
+          "main": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Isloaf",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Runner Bean Saute",
+            "Popoto Salad",
+            "Isloaf",
+            "Bouillabaisse"
+          ]
+        },
+        "3": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Squid Ink",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Squid Ink",
+            "Powdered Paprika",
+            "Squid Ink",
+            "Shark Oil"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ]
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Horn",
+            "Sheepfluff Rug",
+            "Bed"
+          ]
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spruce Round Shield",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        }
+      }
+    },
+    "194": {
+      "date": "May 5 - 11",
+      "cycles": {
+        "2": {
+          "main": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ],
+          "ws4": [
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Earrings",
+            "Buffalo Bean Salad",
+            "Earrings"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Culinary Knife",
+            "Boiled Egg",
+            "Butter",
+            "Culinary Knife",
+            "Boiled Egg",
+            "Butter"
+          ],
+          "ws4": [
+            "Brush",
+            "Culinary Knife",
+            "Brush",
+            "Culinary Knife",
+            "Boiled Egg",
+            "Butter"
+          ]
+        },
+        "5": {
+          "main": [
+            "Brush",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Culinary Knife",
+            "Buffalo Bean Salad",
+            "Bouillabaisse",
+            "Shark Oil"
+          ]
+        },
+        "6": {
+          "main": [
+            "Crook",
+            "Garnet Rapier",
+            "Crook"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Popoto Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "7": {
+          "main": [
+            "Horn",
+            "Garden Scythe",
+            "Horn",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Earrings",
+            "Horn",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        }
+      }
+    },
+    "195": {
+      "date": "May 12 - 18",
+      "cycles": {
+        "2": {
+          "main": [
+            "Sauerkraut",
+            "Pickled Zucchini",
+            "Corn Flakes",
+            "Pickled Zucchini"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Powdered Paprika",
+            "Isloaf",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "4": {
+          "main": [
+            "Baked Pumpkin",
+            "Popoto Salad",
+            "Onion Soup",
+            "Popoto Salad",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Rope",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "main": [
+            "Pumpkin Pudding",
+            "Caramels",
+            "Pumpkin Pudding",
+            "Caramels"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Silver Ear Cuffs",
+            "Garden Scythe"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Earrings",
+            "Scale Fingers",
+            "Earrings",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Bouillabaisse",
+            "Runner Bean Saute",
+            "Bouillabaisse"
+          ]
+        }
+      }
+    },
+    "196": {
+      "date": "May 19 - 25",
+      "cycles": {
+        "2": {
+          "main": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Dressing",
+            "Butter",
+            "Earrings",
+            "Silver Ear Cuffs"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Butter",
+            "Scale Fingers",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "5": {
+          "main": [
+            "Parsnip Salad",
+            "Bouillabaisse",
+            "Parsnip Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Isloaf",
+            "Growth Formula",
+            "Isloaf",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "main": [
+            "Culinary Knife",
+            "Sheepfluff Rug",
+            "Bed",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Rope",
+            "Ribbon",
+            "Bed",
+            "Sheepfluff Rug"
+          ]
+        },
+        "7": {
+          "main": [
+            "Butter",
+            "Horn",
+            "Boiled Egg",
+            "Horn",
+            "Boiled Egg"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing"
+          ]
+        }
+      }
+    },
+    "197": {
+      "date": "May 26 - Jun 1",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Runner Bean Saute",
+            "Onion Soup",
+            "Isloaf",
+            "Onion Soup"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Runner Bean Saute",
+            "Imam Bayildi",
+            "Isloaf",
+            "Onion Soup"
+          ]
+        },
+        "3": {
+          "rest": true
+        },
+        "4": {
+          "main": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ],
+          "ws4": [
+            "Brush",
+            "Shark Oil",
+            "Rope",
+            "Bed"
+          ]
+        },
+        "5": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Pickled Radish"
+          ]
+        },
+        "6": {
+          "main": [
+            "Cawl Cennin",
+            "Horn",
+            "Cawl Cennin",
+            "Horn"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        }
+      }
+    },
+    "198": {
+      "date": "Jun 2 - 8",
+      "cycles": {
+        "2": {
+          "main": [
+            "Dressing",
+            "Butter",
+            "Cawl Cennin",
+            "Butter",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Isloaf",
+            "Essential Draught",
+            "Powdered Paprika",
+            "Cawl Cennin"
+          ]
+        },
+        "3": {
+          "main": [
+            "Dressing",
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish",
+            "Dressing",
+            "Tomato Relish"
+          ],
+          "ws4": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Popoto Salad",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Natron",
+            "Shark Oil",
+            "Natron",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch",
+            "Caramels",
+            "Fruit Punch"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Garden Scythe",
+            "Dried Flowers",
+            "Bed"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Garnet Rapier",
+            "Cooling Glass",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "199": {
+      "date": "Jun 9 - 15",
+      "cycles": {
+        "2": {
+          "main": [
+            "Squid Ink",
+            "Shark Oil",
+            "Brush",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Squid Ink",
+            "Shark Oil"
+          ]
+        },
+        "3": {
+          "main": [
+            "Popoto Salad",
+            "Bouillabaisse",
+            "Popoto Salad",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Tomato Relish",
+            "Powdered Paprika",
+            "Tomato Relish",
+            "Squid Ink",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Boiled Egg",
+            "Hora",
+            "Crook",
+            "Hora"
+          ],
+          "ws4": [
+            "Necklace",
+            "Crook",
+            "Durium Tathlums",
+            "Hora"
+          ]
+        },
+        "5": {
+          "main": [
+            "Rope",
+            "Cavalier's Hat",
+            "Spruce Round Shield",
+            "Cavalier's Hat"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "6": {
+          "main": [
+            "Horn",
+            "Sheepfluff Rug",
+            "Horn",
+            "Sheepfluff Rug"
+          ],
+          "ws4": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "200": {
+      "date": "Jun 16 - 22",
+      "cycles": {
+        "2": {
+          "main": [
+            "Powdered Paprika",
+            "Coconut Juice",
+            "Pumpkin Pudding",
+            "Fruit Punch",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Parsnip Salad",
+            "Baked Pumpkin",
+            "Parsnip Salad"
+          ]
+        },
+        "3": {
+          "main": [
+            "Brass Serving Dish",
+            "Silver Ear Cuffs",
+            "Brass Serving Dish",
+            "Silver Ear Cuffs"
+          ],
+          "ws4": [
+            "Rope",
+            "Bed",
+            "Rope",
+            "Bed"
+          ]
+        },
+        "4": {
+          "rest": true
+        },
+        "5": {
+          "main": [
+            "Tomato Relish",
+            "Butter",
+            "Cawl Cennin",
+            "Butter",
+            "Cawl Cennin"
+          ],
+          "ws4": [
+            "Brush",
+            "Crook",
+            "Brush",
+            "Crook"
+          ]
+        },
+        "6": {
+          "main": [
+            "Buffalo Bean Salad",
+            "Scale Fingers",
+            "Buffalo Bean Salad",
+            "Scale Fingers"
+          ],
+          "ws4": [
+            "Crook",
+            "Spruce Round Shield",
+            "Crook"
+          ]
+        },
+        "7": {
+          "main": [
+            "Rope",
+            "Tunic",
+            "Spruce Round Shield",
+            "Tunic"
+          ],
+          "ws4": [
+            "Brush",
+            "Spruce Round Shield",
+            "Cavalier's Hat",
+            "Tunic"
+          ]
+        }
+      }
+    },
+    "201": {
+      "date": "Jun 23 - 29",
+      "cycles": {
+        "2": {
+          "main": [
+            "Isloaf",
+            "Natron",
+            "Garden Scythe",
+            "Brush",
+            "Garden Scythe"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf",
+            "Parsnip Salad",
+            "Isloaf"
+          ]
+        },
+        "3": {
+          "main": [
+            "Boiled Egg",
+            "Popoto Salad",
+            "Peperoncino",
+            "Popoto Salad",
+            "Peperoncino"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ]
+        },
+        "4": {
+          "main": [
+            "Necklace",
+            "Spruce Round Shield",
+            "Necklace",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Butter",
+            "Scale Fingers",
+            "Spruce Round Shield"
+          ]
+        },
+        "5": {
+          "main": [
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Powdered Paprika",
+            "Vegetable Juice",
+            "Powdered Paprika"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Imam Bayildi",
+            "Sweet Popoto Pie",
+            "Imam Bayildi"
+          ]
+        },
+        "6": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Boiled Egg",
+            "Sweet Popoto Pie",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "7": {
+          "rest": true
+        }
+      }
+    },
+    "202": {
+      "date": "Jun 30 - Jul 6",
+      "cycles": {
+        "2": {
+          "main": [
+            "Culinary Knife",
+            "Shark Oil",
+            "Culinary Knife",
+            "Shark Oil"
+          ],
+          "ws4": [
+            "Parsnip Salad",
+            "Runner Bean Saute",
+            "Buffalo Bean Salad",
+            "Culinary Knife",
+            "Shark Oil"
+          ]
+        },
+        "3": {
+          "main": [
+            "Powdered Paprika",
+            "Isloaf",
+            "Powdered Paprika",
+            "Butter",
+            "Scale Fingers"
+          ]
+        },
+        "4": {
+          "main": [
+            "Corn Flakes",
+            "Pickled Radish",
+            "Corn Flakes",
+            "Pickled Radish"
+          ],
+          "ws4": [
+            "Sauerkraut",
+            "Corn Flakes",
+            "Sauerkraut",
+            "Corn Flakes",
+            "Pickled Radish"
+          ]
+        },
+        "5": {
+          "main": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Powdered Paprika",
+            "Growth Formula"
+          ],
+          "ws4": [
+            "Earrings",
+            "Sheepfluff Rug",
+            "Cawl Cennin",
+            "Growth Formula"
+          ]
+        },
+        "6": {
+          "rest": true
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Earrings",
+            "Silver Ear Cuffs",
+            "Firesand",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    },
+    "203": {
+      "date": "Jul 7 - 13",
+      "cycles": {
+        "2": {
+          "main": [
+            "Squid Ink",
+            "Butter",
+            "Buffalo Bean Salad",
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Runner Bean Saute"
+          ],
+          "ws4": [
+            "Runner Bean Saute",
+            "Parsnip Salad",
+            "Buffalo Bean Salad",
+            "Popoto Salad",
+            "Parsnip Salad",
+            "Runner Bean Saute"
+          ]
+        },
+        "3": {
+          "main": [
+            "Isloaf",
+            "Bouillabaisse",
+            "Isloaf",
+            "Bouillabaisse"
+          ],
+          "ws4": [
+            "Powdered Paprika",
+            "Growth Formula",
+            "Isloaf",
+            "Bouillabaisse"
+          ]
+        },
+        "4": {
+          "main": [
+            "Islefish Pie",
+            "Pumpkin Pudding",
+            "Islefish Pie",
+            "Pumpkin Pudding"
+          ],
+          "ws4": [
+            "Brush",
+            "Garden Scythe",
+            "Shark Oil",
+            "Garden Scythe"
+          ]
+        },
+        "5": {
+          "rest": true
+        },
+        "6": {
+          "main": [
+            "Brush",
+            "Spruce Round Shield",
+            "Brush",
+            "Spruce Round Shield"
+          ],
+          "ws4": [
+            "Rope",
+            "Tunic",
+            "Cavalier's Hat",
+            "Spruce Round Shield"
+          ]
+        },
+        "7": {
+          "main": [
+            "Firesand",
+            "Garnet Rapier",
+            "Firesand",
+            "Garnet Rapier"
+          ],
+          "ws4": [
+            "Garnet Rapier",
+            "Coral Sword",
+            "Garnet Rapier"
+          ]
+        }
+      }
+    }
+  },
+  "anchorSeason": 203,
+  "anchorStart": "2026-07-07"
+}

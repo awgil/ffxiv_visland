@@ -17,4 +17,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\AutoRetainerAPI\AutoRetainerAPI\AutoRetainerAPI.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Workshop\Data\workshop-seasons.json" LogicalName="visland.Workshop.Data.workshop-seasons.json" />
+	</ItemGroup>
 </Project>

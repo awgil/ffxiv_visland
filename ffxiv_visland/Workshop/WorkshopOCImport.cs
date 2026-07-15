@@ -1,4 +1,4 @@
-﻿using Dalamud.Game;
+using Dalamud.Game;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Textures;
 using Dalamud.Interface.Utility.Raii;
@@ -22,14 +22,18 @@ public unsafe class WorkshopOCImport {
     public WorkshopSolver.Recs Recommendations = new();
 
     private readonly WorkshopConfig _config;
+    private readonly WorkshopSeasonDB _seasonDB;
     private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
     private readonly List<uint> _craftIds = [];
     private readonly List<string> _botNames;
     private readonly List<Func<bool>> _pendingActions = [];
     private bool IgnoreFourthWorkshop;
+    private int _loadedSeason;
+    private bool _loadedNextWeek;
 
     public WorkshopOCImport() {
         _config = Service.Config.Get<WorkshopConfig>();
+        _seasonDB = new WorkshopSeasonDB();
         _craftSheet = GetSheet<MJICraftworksObject>(); // unlocalised sheet can't be fetched in english
         _botNames = _craftSheet.Select(r => OfficialNameToBotName(GetRow<Item>(r.Item.RowId, ClientLanguage.English)!.Value.Name.ExtractText())).ToList();
     }
@@ -40,43 +44,39 @@ public unsafe class WorkshopOCImport {
     }
 
     public void Draw() {
-        using var globalDisable = ImRaii.Disabled(_pendingActions.Count > 0); // disallow any manipulations while delayed actions are in progress
+        using var globalDisable = ImRaii.Disabled(_pendingActions.Count > 0);
+
+        var thisSeason = _seasonDB.CurrentSeason(false);
+        var nextSeason = _seasonDB.CurrentSeason(true);
+        ImGui.TextUnformatted($"Archive seasons {_seasonDB.RangeStart}-{_seasonDB.RangeEnd} (cycle {_seasonDB.CycleLength})");
+        ImGui.TextUnformatted($"This week → Season {thisSeason}" + (_seasonDB.TryGet(thisSeason, out var cur) ? $" ({cur.Date})" : " (missing)"));
+        ImGui.TextUnformatted($"Next week → Season {nextSeason}" + (_seasonDB.TryGet(nextSeason, out var nxt) ? $" ({nxt.Date})" : " (missing)"));
+
+        if (ImGui.Button("Load This Week"))
+            LoadSeasonRecs(false);
+        ImGui.SameLine();
+        if (ImGui.Button("Load Next Week"))
+            LoadSeasonRecs(true);
+        ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favor mode from Settings.");
 
         if (ImGui.Button("Import Recommendations From Clipboard"))
             ImportRecsFromClipboard(false);
-        ImGuiComponents.HelpMarker("This is for importing schedules from the Overseas Casuals' Discord from your clipboard.\n" +
-                        "This importer detects the presence of an item's name (not including \"Isleworks\" et al) on each line.\n" +
-                        "You can copy an entire workshop's schedule from the discord, junk included.");
+        ImGuiComponents.HelpMarker("Legacy importer for schedules copied from Discord.\n" +
+                        "The importer detects item names (without \"Isleworks\" et al) on each line.\n" +
+                        "You can copy an entire workshop schedule from discord, junk included.");
 
         if (Recommendations.Empty)
             return;
 
+        if (_loadedSeason != 0)
+            ImGui.TextUnformatted($"Loaded season {_loadedSeason}" + (_loadedNextWeek ? " (next week)" : " (this week)"));
+
         ImGui.Separator();
 
-        if (!_config.UseFavorSolver) {
-            ImGui.TextUnformatted("Favours");
-            ImGuiComponents.HelpMarker("Click the \"This Week's Favors\" or \"Next Week's Favors\" button to generate a bot command for the OC discord for your favors.\n" +
-                    "Then click the #bot-spam button to open discord to the channel, paste in the command and copy its output.\n" +
-                    "Finally, click the \"Override 4th workshop\" button to replace the regular recommendations with favor recommendations.");
+        if (_config.UseFavorSolver) {
+            ImGui.TextUnformatted("Advanced favor overrides");
+            ImGuiComponents.HelpMarker("Manual overrides for the currently loaded schedule. Archive loads already apply the favor mode from Settings.");
 
-            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "This Week's Favors"))
-                ImGui.SetClipboardText(CreateFavorRequestCommand(false));
-            ImGui.SameLine();
-            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Next Week's Favors"))
-                ImGui.SetClipboardText(CreateFavorRequestCommand(true));
-
-            if (ImGui.Button("Overseas Casuals > #bot-spam"))
-                Util.OpenLink("discord://discord.com/channels/1034534280757522442/1034985297391407126");
-            if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-                Util.OpenLink("https://discord.com/channels/1034534280757522442/1034985297391407126");
-            ImGuiComponents.HelpMarker("\uE051: Discord app\n\uE052: Discord in browser");
-
-            if (ImGui.Button("Override 4th workshop with favor schedules from clipboard"))
-                OverrideSideRecsLastWorkshopClipboard();
-            if (ImGui.Button("Override closest workshops with favor schedules from clipboard"))
-                OverrideSideRecsAsapClipboard();
-        }
-        else {
             ImGuiEx.TextV("Override 4th workshop with favors:");
             ImGui.SameLine();
             if (ImGui.Button($"This Week##4th"))
@@ -87,15 +87,25 @@ public unsafe class WorkshopOCImport {
 
             ImGuiEx.TextV("Override closest workshops with favors:");
             ImGui.SameLine();
-
             if (ImGui.Button($"This Week##asap"))
                 OverrideSideRecsAsapSolver(false);
             ImGui.SameLine();
             if (ImGui.Button($"Next Week##asap"))
                 OverrideSideRecsAsapSolver(true);
-        }
 
-        ImGui.Separator();
+            if (ImGui.Button("Override 4th workshop from clipboard"))
+                OverrideSideRecsLastWorkshopClipboard();
+            if (ImGui.Button("Override closest workshops from clipboard"))
+                OverrideSideRecsAsapClipboard();
+
+            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Copy /favors (this week)"))
+                ImGui.SetClipboardText(CreateFavorRequestCommand(false));
+            ImGui.SameLine();
+            if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Copy /favors (next week)"))
+                ImGui.SetClipboardText(CreateFavorRequestCommand(true));
+
+            ImGui.Separator();
+        }
 
         ImGuiEx.TextV("Set Schedule:");
         ImGui.SameLine();
@@ -114,10 +124,62 @@ public unsafe class WorkshopOCImport {
     public void ImportRecsFromClipboard(bool silent) {
         try {
             Recommendations = ParseRecs(ImGui.GetClipboardText());
+            _loadedSeason = 0;
         }
         catch (Exception ex) {
             ReportError($"Error: {ex.Message}", silent);
         }
+    }
+
+    public void LoadSeasonRecs(bool nextWeek, bool silent = false) {
+        try {
+            if (_config.FavorMode == WorkshopFavorMode.None) {
+                ApplySeason(nextWeek, null);
+                return;
+            }
+
+            EnsureDemandFavorsAvailable();
+            _pendingActions.Add(() => {
+                try {
+                    ApplySeason(nextWeek, ReadFavorState(nextWeek));
+                }
+                catch (Exception ex) {
+                    ReportError($"Error: {ex.Message}", silent);
+                }
+                return true;
+            });
+        }
+        catch (Exception ex) {
+            ReportError($"Error: {ex.Message}", silent);
+        }
+    }
+
+    private void ApplySeason(bool nextWeek, WorkshopSolver.FavorState? favors) {
+        var season = _seasonDB.CurrentSeason(nextWeek);
+        var baseRecs = _seasonDB.BuildRecs(season);
+        Recommendations = favors == null || _config.FavorMode == WorkshopFavorMode.None
+            ? baseRecs
+            : WorkshopFavorIntegration.Apply(baseRecs, _config.FavorMode, favors.Value, _craftSheet, _seasonDB.RestCycles(season));
+        _loadedSeason = season;
+        _loadedNextWeek = nextWeek;
+        Service.Log.Info($"Loaded workshop season {season} (favor mode {_config.FavorMode})");
+    }
+
+    private unsafe WorkshopSolver.FavorState ReadFavorState(bool nextWeek) {
+        var mji = MJIManager.Instance();
+        if (mji == null || !mji->IsPlayerInSanctuary)
+            throw new Exception("Favor data requires being on your island");
+        var state = new WorkshopSolver.FavorState();
+        var offset = nextWeek ? 6 : 3;
+        for (var i = 0; i < 3; ++i) {
+            state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
+            state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
+        }
+        if (!mji->DemandDirty)
+            state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
+        if (state.CraftObjectIds.Any(id => id == 0))
+            throw new Exception("Favor craft IDs not available yet");
+        return state;
     }
 
     private void DrawCycleRecommendations() {
@@ -371,24 +433,11 @@ public unsafe class WorkshopOCImport {
     }
 
     private unsafe List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek) {
-        var mji = MJIManager.Instance();
-        if (!mji->IsPlayerInSanctuary) return [];
-        var state = new WorkshopSolver.FavorState();
-        var offset = nextWeek ? 6 : 3;
-        for (var i = 0; i < 3; ++i) {
-            state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
-            state.CompletedCounts[i] = mji->FavorState->NumDelivered[i + offset] + mji->FavorState->NumScheduled[i + offset];
-        }
-        if (!mji->DemandDirty) {
-            state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
-        }
-
         try {
-            return new WorkshopSolverFavorSheet(state).Recs;
+            return new WorkshopSolverFavorSheet(ReadFavorState(nextWeek)).Recs;
         }
         catch (Exception ex) {
             ReportError(ex.Message);
-            Service.Log.Error($"Current favors: {state.CraftObjectIds[0]} #{state.CompletedCounts[0]}, {state.CraftObjectIds[1]} #{state.CompletedCounts[1]}, {state.CraftObjectIds[2]} #{state.CompletedCounts[2]}");
             return [];
         }
     }
@@ -415,17 +464,25 @@ public unsafe class WorkshopOCImport {
         }
     }
 
-    private unsafe void ApplyRecommendation(int cycle, WorkshopSolver.DayRec rec) {
+    private unsafe int ApplyRecommendation(int cycle, WorkshopSolver.DayRec rec, int minStartingHour = 0) {
         var maxWorkshops = WorkshopUtils.GetMaxWorkshops();
+        var scheduled = 0;
         foreach (var w in rec.Enumerate(maxWorkshops))
             if (!IgnoreFourthWorkshop || w.workshop < maxWorkshops - 1)
-                foreach (var r in w.rec.Slots)
+                foreach (var r in w.rec.Slots) {
+                    if (r.Slot < minStartingHour)
+                        continue;
                     WorkshopUtils.ScheduleItemToWorkshop(r.CraftObjectId, r.Slot, cycle, w.workshop);
+                    scheduled++;
+                }
+        return scheduled;
     }
 
     private void ApplyRecommendationToCurrentCycle(WorkshopSolver.DayRec rec) {
-        var cycle = AgentMJICraftSchedule.Instance()->Data->CycleDisplayed;
-        ApplyRecommendation(cycle, rec);
+        var agentData = AgentMJICraftSchedule.Instance()->Data;
+        var cycle = agentData->CycleDisplayed;
+        var minHour = cycle == agentData->CycleInProgress ? agentData->HourSinceCycleStart : 0;
+        ApplyRecommendation(cycle, rec, minHour);
         WorkshopUtils.ResetCurrentCycleToRefreshUI();
     }
 
@@ -434,39 +491,95 @@ public unsafe class WorkshopOCImport {
 
         try {
             var agentData = AgentMJICraftSchedule.Instance()->Data;
-            if (Recommendations.Schedules.Count > 5)
-                throw new Exception($"Too many days in recs: {Recommendations.Schedules.Count}");
+            var restDaysCount = BitOperations.PopCount(~Recommendations.CyclesMask & 0x7F);
+            if (Recommendations.Schedules.Count + restDaysCount > 7)
+                throw new Exception($"Too many days in recs: {Recommendations.Schedules.Count} crafts + {restDaysCount} rest > 7");
 
-            var forbiddenCycles = nextWeek ? 0 : (1u << (agentData->CycleInProgress + 1)) - 1;
-            if ((Recommendations.CyclesMask & forbiddenCycles) != 0)
-                throw new Exception("Some of the cycles in schedule are already in progress or are done");
+            var cycleInProgress = nextWeek ? -1 : agentData->CycleInProgress;
+            var hourSinceStart = nextWeek ? 0 : agentData->HourSinceCycleStart;
+            // Only fully-completed cycles are skipped; the in-progress cycle gets partial apply.
+            var completedCycles = cycleInProgress > 0 ? (1u << cycleInProgress) - 1 : 0u;
+            var skippedMask = Recommendations.CyclesMask & completedCycles;
+            if (skippedMask != 0) {
+                var skipped = FormatCycleMask(skippedMask);
+                Service.Log.Info($"Skipping completed cycles: {skipped}");
+                Service.ChatGui.Print($"Skipping completed cycles: {skipped}", "visland");
+            }
+
+            var hasApplicable = false;
+            foreach ((int c, var r) in Recommendations.Enumerate()) {
+                if ((completedCycles & (1u << (c - 1))) != 0)
+                    continue;
+                if (c - 1 == cycleInProgress)
+                    hasApplicable |= r.Workshops.Any(w => w.Slots.Any(s => s.Slot >= hourSinceStart));
+                else
+                    hasApplicable = true;
+            }
+            if (!hasApplicable)
+                throw new Exception("No remaining cycles to apply — the whole schedule is already done or in progress");
 
             var currentRestCycles = nextWeek ? agentData->RestCycles >> 7 : agentData->RestCycles & 0x7F;
             if ((currentRestCycles & Recommendations.CyclesMask) != 0) {
-                // we need to change rest cycles - set to C1 and last unused
+                // we need to change rest cycles - set to C1 and last unused (or C1 only when FreeRestDay mode packed the second rest)
                 var freeCycles = ~Recommendations.CyclesMask & 0x7F;
                 if ((freeCycles & 1) == 0)
                     throw new Exception($"Sorry, we assume C1 is always rest - set rest days manually to match your schedule");
-                var rest = (1u << (31 - BitOperations.LeadingZeroCount(freeCycles))) | 1;
-                if (BitOperations.PopCount(rest) != 2)
-                    throw new Exception($"Something went wrong, failed to determine rest days");
+
+                uint rest;
+                if (BitOperations.PopCount(freeCycles) == 1) {
+                    rest = freeCycles; // only one free day (typically C1) — free-rest / single-rest week
+                }
+                else {
+                    rest = (1u << (31 - BitOperations.LeadingZeroCount(freeCycles))) | 1;
+                    if (BitOperations.PopCount(rest) != 2)
+                        throw new Exception($"Something went wrong, failed to determine rest days");
+                }
 
                 var changedRest = rest ^ currentRestCycles;
-                if ((changedRest & forbiddenCycles) != 0)
-                    throw new Exception("Can't apply this schedule: it would require changing rest days for cycles that are in progress or already done");
-
-                var newRest = nextWeek ? (rest << 7) | (agentData->RestCycles & 0x7F) : (agentData->RestCycles & 0x3F80) | rest;
-                WorkshopUtils.SetRestCycles(newRest);
+                if ((changedRest & completedCycles) != 0) {
+                    Service.Log.Warning("Skipping rest-day adjustment: would affect cycles already done or in progress");
+                    Service.ChatGui.Print("Skipping rest-day adjustment for this week — set rest days manually if needed", "visland");
+                }
+                else {
+                    var newRest = nextWeek ? (rest << 7) | (agentData->RestCycles & 0x7F) : (agentData->RestCycles & 0x3F80) | rest;
+                    WorkshopUtils.SetRestCycles(newRest);
+                }
             }
 
-            var cycle = agentData->CycleDisplayed;
-            foreach ((int c, var r) in Recommendations.Enumerate())
-                ApplyRecommendation(c - 1 + (nextWeek ? 7 : 0), r);
+            var appliedCycles = 0;
+            var appliedSlots = 0;
+            foreach ((int c, var r) in Recommendations.Enumerate()) {
+                if ((completedCycles & (1u << (c - 1))) != 0)
+                    continue;
+                var minHour = c - 1 == cycleInProgress ? hourSinceStart : 0;
+                var scheduled = ApplyRecommendation(c - 1 + (nextWeek ? 7 : 0), r, minHour);
+                if (scheduled > 0) {
+                    appliedCycles++;
+                    appliedSlots += scheduled;
+                }
+                else if (c - 1 == cycleInProgress && minHour > 0)
+                    Service.Log.Info($"Cycle {c}: no remaining slots after hour {minHour}");
+            }
+
+            if (appliedSlots == 0)
+                throw new Exception("No cycles were applied");
+
             WorkshopUtils.ResetCurrentCycleToRefreshUI();
+            if (skippedMask != 0 || (cycleInProgress >= 0 && hourSinceStart > 0))
+                Service.ChatGui.Print($"Applied {appliedSlots} craft(s) across {appliedCycles} cycle(s)", "visland");
         }
         catch (Exception ex) {
             ReportError($"Error: {ex.Message}");
         }
+    }
+
+    private static string FormatCycleMask(uint mask) {
+        var cycles = new List<int>();
+        for (var c = 1; c <= 7; ++c) {
+            if ((mask & (1u << (c - 1))) != 0)
+                cycles.Add(c);
+        }
+        return string.Join(", ", cycles.Select(c => $"C{c}"));
     }
 
     private static void ReportError(string msg, bool silent = false) {
