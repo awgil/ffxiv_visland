@@ -22,7 +22,7 @@ public abstract class UIAttachedWindow : Window, IDisposable {
 
     public virtual void Dispose() { }
 
-    public unsafe override void PreOpenCheck() {
+    public override unsafe void PreOpenCheck() {
         var addon = (AtkUnitBase*)Service.GameGui.GetAddonByName(_addon).Address;
         IsOpen = addon != null && addon->IsVisible;
         if (IsOpen) {

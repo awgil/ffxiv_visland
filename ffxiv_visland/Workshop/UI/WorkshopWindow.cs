@@ -1,8 +1,7 @@
-﻿using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Utility.Raii;
 using visland.Helpers;
 using Dalamud.Bindings.ImGui;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
-using System;
 
 namespace visland.Workshop;
 
@@ -48,7 +47,7 @@ unsafe class WorkshopWindow : UIAttachedWindow {
         }
         if (_config.FavorMode == WorkshopFavorMode.MinMaxFreeRestDay)
             WorkshopUtils.VoidSecondRestThisWeek();
-        if (_config.AutoImport) {
+        if (_config.AutoImport && GlobalClientFeatures.IsGlobalClient) {
             _oc.LoadSeasonRecs(false, silent: true);
         }
     }
@@ -56,8 +55,12 @@ unsafe class WorkshopWindow : UIAttachedWindow {
     private void DrawSettings() {
         if (ImGui.Checkbox("Automatically select next cycle on open", ref _config.AutoOpenNextDay))
             _config.NotifyModified();
-        if (ImGui.Checkbox("Automatically load archive recs on open", ref _config.AutoImport))
-            _config.NotifyModified();
+        using (ImRaii.Disabled(!GlobalClientFeatures.IsGlobalClient)) {
+            if (ImGui.Checkbox("Automatically load archive recs on open", ref _config.AutoImport))
+                _config.NotifyModified();
+            if (!GlobalClientFeatures.IsGlobalClient)
+                ImGui.TextWrapped(GlobalClientFeatures.UnavailableReason);
+        }
 
         ImGui.Separator();
         ImGui.TextUnformatted("Favor integration");

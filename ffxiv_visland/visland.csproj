@@ -3,16 +3,19 @@
 	<PropertyGroup>
 		<Version>0.0.0.0</Version>
 		<LangVersion>preview</LangVersion>
+
+		<Author>veyn, croizat</Author>
+		<Name>Visland</Name>
+		<InternalName>visland</InternalName>
+		<Punchline>Automate island sanctuary activities</Punchline>
+		<Description>Automate gathering, workshop assignments, etc.</Description>
+		<RepoUrl>https://github.com/awgil/ffxiv_visland</RepoUrl>
+		<IconUrl>https://raw.githubusercontent.com/awgil/ffxiv_visland/d3338f6ddbf54365e60fbdf8e85ea8f5abdb745f/icon.png</IconUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))'">
 		<DalamudLibPath>$(DALAMUD_HOME)/</DalamudLibPath>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<PackageReference Include="ECommons" Version="3.2.0.2" />
-		<PackageReference Include="YamlDotNet" Version="16.3.0" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\AutoRetainerAPI\AutoRetainerAPI\AutoRetainerAPI.csproj" />

@@ -5,14 +5,12 @@ namespace visland.Helpers;
 
 // wrapper around float, stores angle in radians, provides type-safety and convenience
 // when describing rotation in world, common convention is 0 for 'south'/'down'/(0, -1) and increasing counterclockwise - so +90 is 'east'/'right'/(1, 0)
-public struct Angle {
+public struct Angle(float radians = 0) {
     public const float RadToDeg = 180 / MathF.PI;
     public const float DegToRad = MathF.PI / 180;
 
-    public float Rad;
+    public float Rad = radians;
     public float Deg => Rad * RadToDeg;
-
-    public Angle(float radians = 0) { Rad = radians; }
 
     public static Angle FromDirection(Vector2 dir) => new(MathF.Atan2(dir.X, dir.Y));
     public static Angle FromDirection(float x, float z) => new(MathF.Atan2(x, z));

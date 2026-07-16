@@ -1,11 +1,8 @@
-﻿using ECommons.ExcelServices;
-using ECommons.GameHelpers;
-using ECommons.Logging;
-using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using Lumina.Excel.Sheets;
 using System.Linq;
+using visland.Gathering.AutoGather;
 using visland.Helpers;
 
 namespace visland.Gathering;
@@ -112,26 +109,26 @@ internal class GatheringActions {
         public const ushort ArborCallII = 242;
     }
 
-    public static unsafe void UseNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item) {
-        if (P.TaskManager.IsBusy) return;
+    public static unsafe void UseNextBestAction(GatheringAddon.Gathering am, GatheringAddon.Gathering.GatheredItem item) {
+        if (Service.TaskManager.IsBusy) return;
         var action = GetNextBestAction(am, item);
         if (action == 0) {
-            PluginLog.Information($"Gathering {item.ItemName}");
+            Service.Log.Information($"Gathering {item.ItemName}");
             item.Gather();
         }
         else {
             if (ActionManager.Instance()->GetActionStatus(ActionType.Action, action) == 0) {
-                PluginLog.Information($"Using {GetRow<Action>(action)?.Name}");
-                P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
+                Service.Log.Information($"Using {Action.GetRow(action)?.Name}");
+                Service.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
             }
         }
     }
 
-    public static unsafe uint GetNextBestAction(AddonMaster.Gathering am, AddonMaster.Gathering.GatheredItem item) {
+    public static unsafe uint GetNextBestAction(GatheringAddon.Gathering am, GatheringAddon.Gathering.GatheredItem item) {
         if (item.IsCollectable) return 0;
         if (am.CurrentIntegrity is 0) return 0;
 
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
+        Actions actions = Player.Job == GatherRouteDB.ClassJobMiner ? new MINActions() : new BTNActions();
 
         if (!item.IsEnabled && CanUse(actions.Luck))
             return actions.Luck.id;
@@ -175,17 +172,17 @@ internal class GatheringActions {
         return 0;
     }
 
-    public static unsafe void UseNextBestAction(AddonMaster.GatheringMasterpiece am) {
-        if (P.TaskManager.IsBusy) return;
+    public static unsafe void UseNextBestAction(GatheringAddon.GatheringMasterpiece am) {
+        if (Service.TaskManager.IsBusy) return;
         var action = GetNextBestAction(am);
         if (action == 0) return;
 
-        PluginLog.Information($"Using {GetRow<Action>(action)?.Name}");
-        P.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
+        Service.Log.Information($"Using {Action.GetRow(action)?.Name}");
+        Service.TaskManager.Enqueue(() => ActionManager.Instance()->UseAction(ActionType.Action, action));
     }
 
-    public static unsafe uint GetNextBestAction(AddonMaster.GatheringMasterpiece am) {
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
+    public static unsafe uint GetNextBestAction(GatheringAddon.GatheringMasterpiece am) {
+        Actions actions = Player.Job == GatherRouteDB.ClassJobMiner ? new MINActions() : new BTNActions();
 
         if (ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Scour.id) == 0 ||
             ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Collect) == 0) {
@@ -212,17 +209,17 @@ internal class GatheringActions {
     }
 
     public static uint GetCurrentSurveyAbility(bool highest = true) {
-        Actions actions = Player.Job == Job.MIN ? new MINActions() : new BTNActions();
+        Actions actions = Player.Job == GatherRouteDB.ClassJobMiner ? new MINActions() : new BTNActions();
         return Player.Job switch {
-            Job.MIN => highest ? actions.SurveyII.id : actions.SurveyI.id,
-            Job.BTN => highest ? actions.SurveyII.id : actions.SurveyI.id,
-            Job.FSH => highest ? 7905u : 7904u,
+            GatherRouteDB.ClassJobMiner => highest ? actions.SurveyII.id : actions.SurveyI.id,
+            GatherRouteDB.ClassJobBotanist => highest ? actions.SurveyII.id : actions.SurveyI.id,
+            GatherRouteDB.ClassJobFisher => highest ? 7905u : 7904u,
             _ => 0,
         };
     }
 
     private static unsafe bool CanUse((uint Id, ushort buff) action) {
-        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(GetRow<Action>(action.Id)!.Value.UnlockLink.RowId)) return false;
+        if (!UIState.Instance()->IsUnlockLinkUnlockedOrQuestCompleted(Action.GetRow(action.Id)!.Value.UnlockLink.RowId)) return false;
         if (Player.Gp < ActionManager.GetActionCost(ActionType.Action, action.Id, 0, 0, 0, 0)) return false;
         if (action.buff != 0 && Player.Status.Any(x => x.StatusId == action.buff)) return false;
         return true;
@@ -230,5 +227,5 @@ internal class GatheringActions {
 
     private static bool HasScrutiny() => Player.Status.Any(x => x.StatusId == Buffs.Scrutiny);
 
-    private static bool ItemIsCrystal(uint itemId) => itemId >= 2 && itemId <= 19;
+    private static bool ItemIsCrystal(uint itemId) => itemId is >= 2 and <= 19;
 }

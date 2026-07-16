@@ -1,9 +1,6 @@
-﻿using Dalamud.Interface.Components;
+using Dalamud.Interface.Components;
 using Dalamud.Interface.Utility;
 using Dalamud.Interface.Utility.Raii;
-using ECommons.DalamudServices;
-using ECommons.ImGuiMethods;
-using ECommons.Reflection;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
@@ -43,8 +40,6 @@ public static unsafe class Utils {
 
     public static Vector2 ToVec2(this (int, int) tuple) => new(tuple.Item1, tuple.Item2);
 
-    public static bool HasPlugin(string name) => DalamudReflector.TryGetDalamudPlugin(name, out var _, false, true);
-
     // item (button, menu item, etc.) that is disabled unless shift is held, useful for 'dangerous' operations like deletion
     public static bool DangerousItem(Func<bool> item) {
         var disabled = !ImGui.IsKeyDown(ImGuiKey.ModShift);
@@ -61,7 +56,7 @@ public static unsafe class Utils {
     private static Vector2 size = new(24);
     public static void WorkInProgressIcon() {
         const uint iconID = 60073;
-        var texture = Svc.Texture?.GetFromGameIcon(iconID).GetWrapOrEmpty();
+        var texture = Service.TextureProvider.GetFromGameIcon(iconID).GetWrapOrEmpty();
         if (texture != null)
             ImGui.Image(texture.Handle, size);
         else
@@ -77,7 +72,6 @@ public static unsafe class Utils {
 
         var t = (float)Math.Sin(elapsedTime / duration * Math.PI * 2) * 0.5f + 0.5f;
 
-        // Interpolate the color difference
         Vector4 interpolatedColor = new(
             colour1.X + t * (colour2.X - colour1.X),
             colour1.Y + t * (colour2.Y - colour1.Y),
@@ -97,7 +91,6 @@ public static unsafe class Utils {
     public static void DrawSection(string Label, Vector4 colour, bool PushDown = true, bool drawSeparator = true) {
         var style = ImGui.GetStyle();
 
-        // push down a bit
         if (PushDown)
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + style.ItemSpacing.Y * 2);
 
@@ -105,32 +98,26 @@ public static unsafe class Utils {
             ImGui.TextUnformatted(Label);
 
         if (drawSeparator) {
-            // pull up the separator
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() - style.ItemSpacing.Y + 3);
             ImGui.Separator();
             ImGui.SetCursorPosY(ImGui.GetCursorPosY() + style.ItemSpacing.Y * 2 - 1);
         }
     }
 
-    // note: argument should really be any AtkEventInterface
     public static AtkValue SynthesizeEvent(AgentInterface* receiver, ulong eventKind, Span<AtkValue> args) {
         AtkValue res = new();
         receiver->ReceiveEvent(&res, args.GetPointer(0), (uint)args.Length, eventKind);
         return res;
     }
 
-    // get number of owned items by id
     public static int NumItems(uint id) => InventoryManager.Instance()->GetInventoryItemCount(id);
     public static int NumCowries() => NumItems(37549);
 
-    // sort elements of a list by key
     public static void SortBy<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(l).CompareTo(proj(r)));
     public static void SortByReverse<TValue, TKey>(this List<TValue> list, Func<TValue, TKey> proj) where TKey : notnull, IComparable => list.Sort((l, r) => proj(r).CompareTo(proj(l)));
 
-    // swap two values
     public static void Swap<T>(ref T l, ref T r) => (r, l) = (l, r);
 
-    // get all types defined in specified assembly
     public static IEnumerable<Type?> GetAllTypes(Assembly asm) {
         try {
             return asm.DefinedTypes;
@@ -140,7 +127,6 @@ public static unsafe class Utils {
         }
     }
 
-    // get all types derived from specified type in specified assembly
     public static IEnumerable<Type> GetDerivedTypes<Base>(Assembly asm) {
         var b = typeof(Base);
         return GetAllTypes(asm).Where(t => t?.IsSubclassOf(b) ?? false).Select(t => t!);
@@ -187,7 +173,7 @@ public static unsafe class Utils {
     }
 
     public static bool EditNumberField(string labelBefore, float fieldWidth, ref int refValue, string labelAfter = "", string helpText = "") {
-        ImGuiEx.TextV(labelBefore);
+        ImGui.TextV(labelBefore);
 
         ImGui.SameLine();
 
@@ -197,7 +183,7 @@ public static unsafe class Utils {
 
         if (labelAfter != string.Empty) {
             ImGui.SameLine();
-            ImGuiEx.TextV(labelAfter);
+            ImGui.TextV(labelAfter);
         }
 
         if (helpText != string.Empty)
@@ -211,19 +197,5 @@ public static unsafe class Utils {
 }
 
 public static class Extensions {
-    //public static string GetItemName(this ILazyRow row)
-    //{
-    //    if (Utils.GetSheet<Item>()!.HasRow(row.Row))
-    //        return (Utils.GetRow<Item>(row.Row)!.Name);
-    //    return Utils.GetSheet<EventItem>()!.HasRow(row.Row) ? Utils.GetRow<EventItem>(row.Row)!.Name : "";
-    //}
-
-    //public static string GetGatheringItem(this ILazyRow row)
-    //{
-    //    if (Utils.GetSheet<GatheringItem>()!.HasRow(row.Row))
-    //        return Utils.GetRow<Item>((uint)Utils.GetRow<GatheringItem>(row.Row)!.Item)!.Name;
-    //    return Utils.GetSheet<SpearfishingItem>()!.HasRow(row.Row) ? Utils.GetRow<SpearfishingItem>(row.Row)!.Item.GetItemName() : row.Row.ToString();
-    //}
-
     public static int ToUnixTimestamp(this DateTime value) => (int)Math.Truncate(value.ToUniversalTime().Subtract(new DateTime(1970, 1, 1)).TotalSeconds);
 }

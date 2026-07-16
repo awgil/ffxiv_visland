@@ -1,5 +1,4 @@
 ﻿using Dalamud.Interface.Utility.Raii;
-using ECommons.DalamudServices;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel;
 using System;
@@ -119,7 +118,7 @@ public static class UICombo {
         Func<ExcelSheet<T>, string> getPreview, Func<T, string> toName,
         Func<T, string, bool> searchPredicate,
         Func<T, bool> preFilter, ImGuiComboFlags flags = ImGuiComboFlags.None) where T : struct, IExcelRow<T> {
-        var sheet = Svc.Data.GetExcelSheet<T>();
+        var sheet = Service.DataManager.GetExcelSheet<T>();
         if (sheet is null) {
             selected = default;
             return false;

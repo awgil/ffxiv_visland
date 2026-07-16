@@ -1,5 +1,4 @@
 ﻿using Dalamud.Interface.Utility.Raii;
-using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Dalamud.Bindings.ImGui;
@@ -64,7 +63,7 @@ public unsafe class FarmWindow : UIAttachedWindow {
                 if (res != CollectResult.CanCollectSafely) {
                     ImGui.SameLine();
                     using (ImRaii.PushColor(ImGuiCol.Text, 0xff0000ff))
-                        ImGuiEx.TextV(res == CollectResult.EverythingCapped ? "Inventory is full!" : "Warning: some resources will overcap!");
+                        ImGui.TextV(res == CollectResult.EverythingCapped ? "Inventory is full!" : "Warning: some resources will overcap!");
                 }
             }
         }
@@ -105,7 +104,7 @@ public unsafe class FarmWindow : UIAttachedWindow {
 
                 ImGui.TableNextColumn();
                 using (ImRaii.PushColor(ImGuiCol.Text, full ? 0xff0000ff : 0xff00ffff, overcap))
-                    ImGuiEx.TextV($"{slot.YieldName}: {inventory} + {slot.YieldAvailable} / 999");
+                    ImGui.TextV($"{slot.YieldName}: {inventory} + {slot.YieldAvailable} / 999");
 
                 ImGui.TableNextColumn();
                 if (slot.YieldAvailable > 0) {

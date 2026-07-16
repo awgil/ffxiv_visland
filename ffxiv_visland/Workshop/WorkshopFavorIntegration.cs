@@ -2,30 +2,25 @@ using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace visland.Workshop;
 
 public enum WorkshopFavorMode {
     None = 0,
-    /// <summary>Keep OC workshops 1-3; fill workshop 4 with favors, crediting anything already covered by the base schedule.</summary>
+    [Description("Keep workshops 1-3, fill 4 with favours")]
     ReplaceWorkshop4 = 1,
-    /// <summary>Prefer keeping high-value OC crafts: credit covers, try same-duration category substitutions, then sacrifice lowest-value days / workshops.</summary>
+    [Description("Try to keep high-value crafts, try same-duration substitutions, sacrifice lowest-value days/workshops")]
     MinMax = 2,
-    /// <summary>Like MinMax, but craft on the OC second rest day (only C1 remains rest) so favors displace as little paid schedule as possible.</summary>
+    [Description("MinMax but use the second rest day for most of the favours")]
     MinMaxFreeRestDay = 3,
 }
 
 public static class WorkshopFavorIntegration {
     public static readonly int[] FavorTargets = [8, 6, 8]; // 4h / 6h / 8h
 
-    public static WorkshopSolver.Recs Apply(
-        WorkshopSolver.Recs baseRecs,
-        WorkshopFavorMode mode,
-        WorkshopSolver.FavorState favors,
-        ExcelSheet<MJICraftworksObject> sheet,
-        IEnumerable<int>? ocRestCycles = null)
-    {
+    public static WorkshopSolver.Recs Apply(WorkshopSolver.Recs baseRecs, WorkshopFavorMode mode, WorkshopSolver.FavorState favors, ExcelSheet<MJICraftworksObject> sheet, IEnumerable<int>? ocRestCycles = null) {
         if (mode == WorkshopFavorMode.None)
             return Clone(baseRecs);
 
@@ -79,10 +74,7 @@ public static class WorkshopFavorIntegration {
         };
     }
 
-    private static WorkshopSolver.Recs PlaceOnWorkshop4(
-        Dictionary<int, WorkshopSolver.DayRec> days,
-        List<WorkshopSolver.WorkshopRec> favorDays)
-    {
+    private static WorkshopSolver.Recs PlaceOnWorkshop4(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favorDays) {
         var fi = 0;
         foreach (var cycle in days.Keys.OrderBy(c => c)) {
             if (fi >= favorDays.Count)
@@ -97,13 +89,7 @@ public static class WorkshopFavorIntegration {
         return ToRecs(days);
     }
 
-    private static WorkshopSolver.Recs PlaceMinMax(
-        Dictionary<int, WorkshopSolver.DayRec> days,
-        List<WorkshopSolver.WorkshopRec> favorDays,
-        WorkshopSolver.Popularity popularity,
-        ExcelSheet<MJICraftworksObject> sheet,
-        int freeRestCycle)
-    {
+    private static WorkshopSolver.Recs PlaceMinMax(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favorDays, WorkshopSolver.Popularity popularity, ExcelSheet<MJICraftworksObject> sheet, int freeRestCycle) {
         var remaining = new Queue<WorkshopSolver.WorkshopRec>(favorDays.Select(CloneWorkshop));
 
         // Freed rest day: dump as many favor workshops as possible.
@@ -160,8 +146,7 @@ public static class WorkshopFavorIntegration {
         WorkshopSolver.DayRec day,
         uint[] favorIds,
         int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet)
-    {
+        ExcelSheet<MJICraftworksObject> sheet) {
         foreach (var workshop in day.Workshops) {
             for (var i = 0; i < workshop.Slots.Count; ++i) {
                 if (!TryRow(sheet, workshop.Slots[i].CraftObjectId, out var current))
@@ -211,8 +196,7 @@ public static class WorkshopFavorIntegration {
         IEnumerable<WorkshopSolver.DayRec> days,
         uint[] favorIds,
         int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet)
-    {
+        ExcelSheet<MJICraftworksObject> sheet) {
         foreach (var day in days)
             foreach (var workshop in day.Workshops)
                 CreditWorkshop(workshop, favorIds, complete, sheet);
@@ -222,8 +206,7 @@ public static class WorkshopFavorIntegration {
         WorkshopSolver.WorkshopRec workshop,
         uint[] favorIds,
         int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet)
-    {
+        ExcelSheet<MJICraftworksObject> sheet) {
         MJICraftworksObject? prev = null;
         foreach (var slot in workshop.Slots) {
             if (!TryRow(sheet, slot.CraftObjectId, out var row))

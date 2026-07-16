@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using visland.Helpers;
 
-namespace visland;
+namespace visland.Workshop;
 
 public static unsafe class WorkshopUtils {
     public static (long index, DateTime startTime) CurrentWeek() {

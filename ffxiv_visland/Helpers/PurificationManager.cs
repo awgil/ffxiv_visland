@@ -1,9 +1,6 @@
 ﻿using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Conditions;
-using ECommons.DalamudServices;
-using ECommons.Logging;
-using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -26,10 +23,10 @@ internal class PurificationManager {
 
     private static DateTime _nextRetry;
     public static unsafe bool PurifyAllTask() {
-        if (!QuestManager.IsQuestComplete(67633)) return true; // doesn't have aetherial reduction unlocked
+        if (!QuestManager.IsQuestComplete(67633)) return true;
         if (CanPurifyAny()) {
             if (DateTime.Now < _nextRetry) return false;
-            if (!IsOccupied() && !Svc.Condition[ConditionFlag.Occupied39]) {
+            if (!AddonUtils.IsOccupied() && !Service.Condition[ConditionFlag.Occupied39]) {
                 PurifyItem(GetPurifyableItems().First());
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
                 return false;
@@ -43,34 +40,34 @@ internal class PurificationManager {
 
     public static unsafe void PurifyItem(Pointer<InventoryItem> item) {
         var agent = AgentPurify.Instance();
-        if (agent == null) { PluginLog.Debug("AgentPurify is null"); return; }
+        if (agent == null) { Service.Log.Debug("AgentPurify is null"); return; }
 
         agent->ReduceItem(item);
-        PluginLog.Debug($"Reducing [{item.Value->ItemId}] {item.Value->Container}/{item.Value->Slot}");
+        Service.Log.Debug($"Reducing [{item.Value->ItemId}] {item.Value->Container}/{item.Value->Slot}");
     }
 
-    private static unsafe bool IsResultsOpen() => TryGetAddonByName("PurifyResult", out AtkUnitBase* results) && results->IsVisible;
+    private static unsafe bool IsResultsOpen() => AddonUtils.TryGetAddonByName("PurifyResult", out var results) && results->IsVisible;
 
     public static bool ListenersActive;
     public static void EnableListeners() {
         if (!ListenersActive) {
-            PluginLog.Debug("Enabling PurifyResult listeners");
-            Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
+            Service.Log.Debug("Enabling PurifyResult listeners");
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "PurifyResult", ResultsSetup);
             ListenersActive = true;
         }
     }
 
     public static void DisableListeners() {
         if (ListenersActive) {
-            PluginLog.Debug("Disabling PurifyResult listeners");
-            Svc.AddonLifecycle.UnregisterListener(ResultsSetup);
+            Service.Log.Debug("Disabling PurifyResult listeners");
+            Service.AddonLifecycle.UnregisterListener(ResultsSetup);
             ListenersActive = false;
         }
     }
 
     private static unsafe void ResultsSetup(AddonEvent type, AddonArgs args) {
-        if (!IsAddonReady((AtkUnitBase*)args.Addon.Address)) return;
-        new AddonMaster.PurifyResult((AtkUnitBase*)args.Addon.Address).Close();
+        if (!AddonUtils.IsAddonReady((AtkUnitBase*)args.Addon.Address)) return;
+        AtkCallback.Fire((AtkUnitBase*)args.Addon.Address, false, 0);
     }
 
     public static bool CanPurifyAny() => GetPurifyableItems().Count > 0;
@@ -80,7 +77,7 @@ internal class PurificationManager {
         foreach (var inv in PlayerInventory) {
             var cont = InventoryManager.Instance()->GetInventoryContainer(inv);
             for (var i = 0; i < cont->Size; ++i)
-                if (cont->GetInventorySlot(i)->Flags == InventoryItem.ItemFlags.Collectable && GetRow<Item>(cont->GetInventorySlot(i)->ItemId)?.AetherialReduce > 0)
+                if (cont->GetInventorySlot(i)->Flags == InventoryItem.ItemFlags.Collectable && Item.GetRow(cont->GetInventorySlot(i)->ItemId)?.AetherialReduce > 0)
                     items.Add(cont->GetInventorySlot(i));
         }
         return items;

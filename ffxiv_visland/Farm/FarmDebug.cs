@@ -26,7 +26,7 @@ public unsafe class FarmDebug {
             foreach (var n2 in _tree.Node("Seeds")) {
                 var i = 0;
                 foreach (var id in mgr->FarmState->SeedItemIds.AsSpan()) {
-                    _tree.LeafNode($"{i++} = {id} '{Item.GetRef(id).ValueNullable?.Name ?? $"Unknown#{id}"}'");
+                    _tree.LeafNode($"{i++} = {id} '{Item.GetRow(id)?.Name ?? $"Unknown#{id}"}'");
                 }
             }
         }

@@ -23,7 +23,7 @@ public class WorkshopSeasonDB {
     public WorkshopSeasonDB() {
         _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         foreach (var row in _craftSheet) {
-            var name = WorkshopOCImport.OfficialNameToBotName(row.Item.WithLanguage(Lumina.Data.Language.English).Value.Name.ExtractText());
+            var name = WorkshopNames.OfficialNameToBotName(row.Item.Value.Name.ExtractText());
             if (!string.IsNullOrEmpty(name))
                 _nameToId.TryAdd(name, row.RowId);
         }
@@ -60,7 +60,7 @@ public class WorkshopSeasonDB {
         return result;
     }
 
-    /// <summary>OC-posted rest days in 2-7, plus implied C1.</summary>
+    // OC rest days in 2-7 w/ implied C1
     public HashSet<int> RestCycles(int season) {
         var rests = new HashSet<int> { 1 };
         if (_seasons.TryGetValue(season, out var seasonRec)) {

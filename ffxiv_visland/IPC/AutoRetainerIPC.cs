@@ -1,28 +1,30 @@
-﻿using ECommons.EzIpcManager;
-using System;
-using visland.Helpers;
+using AutoRetainerAPI.Configuration;
+using Dalamud.Plugin.Ipc;
+using System.Collections.Generic;
 
 namespace visland.IPC;
 
-#nullable disable
 public class AutoRetainerIPC {
-    public AutoRetainerIPC() => EzIPC.Init(this, "AutoRetainer");
+    private readonly ICallGateSubscriber<bool> _isBusy;
+    private readonly ICallGateSubscriber<bool> _getMultiModeEnabled;
+    private readonly ICallGateSubscriber<bool, object> _setMultiModeEnabled;
+    private readonly ICallGateSubscriber<List<ulong>> _getRegisteredCIDs;
+    private readonly ICallGateSubscriber<ulong, OfflineCharacterData> _getOfflineCharacterData;
 
-    [EzIPC("PluginState.%m")] public readonly Func<bool> IsBusy;
-    [EzIPC("PluginState.%m")] public readonly Func<int> GetInventoryFreeSlotCount;
-    [EzIPC] public readonly Func<bool> GetMultiModeEnabled;
-    [EzIPC] public readonly Action<bool> SetMultiModeEnabled;
-
-    public bool GetMultiEnabled() {
-        if (Utils.HasPlugin("AutoRetainer")) {
-            TryExecute(GetMultiModeEnabled.Invoke, out var result);
-            return result;
-        }
-        return false;
+    public AutoRetainerIPC() {
+        _isBusy = Service.Interface.GetIpcSubscriber<bool>("AutoRetainer.PluginState.IsBusy");
+        _getMultiModeEnabled = Service.Interface.GetIpcSubscriber<bool>("AutoRetainer.GetMultiModeEnabled");
+        _setMultiModeEnabled = Service.Interface.GetIpcSubscriber<bool, object>("AutoRetainer.SetMultiModeEnabled");
+        _getRegisteredCIDs = Service.Interface.GetIpcSubscriber<List<ulong>>("AutoRetainer.GetRegisteredCIDs");
+        _getOfflineCharacterData = Service.Interface.GetIpcSubscriber<ulong, OfflineCharacterData>("AutoRetainer.GetOfflineCharacterData");
     }
 
-    public void SetMultiEnabled(bool s) {
-        if (Utils.HasPlugin("AutoRetainer"))
-            TryExecute(() => SetMultiModeEnabled.Invoke(s));
+    public bool IsBusy() => _isBusy.HasFunction && _isBusy.InvokeFunc();
+    public bool GetMultiEnabled() => _getMultiModeEnabled.HasFunction && _getMultiModeEnabled.InvokeFunc();
+    public void SetMultiEnabled(bool enabled) {
+        if (_setMultiModeEnabled.HasAction)
+            _setMultiModeEnabled.InvokeAction(enabled);
     }
+    public List<ulong> GetRegisteredCIDs() => _getRegisteredCIDs.HasFunction ? _getRegisteredCIDs.InvokeFunc() : [];
+    public OfflineCharacterData? GetOfflineCharacterData(ulong cid) => _getOfflineCharacterData.HasFunction ? _getOfflineCharacterData.InvokeFunc(cid) : null;
 }

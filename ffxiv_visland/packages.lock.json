@@ -15,16 +15,9 @@
         "contentHash": "fcFN01tDTIQqDuTwr1jUQK/geofiwjG5DycJQOnC72i1SsLAk1ELe+apBOuZ11UMQG8YKFZG1FgvjZPbqHyatg=="
       },
       "ECommons": {
-        "type": "Direct",
-        "requested": "[3.2.0.2, )",
-        "resolved": "3.2.0.2",
-        "contentHash": "inrqsG7HOuF4UC9jXYPdy1HEIjQqSAbOogyN6xcXvbLXCsjy3VRqQVR5PrLAoxt+GlSVu+qpsdo9KyUI/yPFIA=="
-      },
-      "YamlDotNet": {
-        "type": "Direct",
-        "requested": "[16.3.0, )",
-        "resolved": "16.3.0",
-        "contentHash": "SgMOdxbz8X65z8hraIs6hOEdnkH6hESTAIUa7viEngHOYaH+6q5XJmwr1+yb9vJpNQ19hCQY69xbFsLtXpobQA=="
+        "type": "Transitive",
+        "resolved": "3.1.0.1",
+        "contentHash": "FFpTsFd3jZMAX8becFBr/yPlKwkZT0PpuH3KGKPwTMQhtTJfvz4w6exiZmNwk5fuar5FhCDxjpb5BYsq87JsbQ=="
       },
       "autoretainerapi": {
         "type": "Project",

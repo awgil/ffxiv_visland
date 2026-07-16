@@ -1,6 +1,4 @@
-﻿using Dalamud.Game.ClientState.Conditions;
-using ECommons.DalamudServices;
-using ECommons.ExcelServices;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using Newtonsoft.Json;
@@ -10,12 +8,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using visland.Helpers;
-using visland.IPC;
-using static visland.Gathering.GatherRouteDB;
+using ECommons.DalamudServices;
 
 namespace visland.Gathering;
 
 public class GatherRouteDB : Configuration.Node {
+    // ClassJob row IDs used for gathering job swaps.
+    public const uint ClassJobMiner = 16;
+    public const uint ClassJobBotanist = 17;
+    public const uint ClassJobFisher = 18;
+
     public enum Movement {
         Normal = 0,
         MountFly = 1,
@@ -25,37 +27,8 @@ public class GatherRouteDB : Configuration.Node {
     public enum InteractionType {
         None = 0,
         Standard = 1,
-        //Emote = 2,
-        //UseItem = 3,
-        //UseAction = 4,
-        //QuestTalk = 5,
-        //Grind = 6,
-        //PickupQuest = 7,
-        //TurninQuest = 8,
         StartRoute = 9,
-        //EquipRecommendedGear = 10,
-        //ChatCommand = 11,
         NodeScan = 12,
-    }
-
-    public enum GrindStopConditions {
-        None = 0,
-        Kills = 1,
-        QuestSequence = 2,
-        QuestComplete = 3,
-    }
-
-    public enum NodeType : byte {
-        Unknown = 0xFF,
-        Regular = 0,
-        Unspoiled = 1,
-        Ephemeral = 2,
-        Legendary = 3,
-    }
-
-    public class Node {
-        public NodeType Type;
-        public int GpThreshold;
     }
 
     public class Waypoint {
@@ -64,52 +37,37 @@ public class GatherRouteDB : Configuration.Node {
         public float Radius;
         public Movement Movement;
         public bool Pathfind = true;
-        public uint InteractWithOID = 0;
+        public uint InteractWithOID;
         public string InteractWithName = "";
         public Vector3 InteractWithPosition;
 
         public bool showInteractions;
         public InteractionType Interaction = InteractionType.Standard;
-        public int EmoteID;
-        public int ItemID;
-        public int ActionID;
-        public int QuestID;
-        public int QuestSeq;
-        public int MobID;
-        public GrindStopConditions StopCondition;
-        public int KillCount;
         public string RouteName = "";
-        public string ChatCommand = "";
 
         public bool showWaits;
         public ConditionFlag WaitForCondition;
         public int WaitTimeMs;
         public Vector2 WaitTimeET;
 
-        public bool NeedsMount => Movement == Movement.MountFly || Movement == Movement.MountNoFly;
-        public uint GatheringType => IsNode ? GetRow<GatheringPoint>(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
-        public bool IsNode => GetSheet<GatheringPoint>().HasRow(InteractWithOID);
-        public Job NodeJob {
-            get {
-                if (!IsNode) return Job.ADV;
-                return GatheringType switch {
-                    0 or 1 => Job.MIN,
-                    2 or 3 => Job.BTN,
-                    4 or 5 => Job.FSH,
-                    _ => Job.ADV
-                };
-            }
-        }
+        public bool NeedsMount => Movement is Movement.MountFly or Movement.MountNoFly;
+        public uint GatheringType => IsNode ? GatheringPoint.GetRow(InteractWithOID)!.Value.GatheringPointBase.Value.GatheringType.RowId : 99;
+        public bool IsNode => GatheringPoint.Get().HasRow(InteractWithOID);
+        public uint NodeJob => GatheringType switch {
+            _ when !IsNode => 0,
+            0 or 1 => ClassJobMiner,
+            2 or 3 => ClassJobBotanist,
+            4 or 5 => ClassJobFisher,
+            _ => 0
+        };
         public bool IsPhantom;
-        public List<Vector3>? Path;
     }
 
     public class Route {
         public string Name = "";
         public string Group = "";
-        public int Food = 0;
-        public int Manual = 0;
-        public int TargetGatherItem = 0;
+        public int Food;
+        public int TargetGatherItem;
         public List<Waypoint> Waypoints = [];
     }
 
@@ -117,76 +75,64 @@ public class GatherRouteDB : Configuration.Node {
     public float DefaultWaypointRadius = 3;
     public float DefaultInteractionRadius = 2;
     public bool GatherModeOnStart = true;
-    public bool DisableOnErrors = false;
+    public bool DisableOnErrors;
 
     public bool ExtractMateria = true;
     public bool RepairGear = true;
     public float RepairPercent = 20;
-    public bool PurifyCollectables = false;
+    public bool PurifyCollectables;
 
-    public int GlobalFood = 0;
-    public int GlobalManual = 0;
+    public int GlobalFood;
 
-    public bool WasFlyingInManual = false;
-    public bool AutoRetainerIntegration = false;
-
+    public bool AutoRetainerIntegration;
     public bool TeleportBetweenZones = true;
-    public int LandDistance = 10;
-    public int PathFindCancellationTime = 5;
-    public bool AutoGather = false;
+    public bool AutoGather;
 
     public override void Deserialize(JObject j, JsonSerializer ser) {
         Routes.Clear();
         if (j["Routes"] is JArray ja) {
             foreach (var jr in ja) {
                 var jn = jr["Name"]?.Value<string>();
-                var jg = jr["Group"]?.Value<string>();
-                var jf = jr["Food"]?.Value<int>();
-                var jm = jr["Manual"]?.Value<int>();
-                var ji = jr["TargetGatherItem"]?.Value<int>();
-                if (jn != null && jr["Waypoints"] is JArray jw) {
-                    if (jg != null)
-                        Routes.Add(new Route() { Name = jn, Group = jg, Food = jf ?? 0, Manual = jm ?? 0, TargetGatherItem = ji ?? 0, Waypoints = LoadFromJSONWaypoints(jw) });
-                    else
-                        Routes.Add(new Route() { Name = jn, Food = jf ?? 0, Manual = jm ?? 0, TargetGatherItem = ji ?? 0, Waypoints = LoadFromJSONWaypoints(jw) });
-                }
+                if (jn == null || jr["Waypoints"] is not JArray jw)
+                    continue;
+
+                Routes.Add(new Route {
+                    Name = jn,
+                    Group = jr["Group"]?.Value<string>() ?? "",
+                    Food = jr["Food"]?.Value<int>() ?? 0,
+                    TargetGatherItem = jr["TargetGatherItem"]?.Value<int>() ?? 0,
+                    Waypoints = LoadFromJSONWaypoints(jw),
+                });
             }
         }
         DisableOnErrors = (bool?)j["DisableOnErrors"] ?? false;
         GatherModeOnStart = (bool?)j["GatherModeOnStart"] ?? true;
         DefaultWaypointRadius = (float?)j["DefaultWaypointRadius"] ?? 3;
         DefaultInteractionRadius = (float?)j["DefaultInteractionRadius"] ?? 2;
-
         TeleportBetweenZones = (bool?)j["TeleportBetweenZones"] ?? true;
         AutoRetainerIntegration = (bool?)j["AutoRetainerIntegration"] ?? false;
-
         AutoGather = (bool?)j["AutoGather"] ?? false;
-        LandDistance = (int?)j["LandDistance"] ?? 10;
-        PathFindCancellationTime = (int?)j["PathFindCancellationTime"] ?? 5;
-
         ExtractMateria = (bool?)j["ExtractMateria"] ?? true;
         RepairGear = (bool?)j["RepairGear"] ?? true;
         RepairPercent = (float?)j["RepairPercent"] ?? 20;
         PurifyCollectables = (bool?)j["Desynth"] ?? false;
-
         GlobalFood = (int?)j["GlobalFood"] ?? 0;
-        GlobalManual = (int?)j["GlobalManual"] ?? 0;
+        // Intentionally ignore obsolete keys: Manual, GlobalManual, WasFlyingInManual,
+        // LandDistance, PathFindCancellationTime, EmoteID, ActionID, ItemID, MobID, QuestID, ChatCommand, etc.
     }
 
     public override JObject Serialize(JsonSerializer ser) {
         JArray res = [];
         foreach (var r in Routes) {
-            res.Add(new JObject()
-            {
+            res.Add(new JObject {
                 { "Name", r.Name },
                 { "Group", r.Group },
                 { "Food", r.Food },
-                { "Manual", r.Manual },
                 { "TargetGatherItem", r.TargetGatherItem },
-                { "Waypoints", SaveToJSONWaypoints(r.Waypoints) }
+                { "Waypoints", SaveToJSONWaypoints(r.Waypoints) },
             });
         }
-        return new JObject() {
+        return new JObject {
             { "Routes", res },
             { "DisableOnErrors", DisableOnErrors },
             { "GatherModeOnStart", GatherModeOnStart },
@@ -198,21 +144,16 @@ public class GatherRouteDB : Configuration.Node {
             { "RepairPercent", RepairPercent },
             { "Desynth", PurifyCollectables },
             { "GlobalFood", GlobalFood },
-            { "GlobalManual", GlobalManual },
             { "AutoRetainerIntegration", AutoRetainerIntegration },
             { "AutoGather", AutoGather },
-            { "LandDistance", LandDistance },
-            { "PathFindCancellationTime", PathFindCancellationTime },
         };
     }
 
     public static JArray SaveToJSONWaypoints(List<Waypoint> waypoints) {
         JArray jw = [];
-
         foreach (var wp in waypoints) {
             if (wp.IsPhantom) continue;
-            var wpObj = new JObject
-            {
+            jw.Add(new JObject {
                 { "X", wp.Position.X },
                 { "Y", wp.Position.Y },
                 { "Z", wp.Position.Z },
@@ -226,103 +167,92 @@ public class GatherRouteDB : Configuration.Node {
                 { "iZ", wp.InteractWithPosition.Z },
                 { "showInteractions", wp.showInteractions },
                 { "Interaction", wp.Interaction.ToString() },
-                //{ "EmoteID", wp.EmoteID },
-                //{ "ActionID", wp.ActionID },
-                //{ "ItemID", wp.ItemID },
                 { "showWaits", wp.showWaits },
                 { "WaitTimeMs", wp.WaitTimeMs },
                 { "WaitForCondition", wp.WaitForCondition.ToString() },
                 { "Pathfind", wp.Pathfind },
-                //{ "MobID", wp.MobID },
-                //{ "QuestID", wp.QuestID },
                 { "RouteName", wp.RouteName },
-                //{ "ChatCommand", wp.ChatCommand }
-            };
-
-            jw.Add(wpObj);
+            });
         }
-
         return jw;
     }
 
     public static List<Waypoint> LoadFromJSONWaypoints(JArray j) {
         List<Waypoint> res = [];
-
         try {
             foreach (var jwe in j) {
-                if (jwe is not JObject jweObj)
+                if (jwe is not JObject o)
                     continue;
 
-                res.Add(new() {
+                // Parse known InteractionType values; map obsolete experimental values to None/Standard safely.
+                var interactionRaw = o["Interaction"]?.Value<string>();
+                var interaction = InteractionType.Standard;
+                if (!string.IsNullOrEmpty(interactionRaw) && !Enum.TryParse(interactionRaw, out interaction))
+                    interaction = InteractionType.None;
+
+                res.Add(new Waypoint {
                     Position = new Vector3(
-                        jweObj["X"]?.Value<float>() ?? 0,
-                        jweObj["Y"]?.Value<float>() ?? 0,
-                        jweObj["Z"]?.Value<float>() ?? 0
+                        o["X"]?.Value<float>() ?? 0,
+                        o["Y"]?.Value<float>() ?? 0,
+                        o["Z"]?.Value<float>() ?? 0
                     ),
-                    ZoneID = jweObj["ZoneID"]?.Value<uint>() ?? 0,
-                    Radius = jweObj["Radius"]?.Value<float>() ?? 0,
-                    InteractWithName = jweObj["InteractWithName"]?.Value<string>() ?? "",
-                    Movement = Enum.TryParse<Movement>(jweObj["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,
-                    InteractWithOID = jweObj["InteractWithOID"]?.Value<uint>() ?? 0,
+                    ZoneID = o["ZoneID"]?.Value<uint>() ?? 0,
+                    Radius = o["Radius"]?.Value<float>() ?? 0,
+                    InteractWithName = o["InteractWithName"]?.Value<string>() ?? "",
+                    Movement = Enum.TryParse<Movement>(o["Movement"]?.Value<string>(), out var movement) ? movement : Movement.Normal,
+                    InteractWithOID = o["InteractWithOID"]?.Value<uint>() ?? 0,
                     InteractWithPosition = new Vector3(
-                        jweObj["iX"]?.Value<float>() ?? 0,
-                        jweObj["iY"]?.Value<float>() ?? 0,
-                        jweObj["iZ"]?.Value<float>() ?? 0
+                        o["iX"]?.Value<float>() ?? 0,
+                        o["iY"]?.Value<float>() ?? 0,
+                        o["iZ"]?.Value<float>() ?? 0
                     ),
-                    showInteractions = jweObj["showInteractions"]?.Value<bool>() ?? false,
-                    Interaction = Enum.TryParse<InteractionType>(jweObj["Interaction"]?.Value<string>(), out var interaction) ? interaction : InteractionType.Standard,
-                    EmoteID = jweObj["EmoteID"]?.Value<int>() ?? 0,
-                    ActionID = jweObj["ActionID"]?.Value<int>() ?? 0,
-                    ItemID = jweObj["ItemID"]?.Value<int>() ?? 0,
-                    showWaits = jweObj["showWaits"]?.Value<bool>() ?? false,
-                    WaitTimeMs = jweObj["WaitTimeMs"]?.Value<int>() ?? 0,
-                    WaitForCondition = Enum.TryParse<ConditionFlag>(jweObj["WaitForCondition"]?.Value<string>(), out var condition) ? condition : ConditionFlag.None,
-                    Pathfind = jweObj["Pathfind"]?.Value<bool>() ?? false,
-                    MobID = jweObj["MobID"]?.Value<int>() ?? 0,
-                    QuestID = jweObj["QuestID"]?.Value<int>() ?? 0,
-                    RouteName = jweObj["RouteName"]?.Value<string>() ?? "",
-                    ChatCommand = jweObj["ChatCommand"]?.Value<string>() ?? ""
+                    showInteractions = o["showInteractions"]?.Value<bool>() ?? false,
+                    Interaction = interaction,
+                    showWaits = o["showWaits"]?.Value<bool>() ?? false,
+                    WaitTimeMs = o["WaitTimeMs"]?.Value<int>() ?? 0,
+                    WaitForCondition = Enum.TryParse<ConditionFlag>(o["WaitForCondition"]?.Value<string>(), out var condition) ? condition : ConditionFlag.None,
+                    Pathfind = o["Pathfind"]?.Value<bool>() ?? false,
+                    RouteName = o["RouteName"]?.Value<string>() ?? "",
                 });
             }
         }
         catch (Exception) {
-            Svc.Log.Error($"Failed to load waypoints from JSON.");
+            Service.Log.Error("Failed to load waypoints from JSON.");
         }
-
         return res;
     }
 
     public static List<string> GetGroups(GatherRouteDB gatherRouteDB, bool sort = false) {
         List<string> groups = ["Ungrouped"];
         for (var g = 0; g < gatherRouteDB.Routes.Count; g++) {
-            var routeSource = gatherRouteDB.Routes;
-            if (string.IsNullOrEmpty(routeSource[g].Group))
-                routeSource[g].Group = "Ungrouped";
-            if (!groups.Contains(routeSource[g].Group))
-                groups.Add(routeSource[g].Group);
+            if (string.IsNullOrEmpty(gatherRouteDB.Routes[g].Group))
+                gatherRouteDB.Routes[g].Group = "Ungrouped";
+            if (!groups.Contains(gatherRouteDB.Routes[g].Group))
+                groups.Add(gatherRouteDB.Routes[g].Group);
         }
         if (sort)
-            groups = [.. groups.OrderBy(i => i == "Ungrouped").ThenBy(i => i)]; //Sort with None at the End
-
+            groups = [.. groups.OrderBy(i => i == "Ungrouped").ThenBy(i => i)];
         return groups;
     }
 
-    public static void TryImport(GatherRouteDB RouteDB) {
+    public static void TryImport(GatherRouteDB routeDB) {
         try {
             var data = ImGui.GetClipboardText();
-            (var IsBase64, var Json) = Utils.FromCompressedBase64(data);
+            (var isBase64, var json) = Utils.FromCompressedBase64(data);
             Route? import = null;
-            if (IsBase64)
-                import = JsonConvert.DeserializeObject<Route>(Json);
+            if (isBase64)
+                import = JsonConvert.DeserializeObject<Route>(json);
             else if (Utils.IsJson(data))
                 import = JsonConvert.DeserializeObject<Route>(data);
-            if (import != null) {
-                if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !NavmeshIPC.IsEnabled))
-                    Svc.Chat.Print($"[{Name}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Name} ({Repo}).");
+            if (import == null)
+                return;
 
-                RouteDB.Routes.Add(new() { Name = import!.Name, Group = import.Group, Food = import.Food, Manual = import.Manual, TargetGatherItem = import.TargetGatherItem, Waypoints = import.Waypoints });
-                RouteDB.NotifyModified();
-            }
+            // Unknown / obsolete waypoint keys are ignored by Newtonsoft (MissingMemberHandling.Ignore).
+            if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !Service.Navmesh.IsEnabled))
+                Service.ChatGui.Print($"[{Svc.PluginInterface.InternalName}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Service.Interface.InternalName} ({Plugin.Repo}).");
+
+            routeDB.Routes.Add(import);
+            routeDB.NotifyModified();
         }
         catch (JsonReaderException ex) {
             Service.ChatGui.PrintError($"Failed to import route: {ex.Message}");
@@ -332,26 +262,24 @@ public class GatherRouteDB : Configuration.Node {
 }
 
 public static class WaypointExtensions {
-    public static bool TryGetNextWaypoint(this Waypoint waypoint, Route route, bool loop, out Waypoint? nextWaypoint) {
+    public static bool TryGetNextWaypoint(this GatherRouteDB.Waypoint waypoint, GatherRouteDB.Route route, bool loop, out GatherRouteDB.Waypoint? nextWaypoint) {
         var index = route.Waypoints.IndexOf(waypoint);
         if (index >= 0 && index < route.Waypoints.Count - 1) {
             nextWaypoint = route.Waypoints[index + 1];
             return true;
         }
-        else {
-            if (loop) {
-                nextWaypoint = route.Waypoints.First();
-                return true;
-            }
-            nextWaypoint = null;
-            return false;
+        if (loop) {
+            nextWaypoint = route.Waypoints.First();
+            return true;
         }
+        nextWaypoint = null;
+        return false;
     }
 
-    public static void AddWaypointsAfter(this Waypoint waypoint, Route route, List<Waypoint> waypoints) {
+    public static void AddWaypointsAfter(this GatherRouteDB.Waypoint waypoint, GatherRouteDB.Route route, List<GatherRouteDB.Waypoint> waypoints) {
         var index = route.Waypoints.IndexOf(waypoint);
         route.Waypoints.InsertRange(index + 1, waypoints);
     }
 
-    public static bool IsLast(this Waypoint waypoint, Route route) => waypoint.Equals(route.Waypoints.Last());
+    public static bool IsLast(this GatherRouteDB.Waypoint waypoint, GatherRouteDB.Route route) => waypoint.Equals(route.Waypoints.Last());
 }

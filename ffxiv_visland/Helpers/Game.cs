@@ -1,6 +1,4 @@
-﻿using ECommons.DalamudServices;
-using ECommons.GameHelpers;
-using FFXIVClientStructs.FFXIV.Client.Game;
+﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -14,7 +12,6 @@ using System.Numerics;
 
 namespace visland.Helpers;
 
-// utilities for interacting with game
 public static unsafe class Game {
     public static bool ExecuteTeleport(uint aetheryteId) => UIState.Instance()->Telepo.Teleport(aetheryteId, 0);
 
@@ -43,7 +40,7 @@ public static unsafe class Game {
         return (0, default);
     }
 
-    public static ulong? FindInteractable(uint id) => Svc.Objects.FirstOrDefault(o => o?.BaseId == id && (o.Position - Player.Position).LengthSquared() < 1 && o.IsTargetable, null)?.GameObjectId;
+    public static ulong? FindInteractable(uint id) => Service.ObjectTable.FirstOrDefault(o => o?.BaseId == id && (o.Position - Player.Position).LengthSquared() < 1 && o.IsTargetable, null)?.GameObjectId;
 
     public static int NumItemsInInventory(uint itemId, short minCollectibility) => InventoryManager.Instance()->GetInventoryItemCount(itemId, false, false, false, minCollectibility);
 
@@ -72,7 +69,7 @@ public static unsafe class Game {
     }
 
     public static void SelectYes() {
-        if (TryGetAddonByName<AtkUnitBase>("SelectYesno", out var addon)) {
+        if (AddonUtils.TryGetAddonByName<AtkUnitBase>("SelectYesno", out var addon)) {
             var evt = new AtkEvent() { Listener = &addon->AtkEventListener, Target = &AtkStage.Instance()->AtkEventTarget };
             var data = new AtkEventData();
             addon->ReceiveEvent(AtkEventType.ButtonClick, 0, &evt, &data);

@@ -1,11 +1,6 @@
 ﻿using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using ECommons;
-using ECommons.DalamudServices;
-using ECommons.ExcelServices;
-using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Excel.Sheets;
@@ -18,17 +13,21 @@ internal unsafe class RepairManager {
     public static bool UseRepair() => ActionManager.Instance()->UseAction(ActionType.GeneralAction, 6);
 
     internal static void Repair() {
-        if (TryGetAddonByName("Repair", out AddonRepair* addon) && addon->AtkUnitBase.IsVisible && addon->RepairAllButton->IsEnabled)
-            _throttle.Exec(() => new AddonMaster.Repair((IntPtr)addon).RepairAll());
+        if (!AddonUtils.TryGetAddonByName("Repair", out AddonRepair* addon) || !addon->AtkUnitBase.IsVisible)
+            return;
+        var btn = addon->RepairAllButton;
+        if (btn == null || !btn->IsEnabled)
+            return;
+        _throttle.Exec(() => AtkCallback.Fire(&addon->AtkUnitBase, false, 0));
     }
 
-    public unsafe static void OpenRepair() {
-        if (Svc.GameGui.GetAddonByName("Repair", 1) == IntPtr.Zero)
+    public static unsafe void OpenRepair() {
+        if (Service.GameGui.GetAddonByName("Repair", 1) == IntPtr.Zero)
             UseRepair();
     }
 
-    public unsafe static void CloseRepair() {
-        if (Svc.GameGui.GetAddonByName("Repair", 1) != IntPtr.Zero)
+    public static unsafe void CloseRepair() {
+        if (Service.GameGui.GetAddonByName("Repair", 1) != IntPtr.Zero)
             UseRepair();
     }
 
@@ -36,33 +35,28 @@ internal unsafe class RepairManager {
     public static bool ListenersActive;
     public static void ToggleListeners(bool enable) {
         if (enable) {
-            Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectYesno", ConfirmYesNo);
+            Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "SelectYesno", ConfirmYesNo);
             ListenersActive = true;
         }
         else {
-            Svc.AddonLifecycle.UnregisterListener(ConfirmYesNo);
+            Service.AddonLifecycle.UnregisterListener(ConfirmYesNo);
             ListenersActive = false;
         }
     }
 
-
     internal static void ConfirmYesNo(AddonEvent type, AddonArgs args) {
-        var addon = new AddonMaster.SelectYesno((AtkUnitBase*)args.Addon.Address);
-        if (addon.Text.ContainsAny(_texts))
-            addon.Yes();
-    }
-
-    internal static bool HasDarkMatterOrBetter(uint darkMatterID) {
-        var repairResources = GetSheet<ItemRepairResource>()!;
-        foreach (var dm in repairResources) {
-            if (dm.Item.RowId < darkMatterID)
-                continue;
-
-            if (InventoryManager.Instance()->GetInventoryItemCount(dm.Item.RowId) > 0)
-                return true;
+        var addon = (AtkUnitBase*)args.Addon.Address;
+        var textNode = addon->GetTextNodeById(2);
+        var text = textNode != null ? textNode->NodeText.ToString() : "";
+        foreach (var expected in _texts) {
+            if (text.Contains(expected, StringComparison.Ordinal)) {
+                Game.SelectYes();
+                return;
+            }
         }
-        return false;
     }
+
+    internal static bool HasDarkMatterOrBetter(uint darkMatterID) => ItemRepairResource.Any(r => r.Item.RowId >= darkMatterID && InventoryManager.Instance()->GetInventoryItemCount(r.Item.RowId) > 0);
 
     internal static int GetMinEquippedPercent() {
         var ret = ushort.MaxValue;
@@ -87,26 +81,21 @@ internal unsafe class RepairManager {
     }
 
     internal static bool CanRepairItem(uint ItemId) {
-        var row = GetRow<Item>(ItemId)!;
-
-        if (row.Value.ClassJobRepair.RowId > 0) {
-            var actualJob = (Job)row.Value.ClassJobRepair.RowId;
-            var repairItem = row.Value.ItemRepair.Value!.Item;
+        if (Item.GetRow(ItemId) is { ClassJobCategory.RowId: > 0, ClassJobRepair.RowId: > 0 } row) {
+            var repairItem = row.ItemRepair.Value!.Item;
 
             if (!HasDarkMatterOrBetter(repairItem.RowId))
                 return false;
 
-            var jobLevel = JobLevel(actualJob);
-            if (Math.Max(row.Value.LevelEquip - 10, 1) <= jobLevel)
+            var jobLevel = Player.JobLevel(row.ClassJobRepair.RowId);
+            if (Math.Max(row.LevelEquip - 10, 1) <= jobLevel)
                 return true;
         }
 
         return false;
     }
 
-    public static unsafe int JobLevel(Job job) => PlayerState.Instance()->ClassJobLevels[GetRow<ClassJob>((uint)job)?.ExpArrayIndex ?? 0];
-
-    internal static bool RepairWindowOpen() => TryGetAddonByName<AddonRepair>("Repair", out _);
+    internal static bool RepairWindowOpen() => AddonUtils.TryGetAddonByName<AddonRepair>("Repair", out _);
 
     private static DateTime _nextRetry;
     internal static bool ProcessRepair() {
@@ -127,7 +116,7 @@ internal unsafe class RepairManager {
                 return false;
             }
 
-            if (RepairWindowOpen() && !IsOccupied()) {
+            if (RepairWindowOpen() && !AddonUtils.IsOccupied()) {
                 Repair();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(1000));
                 return false;

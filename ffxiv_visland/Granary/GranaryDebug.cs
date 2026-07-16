@@ -72,7 +72,7 @@ public unsafe class GranaryDebug {
 
     private unsafe void DrawGranaryState(int i, ref MJIGranaryState state) {
         var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state.ActiveExpeditionId + 1u)!.Value.Singular}) {state.RemainingDays}days" : "none";
-        foreach (var n in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}")) {
+        foreach (var _ in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}")) {
             DrawGranaryItem("rare", state.RareResourcePouchId, state.RareResourceCount);
             for (var k = 0; k < 20; ++k)
                 DrawGranaryItem(k.ToString(), state.NormalResourcePouchIds[k], state.NormalResourceCounts[k]);

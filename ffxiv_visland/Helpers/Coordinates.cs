@@ -1,7 +1,4 @@
-﻿using ECommons.DalamudServices;
-using ECommons.Logging;
-using Lumina.Excel;
-using Lumina.Excel.Sheets;
+﻿using Lumina.Excel.Sheets;
 using System;
 using System.Linq;
 using System.Numerics;
@@ -9,8 +6,6 @@ using System.Numerics;
 namespace visland.Helpers;
 
 internal class Coordinates {
-    public static ExcelSheet<Aetheryte> Aetherytes = GetSheet<Aetheryte>()!;
-
     public static float ConvertMapMarkerToMapCoordinate(float pos, float scale) {
         var num = scale / 100f;
         var rawPosition = (int)((float)(pos - 1024.0) / num * 1000f);
@@ -25,12 +20,12 @@ internal class Coordinates {
     public static uint GetNearestAetheryte(uint zoneID, Vector3 pos) {
         var aetheryte = 0u;
         double distance = 0;
-        foreach (var data in Aetherytes) {
+        foreach (var data in Aetheryte.Get()) {
             if (!data.IsAetheryte) continue;
             if (data.Territory.Value.RowId == zoneID) {
-                var mapMarker = FindSubrow<MapMarker>(m => m!.DataType == 3 && m.DataKey.RowId == data.RowId);
+                var mapMarker = MapMarker.FirstOrNull(m => m.DataType == 3 && m.DataKey.RowId == data.RowId);
                 if (mapMarker == null) {
-                    PluginLog.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
+                    Service.Log.Error($"Cannot find aetherytes position for {zoneID}#{data.PlaceName.Value.Name}");
                     continue;
                 }
                 var AethersX = ConvertMapMarkerToMapCoordinate(mapMarker.Value.X, 100);
@@ -46,5 +41,5 @@ internal class Coordinates {
         return aetheryte;
     }
 
-    public static bool HasAetheryteInZone(uint TerritoryType) => Svc.AetheryteList.Any(a => a.TerritoryId == TerritoryType);
+    public static bool HasAetheryteInZone(uint TerritoryType) => Service.AetheryteList.Any(a => a.TerritoryId == TerritoryType);
 }

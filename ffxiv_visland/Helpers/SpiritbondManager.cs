@@ -1,29 +1,26 @@
-﻿using ECommons;
-using ECommons.DalamudServices;
-using ECommons.UIHelpers.AddonMasterImplementations;
-using FFXIVClientStructs.FFXIV.Client.Game;
+﻿using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 
 namespace visland.Helpers;
 
-public unsafe static class SpiritbondManager {
+public static unsafe class SpiritbondManager {
     public static bool UseMateriaExtraction() => ActionManager.Instance()->UseAction(ActionType.GeneralAction, 14);
-    public static ushort Weapon { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[0].SpiritbondOrCollectability; }
-    public static ushort Offhand { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[1].SpiritbondOrCollectability; }
-    public static ushort Helm { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[2].SpiritbondOrCollectability; }
-    public static ushort Body { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[3].SpiritbondOrCollectability; }
-    public static ushort Hands { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[4].SpiritbondOrCollectability; }
-    public static ushort Legs { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[6].SpiritbondOrCollectability; }
-    public static ushort Feet { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[7].SpiritbondOrCollectability; }
-    public static ushort Earring { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[8].SpiritbondOrCollectability; }
-    public static ushort Neck { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[9].SpiritbondOrCollectability; }
-    public static ushort Wrist { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[10].SpiritbondOrCollectability; }
-    public static ushort Ring1 { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[11].SpiritbondOrCollectability; }
-    public static ushort Ring2 { get => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[12].SpiritbondOrCollectability; }
+    public static ushort Weapon => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[0].SpiritbondOrCollectability;
+    public static ushort Offhand => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[1].SpiritbondOrCollectability;
+    public static ushort Helm => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[2].SpiritbondOrCollectability;
+    public static ushort Body => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[3].SpiritbondOrCollectability;
+    public static ushort Hands => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[4].SpiritbondOrCollectability;
+    public static ushort Legs => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[6].SpiritbondOrCollectability;
+    public static ushort Feet => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[7].SpiritbondOrCollectability;
+    public static ushort Earring => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[8].SpiritbondOrCollectability;
+    public static ushort Neck => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[9].SpiritbondOrCollectability;
+    public static ushort Wrist => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[10].SpiritbondOrCollectability;
+    public static ushort Ring1 => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[11].SpiritbondOrCollectability;
+    public static ushort Ring2 => InventoryManager.Instance()->GetInventoryContainer(InventoryType.EquippedItems)->Items[12].SpiritbondOrCollectability;
 
     public static bool IsSpiritbondReadyAny() {
-        if (!QuestManager.IsQuestComplete(66174)) return false; // doesn't have materia extraction unlocked so doesn't matter
+        if (!QuestManager.IsQuestComplete(66174)) return false;
 
         if (Weapon == 10000) return true;
         if (Offhand == 10000) return true;
@@ -41,32 +38,31 @@ public unsafe static class SpiritbondManager {
         return false;
     }
 
-    public static bool IsMateriaMenuOpen() => Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero;
+    public static bool IsMateriaMenuOpen() => Service.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero;
 
-    public static bool IsMateriaMenuDialogOpen() => Svc.GameGui.GetAddonByName("MaterializeDialog", 1) != IntPtr.Zero;
-    public unsafe static void OpenMateriaMenu() {
-        if (Svc.GameGui.GetAddonByName("Materialize", 1) == IntPtr.Zero)
+    public static bool IsMateriaMenuDialogOpen() => Service.GameGui.GetAddonByName("MaterializeDialog", 1) != IntPtr.Zero;
+    public static unsafe void OpenMateriaMenu() {
+        if (Service.GameGui.GetAddonByName("Materialize", 1) == IntPtr.Zero)
             UseMateriaExtraction();
     }
 
-    public unsafe static void CloseMateriaMenu() {
-        if (Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
+    public static unsafe void CloseMateriaMenu() {
+        if (Service.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
             UseMateriaExtraction();
     }
 
-    public unsafe static void ConfirmMateriaDialog() {
+    public static unsafe void ConfirmMateriaDialog() {
         try {
-            if (TryGetAddonByName("MaterializeDialog", out AtkUnitBase* addon))
-                new AddonMaster.MaterializeDialog(addon).Materialize();
+            if (AddonUtils.TryGetAddonByName("MaterializeDialog", out var addon))
+                AtkCallback.Fire(addon, true, 0);
         }
         catch {
-
         }
     }
 
     private static DateTime _nextRetry;
 
-    public unsafe static bool ExtractMateriaTask() {
+    public static unsafe bool ExtractMateriaTask() {
         if (IsMateriaMenuOpen() && !IsSpiritbondReadyAny()) {
             if (DateTime.Now < _nextRetry) return false;
             CloseMateriaMenu();
@@ -82,7 +78,7 @@ public unsafe static class SpiritbondManager {
                 return false;
             }
 
-            if (IsMateriaMenuOpen() && !IsOccupied()) {
+            if (IsMateriaMenuOpen() && !AddonUtils.IsOccupied()) {
                 ExtractFirstMateria();
                 _nextRetry = DateTime.Now.Add(TimeSpan.FromMilliseconds(500));
                 return false;
@@ -95,22 +91,20 @@ public unsafe static class SpiritbondManager {
         return true;
     }
 
-    public unsafe static void ExtractFirstMateria() {
+    public static unsafe void ExtractFirstMateria() {
         try {
             if (IsSpiritbondReadyAny()) {
                 if (IsMateriaMenuDialogOpen()) {
                     ConfirmMateriaDialog();
                 }
                 else {
-                    var materializePTR = Svc.GameGui.GetAddonByName("Materialize", 1);
+                    var materializePTR = Service.GameGui.GetAddonByName("Materialize", 1);
                     if (materializePTR == IntPtr.Zero)
                         return;
 
                     var materalizeWindow = (AtkUnitBase*)materializePTR.Address;
                     if (materalizeWindow == null)
                         return;
-
-                    var list = (AtkComponentList*)materalizeWindow->UldManager.NodeList[5];
 
                     var values = stackalloc AtkValue[2];
                     values[0] = new() {
@@ -127,7 +121,7 @@ public unsafe static class SpiritbondManager {
             }
         }
         catch (Exception e) {
-            e.Log();
+            Service.Log.Error(e, "Failed to extract materia");
         }
     }
 }

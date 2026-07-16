@@ -1,13 +1,10 @@
-﻿using Dalamud.Game.Text;
+using Dalamud.Game.Text;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Utility.Raii;
-using ECommons.DalamudServices;
-using ECommons.ImGuiMethods;
 using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System.Linq;
 using visland.Helpers;
-using ECommons.GameHelpers;
 
 namespace visland.Gathering;
 
@@ -22,73 +19,73 @@ public unsafe class GatherDebug(GatherRouteExec exec) {
         if (exec.RouteDB.AutoRetainerIntegration) {
             Utils.DrawSection("AutoRetainer Integration", ImGuiColors.ParsedGold);
             Utils.DrawSection($"Conditions to Begin", ImGuiColors.ParsedGold, drawSeparator: false);
-            ImGuiEx.Text($"One of:");
+            ImGui.Text($"One of:");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"Subs Ready: {Service.Retainers.HasSubsReady}");
+            ImGui.Text($"Subs Ready: {Service.Retainers.HasSubsReady}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"Retainers Ready: {Service.Retainers.HasRetainersReady}");
-            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
+            ImGui.Text($"Retainers Ready: {Service.Retainers.HasRetainersReady}");
+            ImGui.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
             Utils.DrawSection($"Conditions to End", ImGuiColors.ParsedGold, drawSeparator: false);
-            ImGuiEx.Text($"Route paused: {exec.Paused}");
-            ImGuiEx.Text($"Retainers finished: {Service.Retainers.Finished}");
-            ImGuiEx.Text($"All of the below:");
+            ImGui.Text($"Route paused: {exec.Paused}");
+            ImGui.Text($"Retainers finished: {Service.Retainers.Finished}");
+            ImGui.Text($"All of the below:");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"MultiMode Enabled: {Service.Retainers.IPC.GetMultiEnabled()}");
+            ImGui.Text($"MultiMode Enabled: {Service.AutoRetainer.GetMultiEnabled()}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"Not Busy: {!Service.Retainers.IPC.IsBusy()}");
+            ImGui.Text($"Not Busy: {!Service.AutoRetainer.IsBusy()}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"Current Character == Starting Character: {Player.CID == Service.Retainers.StartingCharacter}");
+            ImGui.Text($"Current Character == Starting Character: {Player.CID == Service.Retainers.StartingCharacter}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"No Retainers Ready: {!Service.Retainers.HasRetainersReady}");
+            ImGui.Text($"No Retainers Ready: {!Service.Retainers.HasRetainersReady}");
             ImGui.Bullet();
             ImGui.SameLine();
-            ImGuiEx.Text($"No Subs Ready: {!Service.Retainers.HasSubsReady}");
-            ImGuiEx.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
+            ImGui.Text($"No Subs Ready: {!Service.Retainers.HasSubsReady}");
+            ImGui.Text($"Preferred Character == Current Character: {Service.Retainers.GetPreferredCharacter() == Player.CID}");
         }
 
-        if (Svc.Targets.Target != null) {
+        if (Service.TargetManager.Target != null) {
             Utils.DrawSection("Target", ImGuiColors.ParsedGold);
-            var t = Svc.Targets.Target;
-            if (TryGetRow(t.BaseId, out GatheringPoint gp)) {
-                ImGuiEx.Text($"IsNode: {gp}");
+            var t = Service.TargetManager.Target;
+            if (GatheringPoint.GetRow(t.BaseId) is { } gp) {
+                ImGui.Text($"IsNode: {gp}");
                 if (gp.GatheringPointBase.IsValid)
-                    ImGuiEx.Text($"GatheringType: {gp.GatheringPointBase.Value.GatheringType.RowId}");
+                    ImGui.Text($"GatheringType: {gp.GatheringPointBase.Value.GatheringType.RowId}");
             }
             else
-                ImGuiEx.Text($"Not a GatheringPoint (BaseId={t.BaseId})");
+                ImGui.Text($"Not a GatheringPoint (BaseId={t.BaseId})");
         }
-        if (exec.CurrentRoute is { TargetGatherItem: not 0 } && TryGetRow<Item>((uint)exec.CurrentRoute.TargetGatherItem, out var item)) {
+        if (exec.CurrentRoute is { TargetGatherItem: not 0 } && Item.GetRow((uint)exec.CurrentRoute.TargetGatherItem) is { } item) {
             Utils.DrawSection("Target Item", ImGuiColors.ParsedGold);
             var wp = exec.CurrentRoute.Waypoints[exec.CurrentWaypoint];
-            ImGuiEx.Text($"[{exec.CurrentRoute.TargetGatherItem}] {item.Name}");
-            ImGuiEx.Text($"Waypoint: IsNode: {wp.IsNode} Type: {wp.GatheringType} NodeJob: {wp.NodeJob}");
+            ImGui.Text($"[{exec.CurrentRoute.TargetGatherItem}] {item.Name}");
+            ImGui.Text($"Waypoint: IsNode: {wp.IsNode} Type: {wp.GatheringType} NodeJob: {wp.NodeJob}");
         }
         if (exec.GatheringAM != null) {
             Utils.DrawSection("Gathering Addon", ImGuiColors.ParsedGold);
-            ImGuiEx.Text($"Integrity: {exec.GatheringAM.CurrentIntegrity}/{exec.GatheringAM.TotalIntegrity}");
+            ImGui.Text($"Integrity: {exec.GatheringAM.CurrentIntegrity}/{exec.GatheringAM.TotalIntegrity}");
             foreach (var gatherable in exec.GatheringAM.GatheredItems.Where(x => x.IsEnabled)) {
-                ImGuiEx.TextV($@"[{gatherable.ItemID}] Lv{gatherable.ItemLevel} {gatherable.GatherChance}% {gatherable.ItemName} {(gatherable.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
+                ImGui.TextV($@"[{gatherable.ItemID}] Lv{gatherable.ItemLevel} {gatherable.GatherChance}% {gatherable.ItemName} {(gatherable.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
                 ImGui.SameLine();
-                if (ImGuiEx.IconButton(Dalamud.Interface.FontAwesomeIcon.BoreHole, $"###{gatherable.ItemID}"))
+                if (ImGui.IconButton(Dalamud.Interface.FontAwesomeIcon.BoreHole, $"###{gatherable.ItemID}"))
                     gatherable.Gather();
             }
         }
         if (exec.GatheredItem != null) {
             Utils.DrawSection("Gathered Item", ImGuiColors.ParsedGold);
-            ImGuiEx.Text($"[{exec.GatheredItem.ItemID}] {exec.GatheredItem.ItemName} {(exec.GatheredItem.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
+            ImGui.Text($"[{exec.GatheredItem.ItemID}] {exec.GatheredItem.ItemName} {(exec.GatheredItem.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
         }
         if (exec.GatheringCollectableAM != null) {
             Utils.DrawSection("Gathering Collectable Addon", ImGuiColors.ParsedGold);
-            ImGuiEx.Text($"Item: [{exec.GatheringCollectableAM.ItemID}] {exec.GatheringCollectableAM.ItemName}");
-            ImGuiEx.Text($"Integrity: {exec.GatheringCollectableAM.CurrentIntegrity}/{exec.GatheringCollectableAM.TotalIntegrity}");
-            ImGuiEx.Text($"Collectability: {exec.GatheringCollectableAM.CurrentCollectability}/{exec.GatheringCollectableAM.MaxCollectability}");
-            ImGuiEx.Text($"Scour: {exec.GatheringCollectableAM.ScourPower} Brazen: {exec.GatheringCollectableAM.BrazenPowerMin}/{exec.GatheringCollectableAM.BrazenPowerMax} Meticulous: {exec.GatheringCollectableAM.MeticulousPower}");
+            ImGui.Text($"Item: [{exec.GatheringCollectableAM.ItemID}] {exec.GatheringCollectableAM.ItemName}");
+            ImGui.Text($"Integrity: {exec.GatheringCollectableAM.CurrentIntegrity}/{exec.GatheringCollectableAM.TotalIntegrity}");
+            ImGui.Text($"Collectability: {exec.GatheringCollectableAM.CurrentCollectability}/{exec.GatheringCollectableAM.MaxCollectability}");
+            ImGui.Text($"Scour: {exec.GatheringCollectableAM.ScourPower} Brazen: {exec.GatheringCollectableAM.BrazenPowerMin}/{exec.GatheringCollectableAM.BrazenPowerMax} Meticulous: {exec.GatheringCollectableAM.MeticulousPower}");
         }
     }
 }
