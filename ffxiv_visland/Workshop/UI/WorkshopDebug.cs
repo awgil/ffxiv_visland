@@ -41,7 +41,7 @@ public unsafe class WorkshopDebug {
             _tree.LeafNode($"updatestate={ad->UpdateState}, level={ad->IslandLevel}");
             _tree.LeafNode($"addons: modal={ad->OpenedModalAddonHandle} ({ad->OpenedModalAddonId}, review={ad->ReviewMaterialsAddonHandle}, confirm={ad->ConfirmAddonHandle}");
             _tree.LeafNode($"setting: ws={ad->CurScheduleSettingWorkshop}, slot={ad->CurScheduleSettingStartingSlot}, item=#{ad->CurScheduleSettingCraftIndex}, numMats={ad->CurScheduleSettingNumMaterials}, init={ad->CurScheduleSettingMaterialsInitializedMask:X2}");
-            _tree.LeafNode($"s/d: sort={ad->CurSupplyDemandSort:X}, time={ad->CurSupplyDemandFilterTime:X}, cat={ad->CurSupplyDemandFilterCategory:X}, cpop={ad->CurSupplyDemandFilterThisWeekPopularity:X}, npop={ad->CurSupplyDemandFilterNextWeekPopularity:X}, s={ad->CurSupplyDemandFilterSupply:X}, d={ad->CurSupplyDemandFilterDemandShift:X}, f={ad->CurSupplyDemandFilterFavours:X}");
+            _tree.LeafNode($"s/d: sort={ad->CurSupplyDemandSort:X}, time={ad->CurSupplyDemandFilterTime:X}, cat={ad->CurSupplyDemandFilterCategory:X}, cpop={ad->CurSupplyDemandFilterThisWeekPopularity:X}, npop={ad->CurSupplyDemandFilterNextWeekPopularity:X}, s={ad->CurSupplyDemandFilterSupply:X}, d={ad->CurSupplyDemandFilterDemandShift:X}, f={ad->CurSupplyDemandFilterFavors:X}");
             _tree.LeafNode($"ctx: sched={ad->CurContextMenuScheduleEntryWorkshop}/{ad->CurContextMenuScheduleEntrySlot}, sd={ad->CurContextMenuSupplyDemandRow}, preset={ad->CurContextMenuPresetIndex}");
             _tree.LeafNode($"groove={ad->Groove}, cur-cycle={ad->CycleDisplayed}, cur-hour={ad->HourSinceCycleStart}, in-progress={ad->CycleInProgress}");
             _tree.LeafNode($"rest mask={ad->RestCycles:X}, proposed={ad->NewRestCycles:X}, prompt={ad->ConfirmPrompt}");
@@ -61,7 +61,7 @@ public unsafe class WorkshopDebug {
                         _tree.LeafNode($"Sheet data: itemid={item.ItemId}, level={item.LevelReq}, time={item.CraftingTime}, value={item.Value}");
                         _tree.LeafNode($"Indices: main={item.CraftIndex}, sorted={item.SortedByNameIndex}");
                         _tree.LeafNode($"Themes: num={item.NumThemes} [{item.ThemeIds[0]}, {item.ThemeIds[1]}, {item.ThemeIds[2]}]");
-                        _tree.LeafNode($"Props: fav={item.Favour}, pop-cur={item.ThisWeekPopularity}, pop-next={item.NextWeekPopularity}, supply={item.Supply}, demand-shift={item.DemandShift}");
+                        _tree.LeafNode($"Props: fav={item.Favor}, pop-cur={item.ThisWeekPopularity}, pop-next={item.NextWeekPopularity}, supply={item.Supply}, demand-shift={item.DemandShift}");
                     }
                 }
             }
@@ -109,7 +109,7 @@ public unsafe class WorkshopDebug {
             DrawPopularity("Next", mji->NextPopularity);
         }
 
-        var favoursData = mji->FavourState;
+        var favoursData = mji->FavorState;
         var dataAvail = favoursData != null ? favoursData->UpdateState : -1;
         foreach (var nf in _tree.Node($"Favours: avail={dataAvail}", dataAvail != 2)) {
             DrawFavourState(0, "Prev");
@@ -190,7 +190,7 @@ public unsafe class WorkshopDebug {
     }
 
     private void DrawFavourState(int offset, string tag) {
-        var f = MJIManager.Instance()->FavourState;
+        var f = MJIManager.Instance()->FavorState;
         foreach (var n in _tree.Node($"{tag} favour state")) {
             for (var i = 0; i < 3; ++i) {
                 var idx = f->CraftObjectIds[i + offset];
@@ -209,7 +209,7 @@ public unsafe class WorkshopDebug {
     }
 
     private void InitFavoursFromGame(int offset, int pop) {
-        var state = MJIManager.Instance()->FavourState;
+        var state = MJIManager.Instance()->FavorState;
         for (var i = 0; i < 3; ++i) {
             _favourState.CraftObjectIds[i] = state->CraftObjectIds[i + offset];
             _favourState.CompletedCounts[i] = state->NumDelivered[i + offset] + state->NumScheduled[i + offset];

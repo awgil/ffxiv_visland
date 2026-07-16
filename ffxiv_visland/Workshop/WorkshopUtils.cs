@@ -72,7 +72,7 @@ public static unsafe class WorkshopUtils {
     public static void RequestDemandFavours() {
         Service.Log.Info("Fetching demand & favours");
         MJIManager.Instance()->RequestDemandFull();
-        MJIManager.Instance()->RequestFavourData();
+        MJIManager.Instance()->RequestFavorData();
     }
 
     public static int GetMaxWorkshops() {
