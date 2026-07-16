@@ -65,9 +65,8 @@ internal class PurificationManager {
         }
     }
 
-    private static unsafe void ResultsSetup(AddonEvent type, AddonArgs args) {
-        if (!AddonUtils.IsAddonReady((AtkUnitBase*)args.Addon.Address)) return;
-        AtkCallback.Fire((AtkUnitBase*)args.Addon.Address, false, 0);
+    private static void ResultsSetup(AddonEvent type, AddonArgs args) {
+        AtkCallback.Fire(args.AddonName, false, 0);
     }
 
     public static bool CanPurifyAny() => GetPurifyableItems().Count > 0;

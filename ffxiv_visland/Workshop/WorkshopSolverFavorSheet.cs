@@ -8,27 +8,27 @@ using visland.Helpers;
 namespace visland.Workshop;
 
 // this is taken from kd3's google sheet
-public class WorkshopSolverFavorSheet {
+public class WorkshopSolverFavourSheet {
     public enum Strategy { Unknown, NoLinks_No48, AllLinks, NoLinks, Link48, Link46, Link68, Link68_NoF8L4, Link48_NoF6L8 }
 
     public WorkshopSolver.Popularity Popularity;
     public List<WorkshopSolver.WorkshopRec> Recs;
-    public MJICraftworksObject[] Favors;
+    public MJICraftworksObject[] Favours;
     public int[] Complete;
     public List<MJICraftworksObject>[][] Links; // [i][j] = links of duration j for favour i
     public Strategy Plan;
 
     private readonly ExcelSheet<MJICraftworksObject> _sheet;
 
-    public WorkshopSolverFavorSheet(WorkshopSolver.FavorState state) {
+    public WorkshopSolverFavourSheet(WorkshopSolver.FavourState state) {
         _sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         Popularity = state.Popularity;
         if (state.CraftObjectIds.Any(i => i == 0))
             throw new Exception("Invalid state");
-        Favors = [.. state.CraftObjectIds.Select(i => _sheet.GetRow(i))];
+        Favours = [.. state.CraftObjectIds.Select(i => _sheet.GetRow(i))];
 
         Complete = [.. state.CompletedCounts];
-        Links = [.. Favors.Select(BuildLinks)];
+        Links = [.. Favours.Select(BuildLinks)];
         Recs = [];
 
         var f4 = state.CraftObjectIds[0];
@@ -44,9 +44,9 @@ public class WorkshopSolverFavorSheet {
         var f8l4 = Links[2][0].FirstOrDefault().RowId;
         var f8l6 = Links[2][1].FirstOrDefault().RowId;
 
-        var link46 = WorkshopSolver.IsLinked(Favors[0], Favors[1]);
-        var link48 = WorkshopSolver.IsLinked(Favors[0], Favors[2]);
-        var link68 = WorkshopSolver.IsLinked(Favors[1], Favors[2]);
+        var link46 = WorkshopSolver.IsLinked(Favours[0], Favours[1]);
+        var link48 = WorkshopSolver.IsLinked(Favours[0], Favours[2]);
+        var link68 = WorkshopSolver.IsLinked(Favours[1], Favours[2]);
         var noLinksNo48 = f6l4alt == 0 || f8l4 == 0 || f8l6 == 0; // very weird condition...
         var allLinks = link46 && link48 && link68;
         var noLinks = !link46 && !link48 && !link68;
@@ -133,7 +133,7 @@ public class WorkshopSolverFavorSheet {
                 throw new Exception($"Invalid obj id {obj}");
             if (_sheet.TryGetRow(obj, out var row)) {
                 rec.Add(hour, obj);
-                var iFav = Array.FindIndex(Favors, o => o.RowId == obj);
+                var iFav = Array.FindIndex(Favours, o => o.RowId == obj);
                 if (iFav >= 0) {
                     var efficient = prev != null && WorkshopSolver.IsLinked((MJICraftworksObject)prev, row);
                     Complete[iFav] += efficient ? 2 : 1;
@@ -149,7 +149,7 @@ public class WorkshopSolverFavorSheet {
 
     private void AddDayAssertPlan(Strategy plan, params uint[] objs) {
         if (Plan != plan) {
-            Service.Log.Warning($"I fucked up: expected plan {plan}, have {Plan} - for {string.Join(", ", Favors.Select(f => f.Item.Value.Name))}");
+            Service.Log.Warning($"I fucked up: expected plan {plan}, have {Plan} - for {string.Join(", ", Favours.Select(f => f.Item.Value.Name))}");
             Plan = plan;
         }
         AddDay(objs);

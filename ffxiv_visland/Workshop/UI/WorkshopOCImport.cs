@@ -20,9 +20,9 @@ public unsafe class WorkshopOCImport {
     private readonly WorkshopSeasonDB? _seasonDB;
     private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
     private readonly List<string> _botNames;
-    private readonly WorkshopClipboardParser _parser;
-    private readonly WorkshopScheduleApplier _applier = new();
-    private readonly WorkshopFavorReader _favorReader;
+    private readonly ClipboardParser _parser;
+    private readonly ScheduleApplier _applier = new();
+    private readonly FavourReader _favourReader;
     private readonly List<Func<bool>> _pendingActions = [];
     private int _loadedSeason;
     private bool _loadedNextWeek;
@@ -32,9 +32,9 @@ public unsafe class WorkshopOCImport {
         if (GlobalClientFeatures.IsGlobalClient)
             _seasonDB = new WorkshopSeasonDB();
         _craftSheet = MJICraftworksObject.Get();
-        _botNames = [.. _craftSheet.Select(r => WorkshopNames.OfficialNameToBotName(Item.GetRow(r.Item.RowId)!.Value.WithLanguage(ClientLanguage.English).Name.ExtractText()))];
+        _botNames = [.. _craftSheet.Select(r => OSCHandler.OfficialNameToBotName(Item.GetRow(r.Item.RowId)!.Value.WithLanguage(ClientLanguage.English).Name.ExtractText()))];
         _parser = new(_craftSheet, _botNames);
-        _favorReader = new(_botNames);
+        _favourReader = new(_botNames);
     }
 
     public void Update() {
@@ -57,7 +57,7 @@ public unsafe class WorkshopOCImport {
             ImGui.SameLine();
             if (ImGui.Button("Load Next Week"))
                 LoadSeasonRecs(true);
-            ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favor mode from Settings.");
+            ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favour mode from Settings.");
         }
         else {
             ImGui.TextWrapped(GlobalClientFeatures.UnavailableReason);
@@ -77,11 +77,11 @@ public unsafe class WorkshopOCImport {
 
         ImGui.Separator();
 
-        if (_config.UseFavorSolver) {
-            ImGui.TextUnformatted("Advanced favor overrides");
-            ImGuiComponents.HelpMarker("Manual overrides for the currently loaded schedule. Archive loads already apply the favor mode from Settings.");
+        if (_config.UseFavourSolver) {
+            ImGui.TextUnformatted("Advanced favour overrides");
+            ImGuiComponents.HelpMarker("Manual overrides for the currently loaded schedule. Archive loads already apply the favour mode from Settings.");
 
-            ImGui.TextV("Override 4th workshop with favors:");
+            ImGui.TextV("Override 4th workshop with favours:");
             ImGui.SameLine();
             if (ImGui.Button($"This Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(false);
@@ -89,7 +89,7 @@ public unsafe class WorkshopOCImport {
             if (ImGui.Button($"Next Week##4th"))
                 OverrideSideRecsLastWorkshopSolver(true);
 
-            ImGui.TextV("Override closest workshops with favors:");
+            ImGui.TextV("Override closest workshops with favours:");
             ImGui.SameLine();
             if (ImGui.Button($"This Week##asap"))
                 OverrideSideRecsAsapSolver(false);
@@ -104,7 +104,7 @@ public unsafe class WorkshopOCImport {
 
             if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Copy /favors (this week)")) {
                 try {
-                    ImGui.SetClipboardText(_favorReader.CreateFavorRequestCommand(false));
+                    ImGui.SetClipboardText(_favourReader.CreateFavourRequestCommand(false));
                 }
                 catch (Exception ex) {
                     ReportError(ex.Message);
@@ -113,7 +113,7 @@ public unsafe class WorkshopOCImport {
             ImGui.SameLine();
             if (ImGuiComponents.IconButtonWithText(Dalamud.Interface.FontAwesomeIcon.Clipboard, "Copy /favors (next week)")) {
                 try {
-                    ImGui.SetClipboardText(_favorReader.CreateFavorRequestCommand(true));
+                    ImGui.SetClipboardText(_favourReader.CreateFavourRequestCommand(true));
                 }
                 catch (Exception ex) {
                     ReportError(ex.Message);
@@ -156,15 +156,15 @@ public unsafe class WorkshopOCImport {
                 return;
             }
 
-            if (_config.FavorMode == WorkshopFavorMode.None) {
+            if (_config.FavourMode == FavourMode.None) {
                 ApplySeason(nextWeek, null);
                 return;
             }
 
-            _favorReader.EnsureDemandFavorsAvailable(_pendingActions);
+            _favourReader.EnsureDemandFavoursAvailable(_pendingActions);
             _pendingActions.Add(() => {
                 try {
-                    ApplySeason(nextWeek, _favorReader.ReadFavorState(nextWeek));
+                    ApplySeason(nextWeek, _favourReader.ReadFavourState(nextWeek));
                 }
                 catch (Exception ex) {
                     ReportError($"Error: {ex.Message}", silent);
@@ -177,16 +177,16 @@ public unsafe class WorkshopOCImport {
         }
     }
 
-    private void ApplySeason(bool nextWeek, WorkshopSolver.FavorState? favors) {
+    private void ApplySeason(bool nextWeek, WorkshopSolver.FavourState? favours) {
         var seasonDB = _seasonDB ?? throw new Exception("Workshop archive is not available on this client.");
         var season = seasonDB.CurrentSeason(nextWeek);
         var baseRecs = seasonDB.BuildRecs(season);
-        Recommendations = favors == null || _config.FavorMode == WorkshopFavorMode.None
+        Recommendations = favours == null || _config.FavourMode == FavourMode.None
             ? baseRecs
-            : WorkshopFavorIntegration.Apply(baseRecs, _config.FavorMode, favors.Value, _craftSheet, seasonDB.RestCycles(season));
+            : FavourIntegration.Apply(baseRecs, _config.FavourMode, favours.Value, _craftSheet, seasonDB.RestCycles(season));
         _loadedSeason = season;
         _loadedNextWeek = nextWeek;
-        Service.Log.Info($"Loaded workshop season {season} (favor mode {_config.FavorMode})");
+        Service.Log.Info($"Loaded workshop season {season} (favour mode {_config.FavourMode})");
     }
 
     private void DrawCycleRecommendations() {
@@ -255,9 +255,9 @@ public unsafe class WorkshopOCImport {
     }
 
     private void OverrideSideRecsLastWorkshopSolver(bool nextWeek) {
-        _favorReader.EnsureDemandFavorsAvailable(_pendingActions);
+        _favourReader.EnsureDemandFavoursAvailable(_pendingActions);
         _pendingActions.Add(() => {
-            OverrideSideRecsLastWorkshop(_favorReader.SolveRecOverrides(nextWeek));
+            OverrideSideRecsLastWorkshop(_favourReader.SolveRecOverrides(nextWeek));
             return true;
         });
     }
@@ -285,9 +285,9 @@ public unsafe class WorkshopOCImport {
     }
 
     private void OverrideSideRecsAsapSolver(bool nextWeek) {
-        _favorReader.EnsureDemandFavorsAvailable(_pendingActions);
+        _favourReader.EnsureDemandFavoursAvailable(_pendingActions);
         _pendingActions.Add(() => {
-            OverrideSideRecsAsap(_favorReader.SolveRecOverrides(nextWeek));
+            OverrideSideRecsAsap(_favourReader.SolveRecOverrides(nextWeek));
             return true;
         });
     }

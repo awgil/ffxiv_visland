@@ -24,7 +24,7 @@ public class VislandIPC {
             });
         Service.Interface.GetIpcProvider<uint, object>("visland.GatherItem")
             .RegisterAction(itemId => {
-                var item = Service.RouteExec.GatheringAM?.GatheredItems.FirstOrDefault(x => x.ItemID == itemId);
+                var item = Service.RouteExec.GatheringAM?.Items.FirstOrDefault(x => x.ItemID == itemId);
                 item?.Gather();
             });
     }

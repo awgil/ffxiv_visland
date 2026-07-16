@@ -69,7 +69,7 @@ public unsafe class GatherDebug(GatherRouteExec exec) {
         if (exec.GatheringAM != null) {
             Utils.DrawSection("Gathering Addon", ImGuiColors.ParsedGold);
             ImGui.Text($"Integrity: {exec.GatheringAM.CurrentIntegrity}/{exec.GatheringAM.TotalIntegrity}");
-            foreach (var gatherable in exec.GatheringAM.GatheredItems.Where(x => x.IsEnabled)) {
+            foreach (var gatherable in exec.GatheringAM.Items.Where(x => x.IsEnabled)) {
                 ImGui.TextV($@"[{gatherable.ItemID}] Lv{gatherable.ItemLevel} {gatherable.GatherChance}% {gatherable.ItemName} {(gatherable.IsCollectable ? SeIconChar.Collectible : string.Empty)}");
                 ImGui.SameLine();
                 if (ImGui.IconButton(Dalamud.Interface.FontAwesomeIcon.BoreHole, $"###{gatherable.ItemID}"))

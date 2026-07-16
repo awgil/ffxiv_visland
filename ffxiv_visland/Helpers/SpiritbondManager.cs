@@ -53,8 +53,7 @@ public static unsafe class SpiritbondManager {
 
     public static unsafe void ConfirmMateriaDialog() {
         try {
-            if (AddonUtils.TryGetAddonByName("MaterializeDialog", out var addon))
-                AtkCallback.Fire(addon, true, 0);
+            AtkCallback.Fire("MaterializeDialog", true, 0);
         }
         catch {
         }

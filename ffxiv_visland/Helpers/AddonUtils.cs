@@ -27,6 +27,12 @@ public static unsafe class AddonUtils {
 }
 
 public static unsafe class AtkCallback {
+    public static void Fire(string addonName, bool checkVisibility, params int[] values) {
+        if (AddonUtils.TryGetAddonByName<AtkUnitBase>(addonName, out var addon)) {
+            Fire(addon, checkVisibility, values);
+        }
+    }
+
     public static void Fire(AtkUnitBase* addon, bool checkVisibility, params int[] values) {
         if (addon == null)
             return;

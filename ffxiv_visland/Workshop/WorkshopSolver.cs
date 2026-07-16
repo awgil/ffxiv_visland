@@ -87,21 +87,21 @@ public class WorkshopSolver {
         }
     }
 
-    public struct FavorState {
+    public struct FavourState {
         public uint[] CraftObjectIds;
         public int[] CompletedCounts;
         public Popularity Popularity;
 
-        public FavorState() {
+        public FavourState() {
             CraftObjectIds = new uint[3];
             CompletedCounts = new int[3];
             Popularity = new();
         }
 
-        public FavorState(uint favor4Id, uint favor6Id, uint favor8Id, int complete4 = 0, int complete6 = 0, int complete8 = 0) : this() {
-            CraftObjectIds[0] = favor4Id;
-            CraftObjectIds[1] = favor6Id;
-            CraftObjectIds[2] = favor8Id;
+        public FavourState(uint favour4Id, uint favour6Id, uint favour8Id, int complete4 = 0, int complete6 = 0, int complete8 = 0) : this() {
+            CraftObjectIds[0] = favour4Id;
+            CraftObjectIds[1] = favour6Id;
+            CraftObjectIds[2] = favour8Id;
             CompletedCounts[0] = complete4;
             CompletedCounts[1] = complete6;
             CompletedCounts[2] = complete8;

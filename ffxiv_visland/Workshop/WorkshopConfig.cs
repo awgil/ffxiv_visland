@@ -5,6 +5,6 @@ namespace visland.Workshop;
 public class WorkshopConfig : Configuration.Node {
     public bool AutoOpenNextDay = false;
     public bool AutoImport = false;
-    public bool UseFavorSolver = false;
-    public WorkshopFavorMode FavorMode = WorkshopFavorMode.ReplaceWorkshop4;
+    public bool UseFavourSolver = false;
+    public FavourMode FavourMode = FavourMode.ReplaceWorkshop4;
 }

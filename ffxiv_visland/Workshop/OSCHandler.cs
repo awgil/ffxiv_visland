@@ -1,6 +1,6 @@
 namespace visland.Workshop;
 
-public static class WorkshopNames {
+public static class OSCHandler {
     public static string OfficialNameToBotName(string name) {
         if (name.StartsWith("Isleworks "))
             return name[10..];

@@ -289,10 +289,10 @@ public class GatherRouteExec : IDisposable {
             return;
         }
 
-        if (RouteDB.RepairGear && RepairManager.CanRepairAny(RouteDB.RepairPercent) && !AddonUtils.IsOccupied() && !Service.Condition[ConditionFlag.Mounted]) {
+        if (RouteDB.RepairGear && RepairAssistantManager.CanRepairAny(RouteDB.RepairPercent) && !AddonUtils.IsOccupied() && !Service.Condition[ConditionFlag.Mounted]) {
             SetState(State.RepairingGear);
             Service.Log.Debug("Repair gear task queued.");
-            Service.TaskManager.Enqueue(RepairManager.ProcessRepair, "RepairGear");
+            Service.TaskManager.Enqueue(RepairAssistantManager.ProcessRepair, "RepairGear");
             return;
         }
 

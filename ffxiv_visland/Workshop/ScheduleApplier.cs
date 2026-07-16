@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace visland.Workshop;
 
-internal class WorkshopScheduleApplier {
+internal class ScheduleApplier {
     public bool IgnoreFourthWorkshop { get; set; }
 
     public unsafe int ApplyRecommendation(int cycle, WorkshopSolver.DayRec rec, int minStartingHour = 0) {

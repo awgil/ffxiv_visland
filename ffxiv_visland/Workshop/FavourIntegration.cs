@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace visland.Workshop;
 
-public enum WorkshopFavorMode {
+public enum FavourMode {
     None = 0,
     [Description("Keep workshops 1-3, fill 4 with favours")]
     ReplaceWorkshop4 = 1,
@@ -17,82 +17,82 @@ public enum WorkshopFavorMode {
     MinMaxFreeRestDay = 3,
 }
 
-public static class WorkshopFavorIntegration {
-    public static readonly int[] FavorTargets = [8, 6, 8]; // 4h / 6h / 8h
+public static class FavourIntegration {
+    public static readonly int[] FavourTargets = [8, 6, 8]; // 4h / 6h / 8h
 
-    public static WorkshopSolver.Recs Apply(WorkshopSolver.Recs baseRecs, WorkshopFavorMode mode, WorkshopSolver.FavorState favors, ExcelSheet<MJICraftworksObject> sheet, IEnumerable<int>? ocRestCycles = null) {
-        if (mode == WorkshopFavorMode.None)
+    public static WorkshopSolver.Recs Apply(WorkshopSolver.Recs baseRecs, FavourMode mode, WorkshopSolver.FavourState favours, ExcelSheet<MJICraftworksObject> sheet, IEnumerable<int>? ocRestCycles = null) {
+        if (mode == FavourMode.None)
             return Clone(baseRecs);
 
         var days = baseRecs.Enumerate().ToDictionary(e => e.cycle, e => CloneDay(e.rec));
         var freeRestCycle = 0;
-        if (mode == WorkshopFavorMode.MinMaxFreeRestDay) {
+        if (mode == FavourMode.MinMaxFreeRestDay) {
             freeRestCycle = ocRestCycles?.Where(c => c is >= 2 and <= 7).OrderBy(c => c).FirstOrDefault() ?? 0;
             if (freeRestCycle != 0 && !days.ContainsKey(freeRestCycle))
                 days[freeRestCycle] = new WorkshopSolver.DayRec();
         }
 
-        var credited = (int[])favors.CompletedCounts.Clone();
-        if (mode == WorkshopFavorMode.ReplaceWorkshop4) {
+        var credited = (int[])favours.CompletedCounts.Clone();
+        if (mode == FavourMode.ReplaceWorkshop4) {
             // Only credit the kept main pattern (WS1-3). A single workshop entry is duplicated across them.
             foreach (var day in days.Values) {
                 if (day.Workshops.Count == 0)
                     continue;
                 var mainCopies = Math.Min(3, 1 + Math.Max(0, 4 - Math.Max(day.Workshops.Count, 1)));
                 for (var i = 0; i < mainCopies; ++i)
-                    CreditWorkshop(day.Workshops[0], favors.CraftObjectIds, credited, sheet);
+                    CreditWorkshop(day.Workshops[0], favours.CraftObjectIds, credited, sheet);
             }
         }
         else {
-            CreditSchedule(days.Values, favors.CraftObjectIds, credited, sheet);
+            CreditSchedule(days.Values, favours.CraftObjectIds, credited, sheet);
         }
 
-        if (mode is WorkshopFavorMode.MinMax or WorkshopFavorMode.MinMaxFreeRestDay) {
+        if (mode is FavourMode.MinMax or FavourMode.MinMaxFreeRestDay) {
             foreach (var day in days.Values)
-                TrySubstitutions(day, favors.CraftObjectIds, credited, sheet);
-            credited = (int[])favors.CompletedCounts.Clone();
-            CreditSchedule(days.Values, favors.CraftObjectIds, credited, sheet);
+                TrySubstitutions(day, favours.CraftObjectIds, credited, sheet);
+            credited = (int[])favours.CompletedCounts.Clone();
+            CreditSchedule(days.Values, favours.CraftObjectIds, credited, sheet);
         }
 
         if (NeedsMet(credited))
             return ToRecs(days);
 
-        List<WorkshopSolver.WorkshopRec> favorDays;
+        List<WorkshopSolver.WorkshopRec> favourDays;
         try {
-            favorDays = new WorkshopSolverFavorSheet(CloneFavorState(favors, credited)).Recs;
+            favourDays = new WorkshopSolverFavourSheet(CloneFavourState(favours, credited)).Recs;
         }
         catch (Exception ex) {
-            Service.Log.Error($"Favor sheet solver failed: {ex.Message}");
+            Service.Log.Error($"Favour sheet solver failed: {ex.Message}");
             return ToRecs(days);
         }
 
         return mode switch {
-            WorkshopFavorMode.ReplaceWorkshop4 => PlaceOnWorkshop4(days, favorDays),
-            WorkshopFavorMode.MinMax or WorkshopFavorMode.MinMaxFreeRestDay
-                => PlaceMinMax(days, favorDays, favors.Popularity, sheet, freeRestCycle),
+            FavourMode.ReplaceWorkshop4 => PlaceOnWorkshop4(days, favourDays),
+            FavourMode.MinMax or FavourMode.MinMaxFreeRestDay
+                => PlaceMinMax(days, favourDays, favours.Popularity, sheet, freeRestCycle),
             _ => ToRecs(days),
         };
     }
 
-    private static WorkshopSolver.Recs PlaceOnWorkshop4(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favorDays) {
+    private static WorkshopSolver.Recs PlaceOnWorkshop4(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favourDays) {
         var fi = 0;
         foreach (var cycle in days.Keys.OrderBy(c => c)) {
-            if (fi >= favorDays.Count)
+            if (fi >= favourDays.Count)
                 break;
             var day = days[cycle];
             EnsureWorkshopSlots(day, 2);
-            day.Workshops[1] = CloneWorkshop(favorDays[fi++]);
+            day.Workshops[1] = CloneWorkshop(favourDays[fi++]);
         }
 
-        if (fi < favorDays.Count)
-            Service.Log.Warning($"Could not fit {favorDays.Count - fi} favor day(s) into workshop 4 slots");
+        if (fi < favourDays.Count)
+            Service.Log.Warning($"Could not fit {favourDays.Count - fi} favour day(s) into workshop 4 slots");
         return ToRecs(days);
     }
 
-    private static WorkshopSolver.Recs PlaceMinMax(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favorDays, WorkshopSolver.Popularity popularity, ExcelSheet<MJICraftworksObject> sheet, int freeRestCycle) {
-        var remaining = new Queue<WorkshopSolver.WorkshopRec>(favorDays.Select(CloneWorkshop));
+    private static WorkshopSolver.Recs PlaceMinMax(Dictionary<int, WorkshopSolver.DayRec> days, List<WorkshopSolver.WorkshopRec> favourDays, WorkshopSolver.Popularity popularity, ExcelSheet<MJICraftworksObject> sheet, int freeRestCycle) {
+        var remaining = new Queue<WorkshopSolver.WorkshopRec>(favourDays.Select(CloneWorkshop));
 
-        // Freed rest day: dump as many favor workshops as possible.
+        // Freed rest day: dump as many favour workshops as possible.
         if (freeRestCycle != 0 && days.TryGetValue(freeRestCycle, out var freeDay)) {
             freeDay.Workshops.Clear();
             while (remaining.Count > 0 && freeDay.Workshops.Count < 4)
@@ -125,7 +125,7 @@ public static class WorkshopFavorIntegration {
             }
         }
 
-        // Last resort: whole-day favor overwrite on lowest-value days.
+        // Last resort: whole-day favour overwrite on lowest-value days.
         foreach (var cycle in days.Keys.OrderBy(c => EstimateDayValue(days[c], popularity, sheet))) {
             if (remaining.Count == 0)
                 break;
@@ -137,29 +137,25 @@ public static class WorkshopFavorIntegration {
         }
 
         if (remaining.Count > 0)
-            Service.Log.Warning($"Favor min-max could not fully fit remaining favor day(s): {remaining.Count} left");
+            Service.Log.Warning($"Favour min-max could not fully fit remaining favour day(s): {remaining.Count} left");
 
         return ToRecs(days);
     }
 
-    private static void TrySubstitutions(
-        WorkshopSolver.DayRec day,
-        uint[] favorIds,
-        int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet) {
+    private static void TrySubstitutions(WorkshopSolver.DayRec day, uint[] favourIds, int[] complete, ExcelSheet<MJICraftworksObject> sheet) {
         foreach (var workshop in day.Workshops) {
             for (var i = 0; i < workshop.Slots.Count; ++i) {
                 if (!TryRow(sheet, workshop.Slots[i].CraftObjectId, out var current))
                     continue;
 
-                for (var f = 0; f < favorIds.Length; ++f) {
-                    if (complete[f] >= FavorTargets[f])
+                for (var f = 0; f < favourIds.Length; ++f) {
+                    if (complete[f] >= FavourTargets[f])
                         continue;
-                    if (!TryRow(sheet, favorIds[f], out var favor))
+                    if (!TryRow(sheet, favourIds[f], out var favour))
                         continue;
-                    if (favor.CraftingTime != current.CraftingTime)
+                    if (favour.CraftingTime != current.CraftingTime)
                         continue;
-                    if (favor.RowId == current.RowId)
+                    if (favour.RowId == current.RowId)
                         break;
 
                     MJICraftworksObject? prev = i > 0 && TryRow(sheet, workshop.Slots[i - 1].CraftObjectId, out var p) ? p : null;
@@ -167,16 +163,16 @@ public static class WorkshopFavorIntegration {
 
                     var oldPrevLink = prev != null && WorkshopSolver.IsLinked(prev.Value, current);
                     var oldNextLink = next != null && WorkshopSolver.IsLinked(current, next.Value);
-                    var newPrevLink = prev != null && WorkshopSolver.IsLinked(prev.Value, favor);
-                    var newNextLink = next != null && WorkshopSolver.IsLinked(favor, next.Value);
+                    var newPrevLink = prev != null && WorkshopSolver.IsLinked(prev.Value, favour);
+                    var newNextLink = next != null && WorkshopSolver.IsLinked(favour, next.Value);
                     if (oldPrevLink && !newPrevLink)
                         continue;
                     if (oldNextLink && !newNextLink)
                         continue;
-                    if (!SharesTheme(current, favor) && (oldPrevLink || oldNextLink))
+                    if (!SharesTheme(current, favour) && (oldPrevLink || oldNextLink))
                         continue;
 
-                    workshop.Slots[i] = new WorkshopSolver.SlotRec(workshop.Slots[i].Slot, favor.RowId);
+                    workshop.Slots[i] = new WorkshopSolver.SlotRec(workshop.Slots[i].Slot, favour.RowId);
                     complete[f] += newPrevLink ? 2 : 1;
                     break;
                 }
@@ -192,26 +188,18 @@ public static class WorkshopFavorIntegration {
         return a1 != 0 && (a1 == b1 || a1 == b2) || a2 != 0 && (a2 == b1 || a2 == b2);
     }
 
-    public static void CreditSchedule(
-        IEnumerable<WorkshopSolver.DayRec> days,
-        uint[] favorIds,
-        int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet) {
+    public static void CreditSchedule(IEnumerable<WorkshopSolver.DayRec> days, uint[] favourIds, int[] complete, ExcelSheet<MJICraftworksObject> sheet) {
         foreach (var day in days)
             foreach (var workshop in day.Workshops)
-                CreditWorkshop(workshop, favorIds, complete, sheet);
+                CreditWorkshop(workshop, favourIds, complete, sheet);
     }
 
-    public static void CreditWorkshop(
-        WorkshopSolver.WorkshopRec workshop,
-        uint[] favorIds,
-        int[] complete,
-        ExcelSheet<MJICraftworksObject> sheet) {
+    public static void CreditWorkshop(WorkshopSolver.WorkshopRec workshop, uint[] favourIds, int[] complete, ExcelSheet<MJICraftworksObject> sheet) {
         MJICraftworksObject? prev = null;
         foreach (var slot in workshop.Slots) {
             if (!TryRow(sheet, slot.CraftObjectId, out var row))
                 continue;
-            var idx = Array.IndexOf(favorIds, row.RowId);
+            var idx = Array.IndexOf(favourIds, row.RowId);
             if (idx >= 0)
                 complete[idx] += prev != null && WorkshopSolver.IsLinked(prev.Value, row) ? 2 : 1;
             prev = row;
@@ -236,14 +224,14 @@ public static class WorkshopFavorIntegration {
     }
 
     private static bool NeedsMet(int[] complete) {
-        for (var i = 0; i < FavorTargets.Length; ++i)
-            if (complete[i] < FavorTargets[i])
+        for (var i = 0; i < FavourTargets.Length; ++i)
+            if (complete[i] < FavourTargets[i])
                 return false;
         return true;
     }
 
-    private static WorkshopSolver.FavorState CloneFavorState(WorkshopSolver.FavorState src, int[] complete) {
-        var s = new WorkshopSolver.FavorState();
+    private static WorkshopSolver.FavourState CloneFavourState(WorkshopSolver.FavourState src, int[] complete) {
+        var s = new WorkshopSolver.FavourState();
         Array.Copy(src.CraftObjectIds, s.CraftObjectIds, 3);
         Array.Copy(complete, s.CompletedCounts, 3);
         s.Popularity = src.Popularity;

@@ -9,6 +9,9 @@ using System.Reflection;
 
 namespace visland.Workshop;
 
+// the 100 season solved cycle from the OSC discord
+// TODO: use the script again and replace the json once we're at week 259
+// also TODO: do the bot names -> real conversion out-of-plugin so I don't have to force english sheets on CN/KR
 public class WorkshopSeasonDB {
     public int RangeStart { get; private set; }
     public int RangeEnd { get; private set; }
@@ -23,7 +26,7 @@ public class WorkshopSeasonDB {
     public WorkshopSeasonDB() {
         _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         foreach (var row in _craftSheet) {
-            var name = WorkshopNames.OfficialNameToBotName(row.Item.Value.Name.ExtractText());
+            var name = OSCHandler.OfficialNameToBotName(row.Item.Value.Name.ExtractText());
             if (!string.IsNullOrEmpty(name))
                 _nameToId.TryAdd(name, row.RowId);
         }

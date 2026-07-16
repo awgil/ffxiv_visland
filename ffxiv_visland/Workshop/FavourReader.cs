@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace visland.Workshop;
 
-internal unsafe class WorkshopFavorReader(List<string> botNames) {
-    public WorkshopSolver.FavorState ReadFavorState(bool nextWeek) {
+internal unsafe class FavourReader(List<string> botNames) {
+    public WorkshopSolver.FavourState ReadFavourState(bool nextWeek) {
         var mji = MJIManager.Instance();
         if (mji == null || !mji->IsPlayerInSanctuary)
-            throw new Exception("Favor data requires being on your island");
-        var state = new WorkshopSolver.FavorState();
+            throw new Exception("Favour data requires being on your island");
+        var state = new WorkshopSolver.FavourState();
         var offset = nextWeek ? 6 : 3;
         for (var i = 0; i < 3; ++i) {
             state.CraftObjectIds[i] = mji->FavorState->CraftObjectIds[i + offset];
@@ -21,14 +21,14 @@ internal unsafe class WorkshopFavorReader(List<string> botNames) {
         if (!mji->DemandDirty)
             state.Popularity.Set(nextWeek ? mji->NextPopularity : mji->CurrentPopularity);
         if (state.CraftObjectIds.Any(id => id == 0))
-            throw new Exception("Favor craft IDs not available yet");
+            throw new Exception("Favour craft IDs not available yet");
         return state;
     }
 
-    public string CreateFavorRequestCommand(bool nextWeek) {
+    public string CreateFavourRequestCommand(bool nextWeek) {
         var state = MJIManager.Instance()->FavorState;
         if (state == null || state->UpdateState != 2) {
-            throw new Exception($"Favor data not available: {state->UpdateState}");
+            throw new Exception($"Favour data not available: {state->UpdateState}");
         }
 
         var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
@@ -43,13 +43,13 @@ internal unsafe class WorkshopFavorReader(List<string> botNames) {
         return res;
     }
 
-    public void EnsureDemandFavorsAvailable(List<Func<bool>> pendingActions) {
+    public void EnsureDemandFavoursAvailable(List<Func<bool>> pendingActions) {
         if (MJIManager.Instance()->DemandDirty) {
-            WorkshopUtils.RequestDemandFavors();
+            WorkshopUtils.RequestDemandFavours();
             pendingActions.Add(() => !MJIManager.Instance()->DemandDirty && MJIManager.Instance()->FavorState->UpdateState == 2);
         }
     }
 
     public List<WorkshopSolver.WorkshopRec> SolveRecOverrides(bool nextWeek)
-        => new WorkshopSolverFavorSheet(ReadFavorState(nextWeek)).Recs;
+        => new WorkshopSolverFavourSheet(ReadFavourState(nextWeek)).Recs;
 }

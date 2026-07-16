@@ -45,7 +45,7 @@ unsafe class WorkshopWindow : UIAttachedWindow {
         if (_config.AutoOpenNextDay) {
             WorkshopUtils.SetCurrentCycle(AgentMJICraftSchedule.Instance()->Data->CycleInProgress + 1);
         }
-        if (_config.FavorMode == WorkshopFavorMode.MinMaxFreeRestDay)
+        if (_config.FavourMode == FavourMode.MinMaxFreeRestDay)
             WorkshopUtils.VoidSecondRestThisWeek();
         if (_config.AutoImport && GlobalClientFeatures.IsGlobalClient) {
             _oc.LoadSeasonRecs(false, silent: true);
@@ -63,29 +63,29 @@ unsafe class WorkshopWindow : UIAttachedWindow {
         }
 
         ImGui.Separator();
-        ImGui.TextUnformatted("Favor integration");
-        var mode = (int)_config.FavorMode;
+        ImGui.TextUnformatted("Favour integration");
+        var mode = (int)_config.FavourMode;
         var modes = new[] {
             "None — OC schedule only",
-            "Replace workshop 4 — credit favors already in WS1-3",
+            "Replace workshop 4 — credit favours already in WS1-3",
             "Min-max — substitutions + sacrifice low-value slots",
             "Min-max + free rest day — craft on OC's second rest day",
         };
-        if (ImGui.Combo("##favorMode", ref mode, modes, modes.Length)) {
-            _config.FavorMode = (WorkshopFavorMode)mode;
+        if (ImGui.Combo("##favourMode", ref mode, modes, modes.Length)) {
+            _config.FavourMode = (FavourMode)mode;
             _config.NotifyModified();
         }
-        ImGui.TextWrapped(_config.FavorMode switch {
-            WorkshopFavorMode.None => "Loads the archived Overseas Casuals schedule as-is. Use manual favor overrides if needed.",
-            WorkshopFavorMode.ReplaceWorkshop4 => "Workshops 1-3 keep the archive schedule. Workshop 4 is filled from the built-in favor solver, after crediting any favor crafts already produced by the recommended agenda.",
-            WorkshopFavorMode.MinMax => "Tries same-duration/category substitutions first, then places remaining favors on the lowest-value workshop slots so high-cowrie days stay intact when possible.",
-            WorkshopFavorMode.MinMaxFreeRestDay => "Same as min-max, but turns the archive's second rest day into a crafting day (C1 stays rest) so most favors can land on a \"free\" day.",
+        ImGui.TextWrapped(_config.FavourMode switch {
+            FavourMode.None => "Loads the archived Overseas Casuals schedule as-is. Use manual favour overrides if needed.",
+            FavourMode.ReplaceWorkshop4 => "Workshops 1-3 keep the archive schedule. Workshop 4 is filled from the built-in favour solver, after crediting any favour crafts already produced by the recommended agenda.",
+            FavourMode.MinMax => "Tries same-duration/category substitutions first, then places remaining favours on the lowest-value workshop slots so high-cowrie days stay intact when possible.",
+            FavourMode.MinMaxFreeRestDay => "Same as min-max, but turns the archive's second rest day into a crafting day (C1 stays rest) so most favours can land on a \"free\" day.",
             _ => "",
         });
 
         ImGui.Separator();
-        if (ImGui.Checkbox("Show advanced favor override controls", ref _config.UseFavorSolver))
+        if (ImGui.Checkbox("Show advanced favour override controls", ref _config.UseFavourSolver))
             _config.NotifyModified();
-        ImGui.TextWrapped("Shows manual favor-solver / clipboard override buttons on the Schedule tab.");
+        ImGui.TextWrapped("Shows manual favour-solver / clipboard override buttons on the Schedule tab.");
     }
 }

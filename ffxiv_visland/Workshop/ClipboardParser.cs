@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace visland.Workshop;
 
-internal unsafe class WorkshopClipboardParser(ExcelSheet<MJICraftworksObject> craftSheet, List<string> botNames) {
+internal unsafe class ClipboardParser(ExcelSheet<MJICraftworksObject> craftSheet, List<string> botNames) {
     public WorkshopSolver.Recs ParseRecs(string str) {
         var result = new WorkshopSolver.Recs();
 

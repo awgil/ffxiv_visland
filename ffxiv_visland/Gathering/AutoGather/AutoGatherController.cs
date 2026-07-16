@@ -5,12 +5,13 @@ using System.Linq;
 
 namespace visland.Gathering.AutoGather;
 
+// TODO: remove entirely? I don't think anyone uses this and it's totally scope creep
 public sealed class AutoGatherController : IDisposable {
-    private static readonly string[] AddonNames = ["Gathering", "GatheringMasterpiece"];
+    private static readonly string[] _addonNames = ["Gathering", "GatheringMasterpiece"];
 
     public AutoGatherController() {
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, AddonNames, OnAddonSetup);
-        Service.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, AddonNames, OnAddonFinalize);
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, _addonNames, OnAddonSetup);
+        Service.AddonLifecycle.RegisterListener(AddonEvent.PreFinalize, _addonNames, OnAddonFinalize);
     }
 
     public void Dispose() {
@@ -24,9 +25,9 @@ public sealed class AutoGatherController : IDisposable {
             case "Gathering":
                 exec.GatheringAM = new GatheringAddon.Gathering(args.Addon);
                 if (exec.CurrentRoute != null) {
-                    Service.TaskManager.Enqueue(() => exec.GatheringAM.GatheredItems.Any(x => x.ItemID != 0));
+                    Service.TaskManager.Enqueue(() => exec.GatheringAM.Items.Any(x => x.ItemID != 0));
                     Service.TaskManager.Enqueue(() => {
-                        exec.GatheredItem = exec.GatheringAM!.GatheredItems.FirstOrDefault(x => x.ItemID != 0 && x.ItemID == (uint)exec.CurrentRoute!.TargetGatherItem);
+                        exec.GatheredItem = exec.GatheringAM!.Items.FirstOrDefault(x => x.ItemID != 0 && x.ItemID == (uint)exec.CurrentRoute!.TargetGatherItem);
                         return exec.GatheredItem != null;
                     });
                 }

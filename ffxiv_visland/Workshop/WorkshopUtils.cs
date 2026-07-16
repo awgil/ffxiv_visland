@@ -69,10 +69,10 @@ public static unsafe class WorkshopUtils {
         return true;
     }
 
-    public static void RequestDemandFavors() {
-        Service.Log.Info("Fetching demand & favors");
+    public static void RequestDemandFavours() {
+        Service.Log.Info("Fetching demand & favours");
         MJIManager.Instance()->RequestDemandFull();
-        MJIManager.Instance()->RequestFavorData();
+        MJIManager.Instance()->RequestFavourData();
     }
 
     public static int GetMaxWorkshops() {

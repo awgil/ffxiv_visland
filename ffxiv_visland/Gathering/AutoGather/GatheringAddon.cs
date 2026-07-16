@@ -26,9 +26,6 @@ public static unsafe partial class GatheringAddon {
             }
         }
 
-        // Back-compat alias used by existing auto-gather call sites.
-        public GatheredItem[] GatheredItems => Items;
-
         public void Gather(int index) {
             var checkbox = CheckboxAt(index);
             if (checkbox == null || !checkbox->IsEnabled)
