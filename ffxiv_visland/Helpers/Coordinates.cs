@@ -19,7 +19,7 @@ internal class Coordinates {
 
     public static float ConvertRawPositionToMapCoordinate(float pos, float scale) {
         var num = scale / 100f;
-        return (float)((((pos / 1000f * num) + 1024.0) / 2048.0 * 41.0 / num) + 1.0);
+        return (float)((pos / 1000f * num + 1024.0) / 2048.0 * 41.0 / num + 1.0);
     }
 
     public static uint GetNearestAetheryte(uint zoneID, Vector3 pos) {

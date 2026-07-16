@@ -20,7 +20,7 @@ public unsafe class WorkshopDebug {
     private readonly string[] _itemNames;
 
     public WorkshopDebug() {
-        _itemNames = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Select(o => o.Item.Value.Name.ToString()).ToArray();
+        _itemNames = [.. Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Select(o => o.Item.Value.Name.ToString())];
     }
 
     public void Draw() {

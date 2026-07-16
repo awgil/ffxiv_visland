@@ -25,10 +25,10 @@ public class WorkshopSolverFavorSheet {
         Popularity = state.Popularity;
         if (state.CraftObjectIds.Any(i => i == 0))
             throw new Exception("Invalid state");
-        Favors = state.CraftObjectIds.Select(i => _sheet.GetRow(i)).ToArray();
+        Favors = [.. state.CraftObjectIds.Select(i => _sheet.GetRow(i))];
 
         Complete = [.. state.CompletedCounts];
-        Links = Favors.Select(BuildLinks).ToArray();
+        Links = [.. Favors.Select(BuildLinks)];
         Recs = [];
 
         var f4 = state.CraftObjectIds[0];
@@ -118,7 +118,7 @@ public class WorkshopSolverFavorSheet {
     }
 
     private List<MJICraftworksObject>[] BuildLinks(MJICraftworksObject o) {
-        List<MJICraftworksObject>[] links = [WorkshopSolver.Linked(o, 4).ToList(), WorkshopSolver.Linked(o, 6).ToList(), WorkshopSolver.Linked(o, 8).ToList()];
+        List<MJICraftworksObject>[] links = [[.. WorkshopSolver.Linked(o, 4)], [.. WorkshopSolver.Linked(o, 6)], [.. WorkshopSolver.Linked(o, 8)]];
         foreach (var l in links)
             l.SortByReverse(o => o.Value * Popularity.Multiplier(o.RowId));
         return links;

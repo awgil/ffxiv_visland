@@ -85,7 +85,7 @@ unsafe class PastureWindow : UIAttachedWindow {
         var haveNone = true;
         var anyOvercap = false;
         var allFull = true;
-        foreach ((uint itemId, int count) in mji->PastureHandler->AvailableMammetLeavings) {
+        foreach ((var itemId, var count) in mji->PastureHandler->AvailableMammetLeavings) {
             if (count <= 0)
                 continue;
             haveNone = false;

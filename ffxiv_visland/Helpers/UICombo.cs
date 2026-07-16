@@ -175,7 +175,7 @@ public static class UICombo {
         if (ImGui.InputText("##ExcelSheetComboSearch", ref _search, 128))
             _filtered = null;
         if (_filtered == null) {
-            _filtered = possibilities.Where(preFilter).Where(s => searchPredicate(s, _search)).Cast<object>().ToHashSet();
+            _filtered = [.. possibilities.Where(preFilter).Where(s => searchPredicate(s, _search)).Cast<object>()];
             _hoveredItem = 0;
         }
         var i = 0;

@@ -6,7 +6,7 @@ namespace visland;
 
 public class DataStore {
     public DataStore() {
-        rawCordialsData = GetSheet<Item>()
+        rawCordialsData = [.. GetSheet<Item>()
                 .Where(row => Enum.GetValues<CordialIDs>().Any(num => (uint)num == row.RowId))
                 .Select(row => (
                     Name: row.Name.ToString(),
@@ -14,7 +14,7 @@ public class DataStore {
                     CanBeHQ: row.CanBeHq,
                     NQGP: row.ItemAction.Value!.Data[0],
                     HQGP: row.ItemAction.Value.DataHQ[0]
-                )).ToArray();
+                ))];
 
         Cordials = [.. rawCordialsData
             .SelectMany((cordial, index) => cordial.CanBeHQ

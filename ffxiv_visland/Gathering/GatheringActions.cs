@@ -189,7 +189,7 @@ internal class GatheringActions {
 
         if (ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Scour.id) == 0 ||
             ActionManager.Instance()->GetActionStatus(ActionType.Action, actions.Collect) == 0) {
-            bool scrutiny = HasScrutiny();
+            var scrutiny = HasScrutiny();
             if (am.CurrentCollectability == 1000 || am.CurrentIntegrity == 1)
                 return actions.Collect;
 

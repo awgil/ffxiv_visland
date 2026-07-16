@@ -310,7 +310,7 @@ public class GatherRouteDB : Configuration.Node {
     public static void TryImport(GatherRouteDB RouteDB) {
         try {
             var data = ImGui.GetClipboardText();
-            (bool IsBase64, string? Json) = Utils.FromCompressedBase64(data);
+            (var IsBase64, var Json) = Utils.FromCompressedBase64(data);
             Route? import = null;
             if (IsBase64)
                 import = JsonConvert.DeserializeObject<Route>(Json);

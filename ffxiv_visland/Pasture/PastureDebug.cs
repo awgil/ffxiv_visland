@@ -16,12 +16,12 @@ public unsafe class PastureDebug {
         foreach (var n1 in _tree.Node($"State: level={mgr->IslandState.Pasture.Level}, htc={mgr->IslandState.Pasture.HoursToCompletion}, uc={mgr->IslandState.Pasture.UnderConstruction}, efc={mgr->IslandState.Pasture.EligibleForCare}", mgr->PastureHandler == null)) {
             _tree.LeafNode($"PastureH = {(nint)mgr->PastureHandler:X}");
             foreach (var n2 in _tree.Node("Animal -> leavings")) {
-                foreach ((uint k, var v) in mgr->PastureHandler->AnimalToLeavingItemIds) {
+                foreach ((var k, var v) in mgr->PastureHandler->AnimalToLeavingItemIds) {
                     _tree.LeafNode($"{k} = {v.Item1} '{Item.GetRef(v.Item1).ValueNullable?.Name ?? $"Unknown#{v.Item1}"}' / {v.Item2} '{Item.GetRef(v.Item2).ValueNullable?.Name ?? $"Unknown#{v.Item2}"}'");
                 }
             }
             foreach (var n2 in _tree.Node("Available Leavings")) {
-                foreach ((uint k, int v) in mgr->PastureHandler->AvailableMammetLeavings) {
+                foreach ((var k, var v) in mgr->PastureHandler->AvailableMammetLeavings) {
                     _tree.LeafNode($"{k} '{Item.GetRef(k).ValueNullable?.Name ?? $"Unknown#{k}"}' = {v}");
                 }
             }

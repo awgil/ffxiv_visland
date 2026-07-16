@@ -24,7 +24,7 @@ public class Configuration {
         // deserialize fields from json; default implementation should work fine for most cases
         public virtual void Deserialize(JObject j, JsonSerializer ser) {
             var type = GetType();
-            foreach ((string? f, var data) in j) {
+            foreach ((var f, var data) in j) {
                 var field = type.GetField(f);
                 if (field != null) {
                     var value = data?.ToObject(field.FieldType, ser);
@@ -70,7 +70,7 @@ public class Configuration {
             if (json["Payload"] is JObject payload) {
                 payload = ConvertConfig(payload, version);
                 var ser = BuildSerializer();
-                foreach ((string? t, var j) in payload) {
+                foreach ((var t, var j) in payload) {
                     var type = Type.GetType(t);
                     var node = type != null ? _nodes.GetValueOrDefault(type) : null;
                     if (node != null && j is JObject jObj) {

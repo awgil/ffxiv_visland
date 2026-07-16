@@ -389,7 +389,7 @@ public class GatherRouteExec : IDisposable {
 
     private void TryAddObjects(GatherRouteDB.Waypoint wp, IEnumerable<IGameObject> nodes) {
         List<GatherRouteDB.Waypoint>? waypoints = [];
-        waypoints = nodes.Select(obj => new GatherRouteDB.Waypoint {
+        waypoints = [.. nodes.Select(obj => new GatherRouteDB.Waypoint {
             IsPhantom = true,
             Position = Svc.Condition[ConditionFlag.Diving] ? obj.Position : NavmeshIPC.QueryMeshPointOnFloor(obj.Position, false, 5) ?? obj.Position,
             ZoneID = Svc.ClientState.TerritoryType,
@@ -399,7 +399,7 @@ public class GatherRouteExec : IDisposable {
             InteractWithPosition = obj.Position,
             Interaction = GatherRouteDB.InteractionType.Standard,
             Movement = Player.InclusiveFlying ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal
-        }).ToList();
+        })];
 
         if (waypoints.Count > 0)
             wp.AddWaypointsAfter(CurrentRoute!, waypoints);
@@ -407,7 +407,7 @@ public class GatherRouteExec : IDisposable {
 
     private void TryAddMarkers(GatherRouteDB.Waypoint wp, List<(MiniMapGatheringMarker Marker, Vector3 Position, float DistanceToLast, IGameObject? Node)> markers) {
         List<GatherRouteDB.Waypoint>? waypoints = [];
-        waypoints = markers.Select(marker => new GatherRouteDB.Waypoint {
+        waypoints = [.. markers.Select(marker => new GatherRouteDB.Waypoint {
             IsPhantom = true,
             Position = Svc.Condition[ConditionFlag.Diving] ? marker.Position : NavmeshIPC.QueryMeshPointOnFloor(marker.Position, false, 5) ?? marker.Position,
             ZoneID = Svc.ClientState.TerritoryType,
@@ -417,14 +417,14 @@ public class GatherRouteExec : IDisposable {
             InteractWithPosition = marker.Node?.Position ?? marker.Position,
             Interaction = GatherRouteDB.InteractionType.Standard,
             Movement = Svc.Condition[ConditionFlag.Diving] || marker.DistanceToLast > 30 ? GatherRouteDB.Movement.MountFly : GatherRouteDB.Movement.Normal
-        }).OrderBy(x => Vector3.Distance(Player.Position, x.Position)).ToList();
+        }).OrderBy(x => Vector3.Distance(Player.Position, x.Position))];
 
         if (waypoints.Count > 0)
             wp.AddWaypointsAfter(CurrentRoute!, waypoints);
     }
 
     private unsafe List<(MiniMapGatheringMarker Marker, Vector3 Position, float DistanceToLast, IGameObject? Node)> GetGatheringMarkers()
-        => AgentMap.Instance()->MiniMapGatheringMarkers.ToArray()
+        => [.. AgentMap.Instance()->MiniMapGatheringMarkers.ToArray()
             .Where(x => x.MapMarker.IconId != 0)
             .Select((marker, index) => {
                 var pos = new Vector3(marker.MapMarker.X / 16, Player.Position.Y, marker.MapMarker.Y / 16);
@@ -432,7 +432,7 @@ public class GatherRouteExec : IDisposable {
                 var obj = Svc.Objects.FirstOrDefault(o => o?.ObjectKind == ObjectKind.GatheringPoint && o.IsTargetable && o?.Position.X - CurrentRoute!.Waypoints[CurrentWaypoint].InteractWithPosition.X < 5 && o?.Position.Z - CurrentRoute.Waypoints[CurrentWaypoint].InteractWithPosition.Z < 5, null);
                 PluginLog.Debug($"Found {nameof(MiniMapGatheringMarker)} @ {pos} {(obj != null ? $"and matching object [{obj.BaseId}] {obj.Name.TextValue} @ {obj.Position}" : string.Empty)}");
                 return (Marker: marker, Position: obj != null ? obj.Position : pos, DistanceToLast: dist, Node: obj);
-            }).ToList();
+            })];
     #endregion
 
     #region Error Checking

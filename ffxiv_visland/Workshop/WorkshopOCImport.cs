@@ -22,7 +22,7 @@ public unsafe class WorkshopOCImport {
     public WorkshopSolver.Recs Recommendations = new();
 
     private readonly WorkshopConfig _config;
-    private readonly WorkshopSeasonDB _seasonDB;
+    private readonly WorkshopSeasonDB? _seasonDB;
     private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
     private readonly List<uint> _craftIds = [];
     private readonly List<string> _botNames;
@@ -33,9 +33,10 @@ public unsafe class WorkshopOCImport {
 
     public WorkshopOCImport() {
         _config = Service.Config.Get<WorkshopConfig>();
-        _seasonDB = new WorkshopSeasonDB();
+        if ((int)Service.ClientState.ClientLanguage <= 3)
+            _seasonDB = new WorkshopSeasonDB();
         _craftSheet = GetSheet<MJICraftworksObject>(); // unlocalised sheet can't be fetched in english
-        _botNames = _craftSheet.Select(r => OfficialNameToBotName(GetRow<Item>(r.Item.RowId, ClientLanguage.English)!.Value.Name.ExtractText())).ToList();
+        _botNames = [.. _craftSheet.Select(r => OfficialNameToBotName(GetRow<Item>(r.Item.RowId, ClientLanguage.English)!.Value.Name.ExtractText()))];
     }
 
     public void Update() {
@@ -46,18 +47,20 @@ public unsafe class WorkshopOCImport {
     public void Draw() {
         using var globalDisable = ImRaii.Disabled(_pendingActions.Count > 0);
 
-        var thisSeason = _seasonDB.CurrentSeason(false);
-        var nextSeason = _seasonDB.CurrentSeason(true);
-        ImGui.TextUnformatted($"Archive seasons {_seasonDB.RangeStart}-{_seasonDB.RangeEnd} (cycle {_seasonDB.CycleLength})");
-        ImGui.TextUnformatted($"This week → Season {thisSeason}" + (_seasonDB.TryGet(thisSeason, out var cur) ? $" ({cur.Date})" : " (missing)"));
-        ImGui.TextUnformatted($"Next week → Season {nextSeason}" + (_seasonDB.TryGet(nextSeason, out var nxt) ? $" ({nxt.Date})" : " (missing)"));
+        if (_seasonDB != null) {
+            var thisSeason = _seasonDB.CurrentSeason(false);
+            var nextSeason = _seasonDB.CurrentSeason(true);
+            ImGui.TextUnformatted($"Archive seasons {_seasonDB.RangeStart}-{_seasonDB.RangeEnd} (cycle {_seasonDB.CycleLength})");
+            ImGui.TextUnformatted($"This week → Season {thisSeason}" + (_seasonDB.TryGet(thisSeason, out var cur) ? $" ({cur.Date})" : " (missing)"));
+            ImGui.TextUnformatted($"Next week → Season {nextSeason}" + (_seasonDB.TryGet(nextSeason, out var nxt) ? $" ({nxt.Date})" : " (missing)"));
 
-        if (ImGui.Button("Load This Week"))
-            LoadSeasonRecs(false);
-        ImGui.SameLine();
-        if (ImGui.Button("Load Next Week"))
-            LoadSeasonRecs(true);
-        ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favor mode from Settings.");
+            if (ImGui.Button("Load This Week"))
+                LoadSeasonRecs(false);
+            ImGui.SameLine();
+            if (ImGui.Button("Load Next Week"))
+                LoadSeasonRecs(true);
+            ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favor mode from Settings.");
+        }
 
         if (ImGui.Button("Import Recommendations From Clipboard"))
             ImportRecsFromClipboard(false);
@@ -133,6 +136,11 @@ public unsafe class WorkshopOCImport {
 
     public void LoadSeasonRecs(bool nextWeek, bool silent = false) {
         try {
+            if (_seasonDB == null) {
+                ReportError("Workshop archive is not available on this client.", silent);
+                return;
+            }
+
             if (_config.FavorMode == WorkshopFavorMode.None) {
                 ApplySeason(nextWeek, null);
                 return;
@@ -155,11 +163,12 @@ public unsafe class WorkshopOCImport {
     }
 
     private void ApplySeason(bool nextWeek, WorkshopSolver.FavorState? favors) {
-        var season = _seasonDB.CurrentSeason(nextWeek);
-        var baseRecs = _seasonDB.BuildRecs(season);
+        var seasonDB = _seasonDB ?? throw new Exception("Workshop archive is not available on this client.");
+        var season = seasonDB.CurrentSeason(nextWeek);
+        var baseRecs = seasonDB.BuildRecs(season);
         Recommendations = favors == null || _config.FavorMode == WorkshopFavorMode.None
             ? baseRecs
-            : WorkshopFavorIntegration.Apply(baseRecs, _config.FavorMode, favors.Value, _craftSheet, _seasonDB.RestCycles(season));
+            : WorkshopFavorIntegration.Apply(baseRecs, _config.FavorMode, favors.Value, _craftSheet, seasonDB.RestCycles(season));
         _loadedSeason = season;
         _loadedNextWeek = nextWeek;
         Service.Log.Info($"Loaded workshop season {season} (favor mode {_config.FavorMode})");
@@ -187,7 +196,7 @@ public unsafe class WorkshopOCImport {
         var maxWorkshops = WorkshopUtils.GetMaxWorkshops();
 
         using var scrollSection = ImRaii.Child("ScrollableSection");
-        foreach ((int c, var r) in Recommendations.Enumerate()) {
+        foreach ((var c, var r) in Recommendations.Enumerate()) {
             ImGuiEx.TextV($"Cycle {c}:");
             ImGui.SameLine();
             if (ImGui.Button($"Set on Active Cycle##{c}"))
@@ -342,7 +351,7 @@ public unsafe class WorkshopOCImport {
                 nextSlot = 24;
                 curCycle = cycle;
             }
-            else if (l == "First 3 Workshops" || l == "All Workshops") {
+            else if (l is "First 3 Workshops" or "All Workshops") {
                 // just a sanity check...
                 if (!curRec.Empty)
                     throw new Exception("Unexpected start of 1st workshop recs");
@@ -395,9 +404,8 @@ public unsafe class WorkshopOCImport {
         return matchingRows.Count > 0 ? _craftSheet.GetRow((uint)matchingRows.First().i) : null;
     }
 
-
     private static bool IsMatch(string x, string y) => Regex.IsMatch(x, $@"\b{Regex.Escape(y)}\b");
-    private static object MatchingScore(string item, string line) {
+    private static int MatchingScore(string item, string line) {
         var score = 0;
 
         // primitive matching based on how long the string matches. Enough for now but could need expanding later
@@ -445,13 +453,13 @@ public unsafe class WorkshopOCImport {
     public static string OfficialNameToBotName(string name) {
         // why do they keep fucking changing this!?
         if (name.StartsWith("Isleworks "))
-            return name.Remove(0, 10);
+            return name[10..];
         //if (name.StartsWith("Isleberry "))
         //    return name.Remove(0, 10);
         if (name.StartsWith("Islefish "))
-            return name.Remove(0, 9);
+            return name[9..];
         if (name.StartsWith("Island "))
-            return name.Remove(0, 7);
+            return name[7..];
         if (name == "Mammet of the Cycle Award")
             return "Mammet Award";
         return name;
@@ -507,7 +515,7 @@ public unsafe class WorkshopOCImport {
             }
 
             var hasApplicable = false;
-            foreach ((int c, var r) in Recommendations.Enumerate()) {
+            foreach ((var c, var r) in Recommendations.Enumerate()) {
                 if ((completedCycles & (1u << (c - 1))) != 0)
                     continue;
                 if (c - 1 == cycleInProgress)
@@ -548,7 +556,7 @@ public unsafe class WorkshopOCImport {
 
             var appliedCycles = 0;
             var appliedSlots = 0;
-            foreach ((int c, var r) in Recommendations.Enumerate()) {
+            foreach ((var c, var r) in Recommendations.Enumerate()) {
                 if ((completedCycles & (1u << (c - 1))) != 0)
                     continue;
                 var minHour = c - 1 == cycleInProgress ? hourSinceStart : 0;
@@ -565,7 +573,7 @@ public unsafe class WorkshopOCImport {
                 throw new Exception("No cycles were applied");
 
             WorkshopUtils.ResetCurrentCycleToRefreshUI();
-            if (skippedMask != 0 || (cycleInProgress >= 0 && hourSinceStart > 0))
+            if (skippedMask != 0 || cycleInProgress >= 0 && hourSinceStart > 0)
                 Service.ChatGui.Print($"Applied {appliedSlots} craft(s) across {appliedCycles} cycle(s)", "visland");
         }
         catch (Exception ex) {

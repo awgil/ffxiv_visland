@@ -159,7 +159,7 @@ public sealed class Plugin : IDalamudPlugin {
     }
 
     internal void ExecuteTempRoute(string base64, bool once) {
-        (bool IsBase64, string? Json) = Utils.FromCompressedBase64(base64);
+        (var IsBase64, var Json) = Utils.FromCompressedBase64(base64);
         var route = Newtonsoft.Json.JsonConvert.DeserializeObject<GatherRouteDB.Route>(Json);
         if (route != null)
             _wndGather.Exec.Start(route, 0, true, !once);

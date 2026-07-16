@@ -35,7 +35,7 @@ public class GatherWindow : Window, IDisposable {
     private int selectedRouteIndex = -1;
     public static bool loop;
 
-    private readonly List<uint> Colours = GetSheet<UIColor>()!.Select(x => x.Dark).ToList();
+    private readonly List<uint> Colours = [.. GetSheet<UIColor>()!.Select(x => x.Dark)];
     private Vector4 greenColor = new Vector4(0x5C, 0xB8, 0x5C, 0xFF) / 0xFF;
     private Vector4 redColor = new Vector4(0xD9, 0x53, 0x4F, 0xFF) / 0xFF;
     private Vector4 yellowColor = new Vector4(0xD9, 0xD9, 0x53, 0xFF) / 0xFF;
@@ -510,7 +510,7 @@ public class GatherWindow : Window, IDisposable {
                 case InteractionType.None: break;
                 case InteractionType.Standard: break;
                 case InteractionType.StartRoute:
-                    if (UICombo.String("Route Name", RouteDB.Routes.Select(r => r.Name).ToArray(), ref wp.RouteName))
+                    if (UICombo.String("Route Name", [.. RouteDB.Routes.Select(r => r.Name)], ref wp.RouteName))
                         RouteDB.NotifyModified();
                     break;
                 case InteractionType.NodeScan:

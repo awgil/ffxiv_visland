@@ -17,24 +17,16 @@ public class WorkshopSeasonDB {
     public DateTime AnchorStart { get; private set; }
 
     private readonly Dictionary<int, SeasonRec> _seasons = [];
-    private readonly Dictionary<string, uint> _nameToId = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, uint> _nameToId = [with(StringComparer.OrdinalIgnoreCase)];
     private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
 
     public WorkshopSeasonDB() {
         _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         foreach (var row in _craftSheet) {
-            var item = Service.LuminaRow<Item>(row.Item.RowId);
-            if (item == null)
-                continue;
-            // Prefer English bot-style names; fall back to the client's language sheet.
-            var eng = Service.LuminaGameData.GetExcelSheet<Item>(Lumina.Data.Language.English)?.GetRowOrDefault(row.Item.RowId);
-            var name = eng != null
-                ? WorkshopOCImport.OfficialNameToBotName(eng.Value.Name.ExtractText())
-                : WorkshopOCImport.OfficialNameToBotName(item.Value.Name.ExtractText());
+            var name = WorkshopOCImport.OfficialNameToBotName(row.Item.WithLanguage(Lumina.Data.Language.English).Value.Name.ExtractText());
             if (!string.IsNullOrEmpty(name))
                 _nameToId.TryAdd(name, row.RowId);
         }
-
         LoadEmbedded();
     }
 
@@ -96,19 +88,19 @@ public class WorkshopSeasonDB {
 
     private void LoadEmbedded() {
         var asm = Assembly.GetExecutingAssembly();
-        using var stream = asm.GetManifestResourceStream("visland.Workshop.Data.workshop-seasons.json")
-            ?? throw new Exception("Embedded workshop-seasons.json not found");
+        using var stream = asm.GetManifestResourceStream("visland.Workshop.Data.workshop-seasons.json") ?? throw new Exception("Embedded resource visland.Workshop.Data.workshop-seasons.json not found");
         using var reader = new StreamReader(stream);
         var root = JObject.Parse(reader.ReadToEnd());
 
-        var range = root["range"]!.ToObject<int[]>()!;
+        var range = root["range"]?.ToObject<int[]>() ?? throw new Exception("workshop-seasons.json: missing range");
         RangeStart = range[0];
         RangeEnd = range[1];
         CycleLength = root["cycleLength"]?.Value<int>() ?? (RangeEnd - RangeStart + 1);
         AnchorSeason = root["anchorSeason"]?.Value<int>() ?? RangeEnd;
         AnchorStart = DateTime.Parse(root["anchorStart"]?.Value<string>() ?? "2026-07-07").Date;
 
-        foreach (var prop in ((JObject)root["seasons"]!).Properties()) {
+        var seasons = (JObject)root["seasons"]!;
+        foreach (var prop in seasons.Properties()) {
             var season = int.Parse(prop.Name);
             var cycles = new Dictionary<int, CycleRec>();
             foreach (var cycleProp in ((JObject)prop.Value["cycles"]!).Properties()) {
@@ -119,10 +111,9 @@ public class WorkshopSeasonDB {
                     continue;
                 }
 
-                cycles[cycle] = new CycleRec {
-                    Main = ResolveCrafts(obj["main"] as JArray, season, cycle, "main"),
-                    Ws4 = ResolveCrafts(obj["ws4"] as JArray, season, cycle, "ws4"),
-                };
+                var main = ResolveCrafts(obj["main"] as JArray, season, cycle, "main");
+                var ws4 = ResolveCrafts(obj["ws4"] as JArray, season, cycle, "ws4");
+                cycles[cycle] = new CycleRec { Main = main, Ws4 = ws4 };
             }
             _seasons[season] = new SeasonRec {
                 Season = season,
@@ -137,14 +128,13 @@ public class WorkshopSeasonDB {
     private List<uint>? ResolveCrafts(JArray? names, int season, int cycle, string workshop) {
         if (names == null || names.Count == 0)
             return null;
+
         var ids = new List<uint>(names.Count);
         foreach (var token in names) {
             var name = token.Value<string>() ?? "";
             if (!_nameToId.TryGetValue(name, out var id)) {
                 var match = _nameToId.Keys.Where(n => n.Length > 0 && name.Contains(n, StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(n => n.Length).FirstOrDefault();
-                if (match == null)
-                    throw new Exception($"Season {season} C{cycle} {workshop}: unknown craft '{name}'");
+                    .OrderByDescending(n => n.Length).FirstOrDefault() ?? throw new Exception($"Season {season} C{cycle} {workshop}: unknown craft '{name}'");
                 id = _nameToId[match];
                 Service.Log.Warning($"Season {season} C{cycle} {workshop}: resolved '{name}' → '{match}'");
             }
