@@ -18,14 +18,11 @@ public class WorkshopSolverFavourSheet {
     public List<MJICraftworksObject>[][] Links; // [i][j] = links of duration j for favour i
     public Strategy Plan;
 
-    private readonly ExcelSheet<MJICraftworksObject> _sheet;
-
     public WorkshopSolverFavourSheet(WorkshopSolver.FavourState state) {
-        _sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         Popularity = state.Popularity;
         if (state.CraftObjectIds.Any(i => i == 0))
             throw new Exception("Invalid state");
-        Favours = [.. state.CraftObjectIds.Select(i => _sheet.GetRow(i))];
+        Favours = [.. state.CraftObjectIds.Select(i => MJICraftworksObject.Get().GetRow(i))];
 
         Complete = [.. state.CompletedCounts];
         Links = [.. Favours.Select(BuildLinks)];
@@ -131,7 +128,7 @@ public class WorkshopSolverFavourSheet {
         foreach (var obj in objs) {
             if (obj == 0)
                 throw new Exception($"Invalid obj id {obj}");
-            if (_sheet.TryGetRow(obj, out var row)) {
+            if (MJICraftworksObject.GetRow(obj) is { } row) {
                 rec.Add(hour, obj);
                 var iFav = Array.FindIndex(Favours, o => o.RowId == obj);
                 if (iFav >= 0) {

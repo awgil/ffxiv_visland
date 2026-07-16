@@ -18,7 +18,7 @@ public unsafe class WorkshopDebug {
     private readonly string[] _itemNames;
 
     public WorkshopDebug() {
-        _itemNames = [.. Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Select(o => o.Item.Value.Name.ToString())];
+        _itemNames = [.. MJICraftworksObject.Get().Select(o => o.Item.Value.Name.ToString())];
     }
 
     public void Draw() {
@@ -36,7 +36,7 @@ public unsafe class WorkshopDebug {
         _tree.LeafNode($"Current week: #{curWeek.index}, started at {curWeek.startTime}");
 
         var ad = AgentMJICraftSchedule.Instance()->Data;
-        var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
+        var sheet = MJICraftworksObject.Get(Dalamud.Game.ClientLanguage.English);
         foreach (var na in _tree.Node($"Agent data: {(nint)ad:X}", ad == null)) {
             _tree.LeafNode($"updatestate={ad->UpdateState}, level={ad->IslandLevel}");
             _tree.LeafNode($"addons: modal={ad->OpenedModalAddonHandle} ({ad->OpenedModalAddonId}, review={ad->ReviewMaterialsAddonHandle}, confirm={ad->ConfirmAddonHandle}");
@@ -164,7 +164,7 @@ public unsafe class WorkshopDebug {
         foreach (var n in _tree.Node($"{tag}: {w.NumScheduleEntries} entries, {w.NumEfficientCrafts} eff, {w.UsedTimeSlots:X} used", w.NumScheduleEntries == 0)) {
             for (var j = 0; j < w.NumScheduleEntries; ++j) {
                 ref var e = ref w.EntryData[j];
-                _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({Service.LuminaRow<MJICraftworksObject>(e.CraftObjectId)?.Item.Value.Name}), flags={e.Flags} startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started}, efficient={e.Efficient}");
+                _tree.LeafNode($"Item {j}: {e.CraftObjectId} ({MJICraftworksObject.GetRow(e.CraftObjectId)?.Item.Value.Name}), flags={e.Flags} startslot={e.StartingSlot}, dur={e.Duration}, started={e.Started}, efficient={e.Efficient}");
             }
         }
     }
@@ -173,14 +173,13 @@ public unsafe class WorkshopDebug {
         _tree.LeafNode($"index={entry.EntryIndex} unk={entry.uDC}");
         for (var i = 0; i < 109; ++i)
             if (entry.UsedAmounts[i] != 0)
-                _tree.LeafNode($"{Service.LuminaRow<MJIItemPouch>((uint)i)?.Item.Value.Name} = {entry.UsedAmounts[i]}");
+                _tree.LeafNode($"{MJIItemPouch.GetRow((uint)i)?.Item.Value.Name} = {entry.UsedAmounts[i]}");
     }
 
     private void DrawPopularity(string tag, byte index) {
-        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
-        var pop = Service.LuminaRow<MJICraftworksPopularity>(index)!;
+        var pop = MJICraftworksPopularity.GetRow(index)!;
         foreach (var np in _tree.Node($"{tag} popularity={index}")) {
-            _tree.LeafNodes(sheetCraft.Where(o => o.RowId > 0), o => {
+            _tree.LeafNodes(MJICraftworksObject.Get().Where(o => o.RowId > 0), o => {
                 if (o.RowId < pop.Value.Popularity.Count)
                     return $"{o.RowId} '{o.Item.Value.Name}' = {pop.Value.Popularity[(int)o.RowId].Value.Ratio}";
                 else
@@ -194,16 +193,15 @@ public unsafe class WorkshopDebug {
         foreach (var n in _tree.Node($"{tag} favour state")) {
             for (var i = 0; i < 3; ++i) {
                 var idx = f->CraftObjectIds[i + offset];
-                _tree.LeafNode($"{idx} '{Service.LuminaRow<MJICraftworksObject>(idx)?.Item.Value.Name}': delivered={f->NumDelivered[i + offset]}, scheduled={f->NumScheduled[i + offset]}, bonus={f->Bonus(i + offset)}, shipped={f->Shipped(i + offset)}");
+                _tree.LeafNode($"{idx} '{MJICraftworksObject.GetRow(idx)?.Item.Value.Name}': delivered={f->NumDelivered[i + offset]}, scheduled={f->NumScheduled[i + offset]}, bonus={f->Bonus(i + offset)}, shipped={f->Shipped(i + offset)}");
             }
         }
     }
 
     private void DrawFavourSetup(int idx, int duration, int req) {
-        var sheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
         ImGui.TextV($"{duration}h:");
         ImGui.SameLine();
-        UICombo.UInt($"###c{idx}", _itemNames, ref _favourState.CraftObjectIds[idx], i => i != 0 && sheet.GetRow(i).CraftingTime == duration);
+        UICombo.UInt($"###c{idx}", _itemNames, ref _favourState.CraftObjectIds[idx], i => i != 0 && MJICraftworksObject.GetRow(i)?.CraftingTime == duration);
         ImGui.SameLine();
         ImGui.DragInt($"###r{idx}", ref _favourState.CompletedCounts[idx], 0.03f, 0, req);
     }

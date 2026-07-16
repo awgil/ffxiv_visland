@@ -4,6 +4,7 @@ using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using visland.Helpers;
 
 namespace visland.Workshop;
 
@@ -31,12 +32,11 @@ internal unsafe class FavourReader(List<string> botNames) {
             throw new Exception($"Favour data not available: {state->UpdateState}");
         }
 
-        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>(Language.English)!;
         var res = "/favors";
         var offset = nextWeek ? 6 : 3;
         for (var i = 0; i < 3; ++i) {
             var id = state->CraftObjectIds[offset + i];
-            var name = sheetCraft.GetRow(id).Item.Value.Name;
+            var name = MJICraftworksObject.GetRow(id)?.WithLanguage(Language.English).Item.Value.Name ?? string.Empty;
             if (!name.IsEmpty)
                 res += $" favor{i + 1}:{botNames[id].Replace("\'", "")}";
         }

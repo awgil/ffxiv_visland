@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using visland.Helpers;
 
 namespace visland.Workshop;
 
@@ -21,11 +22,9 @@ public class WorkshopSeasonDB {
 
     private readonly Dictionary<int, SeasonRec> _seasons = [];
     private readonly Dictionary<string, uint> _nameToId = [with(StringComparer.OrdinalIgnoreCase)];
-    private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
 
     public WorkshopSeasonDB() {
-        _craftSheet = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
-        foreach (var row in _craftSheet) {
+        foreach (var row in MJICraftworksObject.Get()) {
             var name = OSCHandler.OfficialNameToBotName(row.Item.Value.Name.ExtractText());
             if (!string.IsNullOrEmpty(name))
                 _nameToId.TryAdd(name, row.RowId);
@@ -79,7 +78,7 @@ public class WorkshopSeasonDB {
         var rec = new WorkshopSolver.WorkshopRec();
         var hour = 0;
         foreach (var id in crafts) {
-            if (!_craftSheet.TryGetRow(id, out var row))
+            if (MJICraftworksObject.GetRow(id) is not { } row)
                 throw new Exception($"Unknown craftworks id {id}");
             rec.Add(hour, id);
             hour += row.CraftingTime;

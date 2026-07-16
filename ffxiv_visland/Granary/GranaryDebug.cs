@@ -33,9 +33,9 @@ public unsafe class GranaryDebug {
                         var i = 0;
                         foreach (var e in agent->Data->Expeditions.AsSpan()) {
                             foreach (var k in _tree.Node($"[{i++}] {e.ExpeditionId} '{e.Name}'")) {
-                                _tree.LeafNode($"[rare] {e.RareItemId} '{Service.LuminaRow<Item>(e.RareItemId)?.Name}' {e.RareIconId}");
+                                _tree.LeafNode($"[rare] {e.RareItemId} '{Item.GetRow(e.RareItemId)?.Name}' {e.RareIconId}");
                                 for (var j = 0; j < e.NumNormalItems; ++j)
-                                    _tree.LeafNode($"[{j}] {e.NormalItemIds[j]} '{Service.LuminaRow<Item>(e.NormalItemIds[j])?.Name}' {e.NormalIconIds[j]}");
+                                    _tree.LeafNode($"[{j}] {e.NormalItemIds[j]} '{Item.GetRow(e.NormalItemIds[j])?.Name}' {e.NormalIconIds[j]}");
                             }
                         }
                     }
@@ -71,7 +71,7 @@ public unsafe class GranaryDebug {
     }
 
     private unsafe void DrawGranaryState(int i, ref MJIGranaryState state) {
-        var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({Service.LuminaRow<MJIName>(state.ActiveExpeditionId + 1u)!.Value.Singular}) {state.RemainingDays}days" : "none";
+        var expedition = state.RemainingDays > 0 ? $"{state.ActiveExpeditionId} ({MJIName.GetRow(state.ActiveExpeditionId + 1u)!.Value.Singular}) {state.RemainingDays}days" : "none";
         foreach (var _ in _tree.Node($"G{i}: {expedition}, finish-at={DateTimeOffset.FromUnixTimeSeconds(state.FinishTime)}")) {
             DrawGranaryItem("rare", state.RareResourcePouchId, state.RareResourceCount);
             for (var k = 0; k < 20; ++k)
@@ -82,7 +82,7 @@ public unsafe class GranaryDebug {
     private unsafe void DrawGranaryItem(string prompt, uint mjiPouchId, int count) {
         if (count <= 0)
             return;
-        var item = Service.LuminaRow<MJIItemPouch>(mjiPouchId)!.Value.Item;
+        var item = MJIItemPouch.GetRow(mjiPouchId)!.Value.Item;
         var avail = Utils.NumItems(item.RowId);
         _tree.LeafNode($"[{prompt}] {mjiPouchId} {item.Value!.Name}: {avail}+{count}");
     }

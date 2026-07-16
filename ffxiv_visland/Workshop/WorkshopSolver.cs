@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using visland.Helpers;
 
 namespace visland.Workshop;
 
@@ -80,7 +81,7 @@ public class WorkshopSolver {
         public float Multiplier(uint objId) => objId < _values.Length ? 0.01f * _values[objId] : 1;
 
         public void Set(uint rowId) {
-            var popRow = Service.LuminaRow<MJICraftworksPopularity>(rowId);
+            var popRow = MJICraftworksPopularity.GetRow(rowId);
             _values = popRow != null ? new int[popRow.Value.Popularity.Count] : [];
             for (var i = 0; i < _values.Length; ++i)
                 _values[i] = popRow?.Popularity[i].Value.Ratio ?? 100;
@@ -118,5 +119,5 @@ public class WorkshopSolver {
         return l1 == r1 || l1 == r2 || l2 != 0 && (l2 == r1 || l2 == r2);
     }
 
-    public static IEnumerable<MJICraftworksObject> Linked(MJICraftworksObject obj, int duration) => Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!.Where(o => o.CraftingTime == duration && IsLinked(o, obj));
+    public static IEnumerable<MJICraftworksObject> Linked(MJICraftworksObject obj, int duration) => MJICraftworksObject.Get()!.Where(o => o.CraftingTime == duration && IsLinked(o, obj));
 }

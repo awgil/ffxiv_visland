@@ -12,7 +12,6 @@ public unsafe class PastureDebug {
 
     public void Draw() {
         var mgr = MJIManager.Instance();
-        var sheetItem = Service.LuminaGameData.GetExcelSheet<Item>()!;
         foreach (var n1 in _tree.Node($"State: level={mgr->IslandState.Pasture.Level}, htc={mgr->IslandState.Pasture.HoursToCompletion}, uc={mgr->IslandState.Pasture.UnderConstruction}, efc={mgr->IslandState.Pasture.EligibleForCare}", mgr->PastureHandler == null)) {
             _tree.LeafNode($"PastureH = {(nint)mgr->PastureHandler:X}");
             foreach (var n2 in _tree.Node("Animal -> leavings")) {
@@ -26,8 +25,8 @@ public unsafe class PastureDebug {
                 }
             }
             foreach (var n2 in _tree.Node("Animals")) {
-                var sheetAnimals = Service.LuminaGameData.GetExcelSheet<MJIAnimals>()!; // AnimalType is row here
-                var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
+                var sheetAnimals = MJIAnimals.Get(); // AnimalType is row here
+                var sheetName = BNpcName.Get();
                 foreach (ref var a in mgr->PastureHandler->MJIAnimals) {
                     if (!sheetName.TryGetRow(a.BNPCNameId, out var baseName)) {
                         _tree.LeafNode($"Unknown animal type {a.AnimalType} '{a.NicknameString}'");
@@ -41,7 +40,7 @@ public unsafe class PastureDebug {
                         _tree.LeafNode($"Mood={a.Mood}, food={a.FoodLevel} hours");
                         _tree.LeafNode($"Have leavings: {a.ManualLeavingsAvailable}");
                         _tree.LeafNode($"Care: cared={a.UnderCare}, paid={a.WasUnderCare}, halted={a.CareHalted}");
-                        if (sheetItem.TryGetRow(a.AutoFoodItemId, out var food)) {
+                        if (Item.GetRow(a.AutoFoodItemId) is { } food) {
                             _tree.LeafNode($"Mammet Food: {food.RowId} '{food.Name}");
                         }
                         _tree.LeafNode($"Mammet Collect: {a.AutoAvailableLeavings1} / {a.AutoAvailableLeavings2}");
@@ -66,7 +65,7 @@ public unsafe class PastureDebug {
                         _tree.LeafNode($"ObjectID: {a.EntityId:X}");
                         _tree.LeafNode($"Rarity: {a.Desc.Rarity}");
                         _tree.LeafNode($"Sort: {a.Desc.Sort}");
-                        if (sheetItem.TryGetRow(a.Desc.Leaving1ItemId, out var r1) && sheetItem.TryGetRow(a.Desc.Leaving2ItemId, out var r2)) {
+                        if (Item.GetRow(a.Desc.Leaving1ItemId) is { } r1 && Item.GetRow(a.Desc.Leaving2ItemId) is { } r2) {
                             _tree.LeafNode($"Rewards: {a.Desc.Leaving1ItemId} '{r1.Name}' / {a.Desc.Leaving2ItemId} '{r2.Name}'");
                         }
                         _tree.LeafNode($"Food: {a.FoodItemId} '{a.FoodName}' ({a.FoodLink}) {a.FoodItemCategoryId} {a.FoodCount}");
@@ -75,7 +74,7 @@ public unsafe class PastureDebug {
                 }
             }
             foreach (var n2 in _tree.Node("Animals")) {
-                var sheetName = Service.LuminaGameData.GetExcelSheet<BNpcName>()!;
+                var sheetName = BNpcName.Get();
                 foreach (ref readonly var a in agent->AnimalDescs.AsSpan()) {
                     if (!sheetName.TryGetRow(a.BNpcNameId, out var baseName)) {
                         _tree.LeafNode($"Unknown animal type {a.AnimalRowId} '{a.Nickname}'");
@@ -84,7 +83,7 @@ public unsafe class PastureDebug {
                     foreach (var n3 in _tree.Node($"{a.AnimalRowId} '{a.Nickname}'/{baseName.Singular}")) {
                         _tree.LeafNode($"Rarity: {a.Rarity}");
                         _tree.LeafNode($"Sort: {a.Sort}");
-                        if (sheetItem.TryGetRow(a.Leaving1ItemId, out var r1) && sheetItem.TryGetRow(a.Leaving2ItemId, out var r2)) {
+                        if (Item.GetRow(a.Leaving1ItemId) is { } r1 && Item.GetRow(a.Leaving2ItemId) is { } r2) {
                             _tree.LeafNode($"Rewards: {a.Leaving1ItemId} '{r1.Name}' / {a.Leaving2ItemId} '{r2.Name}'");
                         }
                     }

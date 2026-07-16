@@ -3,6 +3,7 @@ using Dalamud.Bindings.ImGui;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
+using visland.Helpers;
 
 namespace visland.Workshop;
 
@@ -12,7 +13,7 @@ public class WorkshopManual {
 
     public void Draw() {
         ImGui.InputText("Filter", ref _filter, 256);
-        var sheetCraft = Service.LuminaGameData.GetExcelSheet<MJICraftworksObject>()!;
+        var sheetCraft = MJICraftworksObject.Get();
         foreach (var row in sheetCraft) {
             var name = row.Item.Value.Name.ToString() ?? "";
             if (name.Length == 0 || !name.Contains(_filter, StringComparison.InvariantCultureIgnoreCase))

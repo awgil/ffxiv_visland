@@ -79,5 +79,5 @@ public static unsafe class GranaryUtils {
 
     public static int MaxDays() => Utils.NumCowries() / 50;
 
-    private static bool WillOvercap(uint pouchId, int count) => Utils.NumItems(Service.LuminaRow<MJIItemPouch>(pouchId)!.Value.Item.RowId) + count > 999;
+    private static bool WillOvercap(uint pouchId, int count) => Utils.NumItems(MJIItemPouch.GetRow(pouchId)!.Value.Item.RowId) + count > 999;
 }

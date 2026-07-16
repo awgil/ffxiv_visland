@@ -10,8 +10,6 @@ public unsafe class FarmDebug {
 
     public void Draw() {
         var mgr = MJIManager.Instance();
-        var sheetItem = Service.LuminaGameData.GetExcelSheet<Item>()!;
-        var sheetCrop = Service.LuminaGameData.GetExcelSheet<MJICropSeed>()!;
         foreach (var n1 in _tree.Node($"State: level={mgr->IslandState.Farm.Level}, htc={mgr->IslandState.Farm.HoursToCompletion}, uc={mgr->IslandState.Farm.UnderConstruction}, efc={mgr->IslandState.Farm.EligibleForCare}", mgr->FarmState == null)) {
             _tree.LeafNode($"Expected total yield: {mgr->FarmState->ExpectedTotalYield}");
             _tree.LeafNode($"Layout state: {mgr->FarmState->LayoutInitialized} {mgr->FarmState->ReactionEventObjectRowId}");
@@ -19,7 +17,7 @@ public unsafe class FarmDebug {
 
             foreach (var n2 in _tree.Node("Slots")) {
                 for (var i = 0; i < 20; ++i) {
-                    var name = sheetCrop.TryGetRow(mgr->FarmState->SeedType[i], out var crop) ? crop.Name.Value.Singular : $"Unknown#{mgr->FarmState->SeedType[i]}";
+                    var name = MJICropSeed.GetRow(mgr->FarmState->SeedType[i]) is { } crop ? crop.Name.Value.Singular : $"Unknown#{mgr->FarmState->SeedType[i]}";
                     _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{name}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }

@@ -138,8 +138,7 @@ public unsafe class FarmWindow : UIAttachedWindow {
         if (agent == null || agent->TotalAvailableYield <= 0 || mji == null || mji->FarmState == null)
             return CollectResult.NothingToCollect;
 
-        var sheet = Service.LuminaGameData.GetExcelSheet<MJICropSeed>()!;
-        var perCropYield = new int[sheet.Count];
+        var perCropYield = new int[MJICropSeed.Get().Count];
         for (var i = 0; i < 20; ++i) {
             var seed = mji->FarmState->SeedType[i];
             if (seed != 0) {
@@ -153,7 +152,7 @@ public unsafe class FarmWindow : UIAttachedWindow {
             if (perCropYield[i] == 0)
                 continue;
 
-            var inventory = Utils.NumItems(sheet.GetRow((uint)i)!.Item.RowId);
+            var inventory = Utils.NumItems(MJICropSeed.GetRow((uint)i)!.Value.Item.RowId);
             allFull &= inventory >= 999;
             anyOvercap |= inventory + perCropYield[i] > 999;
         }

@@ -29,10 +29,6 @@ public class Service {
     [PluginService] public static IAetheryteList AetheryteList { get; private set; } = null!;
     [PluginService] public static IPlayerState PlayerState { get; private set; } = null!;
 
-    public static Lumina.GameData LuminaGameData => DataManager.GameData;
-    public static Lumina.Excel.ExcelSheet<T>? LuminaSheet<T>() where T : struct, Lumina.Excel.IExcelRow<T> => LuminaGameData?.GetExcelSheet<T>(Lumina.Data.Language.English);
-    public static T? LuminaRow<T>(uint row) where T : struct, Lumina.Excel.IExcelRow<T> => LuminaSheet<T>()?.GetRowOrDefault(row);
-
     public static Configuration Config = new();
     public static Retainers Retainers { get; private set; } = null!;
     public static TaskManager TaskManager { get; private set; } = null!;

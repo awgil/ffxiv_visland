@@ -10,7 +10,7 @@ namespace visland.Workshop;
 
 public static unsafe class WorkshopUtils {
     public static (long index, DateTime startTime) CurrentWeek() {
-        var cycleData = Service.LuminaRow<CycleTime>(2)!;
+        var cycleData = CycleTime.GetRow(2)!;
         var now = DateTimeOffset.Now.ToUnixTimeSeconds();
         var index = (now - cycleData.Value.FirstCycle) / cycleData.Value.Cycle;
         var startTime = cycleData.Value.FirstCycle + cycleData.Value.Cycle * index;
