@@ -29,7 +29,7 @@ public class Service {
     [PluginService] public static IAetheryteList AetheryteList { get; private set; } = null!;
     [PluginService] public static IPlayerState PlayerState { get; private set; } = null!;
 
-    public static Configuration Config = new();
+    public static Configuration Config { get; private set; } = null!;
     public static Retainers Retainers { get; private set; } = null!;
     public static TaskManager TaskManager { get; private set; } = null!;
     public static NavmeshIPC Navmesh { get; private set; } = null!;
@@ -40,6 +40,7 @@ public class Service {
     public static void Init(IDalamudPluginInterface pi) {
         try {
             pi.Create<Service>();
+            Config = new();
             Config.Initialize(pi.ConfigFile);
             TaskManager = new TaskManager { AbortOnTimeout = true, TimeLimitMS = 20000 };
             Navmesh = new NavmeshIPC();
