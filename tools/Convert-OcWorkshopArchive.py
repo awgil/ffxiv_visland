@@ -20,6 +20,40 @@ IMG_RE = re.compile(r'<img[^>]*>', re.I)
 TAG_RE = re.compile(r'<[^>]+>')
 
 
+def official_name_to_bot_name(name: str) -> str:
+    if name.startswith('Isleworks '):
+        return name[10:]
+    if name.startswith('Islefish '):
+        return name[9:]
+    if name.startswith('Island '):
+        return name[7:]
+    if name == 'Mammet of the Cycle Award':
+        return 'Mammet Award'
+    return name
+
+
+def load_craft_map(path: Path) -> dict[str, int]:
+    raw = json.loads(path.read_text(encoding='utf-8'))
+    return {k: int(v) for k, v in raw.items()}
+
+
+def resolve_craft_name(name: str, craft_map: dict[str, int]) -> int:
+    for candidate in (name, official_name_to_bot_name(name)):
+        if candidate in craft_map:
+            return craft_map[candidate]
+    matches = [key for key in craft_map if key and key.lower() in name.lower()]
+    if not matches:
+        raise KeyError(name)
+    best = max(matches, key=len)
+    if best != name:
+        print(f"Resolved '{name}' -> '{best}'", file=sys.stderr)
+    return craft_map[best]
+
+
+def resolve_crafts(names: list[str], craft_map: dict[str, int]) -> list[int]:
+    return [resolve_craft_name(name, craft_map) for name in names]
+
+
 def clean_html(fragment: str) -> str:
     text = IMG_RE.sub(' ', fragment)
     text = re.sub(r'<br\s*/?>', '\n', text, flags=re.I)
@@ -121,7 +155,22 @@ def extract_seasons(html_text: str) -> dict[int, dict]:
     return seasons
 
 
-def build_payload(seasons: dict[int, dict], start: int, end: int) -> dict:
+def resolve_cycle_crafts(cycles: dict, craft_map: dict[str, int]) -> dict:
+    resolved: dict = {}
+    for cycle, day in cycles.items():
+        if day.get('rest'):
+            resolved[cycle] = {'rest': True}
+            continue
+        entry: dict = {}
+        if 'main' in day:
+            entry['main'] = resolve_crafts(day['main'], craft_map)
+        if 'ws4' in day:
+            entry['ws4'] = resolve_crafts(day['ws4'], craft_map)
+        resolved[cycle] = entry
+    return resolved
+
+
+def build_payload(seasons: dict[int, dict], start: int, end: int, craft_map: dict[str, int]) -> dict:
     selected = {}
     missing = []
     for season in range(start, end + 1):
@@ -131,7 +180,7 @@ def build_payload(seasons: dict[int, dict], start: int, end: int) -> dict:
         entry = seasons[season]
         selected[str(season)] = {
             'date': entry['date'],
-            'cycles': entry['cycles'],
+            'cycles': resolve_cycle_crafts(entry['cycles'], craft_map),
         }
 
     payload = {
@@ -152,13 +201,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('html', type=Path, help='DiscordChatExporter HTML archive')
     parser.add_argument('-o', '--output', type=Path, required=True, help='Output JSON path')
+    default_craft_map = Path(__file__).resolve().parent.parent / 'ffxiv_visland' / 'Workshop' / 'Data' / 'mji-craft-map.json'
+    parser.add_argument('--craft-map', type=Path, default=default_craft_map,
+                        help='Bot craft name -> MJICraftworksObject row id map')
     parser.add_argument('--start', type=int, default=104)
     parser.add_argument('--end', type=int, default=203)
     args = parser.parse_args()
 
+    craft_map = load_craft_map(args.craft_map)
     html_text = args.html.read_text(encoding='utf-8')
     seasons = extract_seasons(html_text)
-    payload = build_payload(seasons, args.start, args.end)
+    payload = build_payload(seasons, args.start, args.end, craft_map)
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')

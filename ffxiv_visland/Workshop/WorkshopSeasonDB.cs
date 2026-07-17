@@ -1,4 +1,3 @@
-using Lumina.Excel;
 using Lumina.Excel.Sheets;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,8 +10,6 @@ using visland.Helpers;
 namespace visland.Workshop;
 
 // the 100 season solved cycle from the OSC discord
-// TODO: use the script again and replace the json once we're at week 259
-// also TODO: do the bot names -> real conversion out-of-plugin so I don't have to force english sheets on CN/KR
 public class WorkshopSeasonDB {
     public int RangeStart { get; private set; }
     public int RangeEnd { get; private set; }
@@ -21,16 +18,8 @@ public class WorkshopSeasonDB {
     public DateTime AnchorStart { get; private set; }
 
     private readonly Dictionary<int, SeasonRec> _seasons = [];
-    private readonly Dictionary<string, uint> _nameToId = [with(StringComparer.OrdinalIgnoreCase)];
 
-    public WorkshopSeasonDB() {
-        foreach (var row in MJICraftworksObject.Get()) {
-            var name = OSCHandler.OfficialNameToBotName(row.Item.Value.Name.ExtractText());
-            if (!string.IsNullOrEmpty(name))
-                _nameToId.TryAdd(name, row.RowId);
-        }
-        LoadEmbedded();
-    }
+    public WorkshopSeasonDB() => LoadEmbedded();
 
     public int SeasonForWeek(DateTime weekStart, bool nextWeek = false) {
         var weeksFromAnchor = (int)Math.Floor((weekStart.Date - AnchorStart.Date).TotalDays / 7.0);
@@ -113,9 +102,10 @@ public class WorkshopSeasonDB {
                     continue;
                 }
 
-                var main = ResolveCrafts(obj["main"] as JArray, season, cycle, "main");
-                var ws4 = ResolveCrafts(obj["ws4"] as JArray, season, cycle, "ws4");
-                cycles[cycle] = new CycleRec { Main = main, Ws4 = ws4 };
+                cycles[cycle] = new CycleRec {
+                    Main = ParseCraftIds(obj["main"] as JArray, season, cycle, "main"),
+                    Ws4 = ParseCraftIds(obj["ws4"] as JArray, season, cycle, "ws4"),
+                };
             }
             _seasons[season] = new SeasonRec {
                 Season = season,
@@ -127,20 +117,15 @@ public class WorkshopSeasonDB {
         Service.Log.Info($"Workshop season DB loaded: {_seasons.Count} seasons ({RangeStart}-{RangeEnd}), anchor S{AnchorSeason} @ {AnchorStart:yyyy-MM-dd}");
     }
 
-    private List<uint>? ResolveCrafts(JArray? names, int season, int cycle, string workshop) {
-        if (names == null || names.Count == 0)
+    private static List<uint>? ParseCraftIds(JArray? arr, int season, int cycle, string workshop) {
+        if (arr == null || arr.Count == 0)
             return null;
 
-        var ids = new List<uint>(names.Count);
-        foreach (var token in names) {
-            var name = token.Value<string>() ?? "";
-            if (!_nameToId.TryGetValue(name, out var id)) {
-                var match = _nameToId.Keys.Where(n => n.Length > 0 && name.Contains(n, StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(n => n.Length).FirstOrDefault() ?? throw new Exception($"Season {season} C{cycle} {workshop}: unknown craft '{name}'");
-                id = _nameToId[match];
-                Service.Log.Warning($"Season {season} C{cycle} {workshop}: resolved '{name}' → '{match}'");
-            }
-            ids.Add(id);
+        var ids = new List<uint>(arr.Count);
+        foreach (var token in arr) {
+            if (token.Type != JTokenType.Integer)
+                throw new Exception($"Season {season} C{cycle} {workshop}: expected craft ids, got {token.Type}");
+            ids.Add(token.Value<uint>());
         }
         return ids;
     }

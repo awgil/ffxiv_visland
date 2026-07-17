@@ -17,7 +17,7 @@ public unsafe class WorkshopOCImport {
     public WorkshopSolver.Recs Recommendations = new();
 
     private readonly WorkshopConfig _config;
-    private readonly WorkshopSeasonDB? _seasonDB;
+    private readonly WorkshopSeasonDB _seasonDB;
     private readonly ExcelSheet<MJICraftworksObject> _craftSheet;
     private readonly List<string> _botNames;
     private readonly ClipboardParser _parser;
@@ -29,8 +29,7 @@ public unsafe class WorkshopOCImport {
 
     public WorkshopOCImport() {
         _config = Service.Config.Get<WorkshopConfig>();
-        if (GlobalClientFeatures.IsGlobalClient)
-            _seasonDB = new WorkshopSeasonDB();
+        _seasonDB = new WorkshopSeasonDB();
         _craftSheet = MJICraftworksObject.Get();
         _botNames = [.. _craftSheet.Select(r => OSCHandler.OfficialNameToBotName(Item.GetRow(r.Item.RowId)!.Value.WithLanguage(ClientLanguage.English).Name.ExtractText()))];
         _parser = new(_craftSheet, _botNames);
@@ -45,23 +44,18 @@ public unsafe class WorkshopOCImport {
     public void Draw() {
         using var globalDisable = ImRaii.Disabled(_pendingActions.Count > 0);
 
-        if (_seasonDB != null) {
-            var thisSeason = _seasonDB.CurrentSeason(false);
-            var nextSeason = _seasonDB.CurrentSeason(true);
-            ImGui.TextUnformatted($"Archive seasons {_seasonDB.RangeStart}-{_seasonDB.RangeEnd} (cycle {_seasonDB.CycleLength})");
-            ImGui.TextUnformatted($"This week → Season {thisSeason}" + (_seasonDB.TryGet(thisSeason, out var cur) ? $" ({cur.Date})" : " (missing)"));
-            ImGui.TextUnformatted($"Next week → Season {nextSeason}" + (_seasonDB.TryGet(nextSeason, out var nxt) ? $" ({nxt.Date})" : " (missing)"));
+        var thisSeason = _seasonDB.CurrentSeason(false);
+        var nextSeason = _seasonDB.CurrentSeason(true);
+        ImGui.TextUnformatted($"Archive seasons {_seasonDB.RangeStart}-{_seasonDB.RangeEnd} (cycle {_seasonDB.CycleLength})");
+        ImGui.TextUnformatted($"This week → Season {thisSeason}" + (_seasonDB.TryGet(thisSeason, out var cur) ? $" ({cur.Date})" : " (missing)"));
+        ImGui.TextUnformatted($"Next week → Season {nextSeason}" + (_seasonDB.TryGet(nextSeason, out var nxt) ? $" ({nxt.Date})" : " (missing)"));
 
-            if (ImGui.Button("Load This Week"))
-                LoadSeasonRecs(false);
-            ImGui.SameLine();
-            if (ImGui.Button("Load Next Week"))
-                LoadSeasonRecs(true);
-            ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favour mode from Settings.");
-        }
-        else {
-            ImGui.TextWrapped(GlobalClientFeatures.UnavailableReason);
-        }
+        if (ImGui.Button("Load This Week"))
+            LoadSeasonRecs(false);
+        ImGui.SameLine();
+        if (ImGui.Button("Load Next Week"))
+            LoadSeasonRecs(true);
+        ImGuiComponents.HelpMarker("Loads Overseas Casuals archive recommendations for the mapped season, then applies the favour mode from Settings.");
 
         if (ImGui.Button("Import Recommendations From Clipboard"))
             ImportRecsFromClipboard(false);
@@ -151,11 +145,6 @@ public unsafe class WorkshopOCImport {
 
     public void LoadSeasonRecs(bool nextWeek, bool silent = false) {
         try {
-            if (_seasonDB == null) {
-                ReportError(GlobalClientFeatures.UnavailableReason, silent);
-                return;
-            }
-
             if (_config.FavourMode == FavourMode.None) {
                 ApplySeason(nextWeek, null);
                 return;
@@ -178,12 +167,11 @@ public unsafe class WorkshopOCImport {
     }
 
     private void ApplySeason(bool nextWeek, WorkshopSolver.FavourState? favours) {
-        var seasonDB = _seasonDB ?? throw new Exception("Workshop archive is not available on this client.");
-        var season = seasonDB.CurrentSeason(nextWeek);
-        var baseRecs = seasonDB.BuildRecs(season);
+        var season = _seasonDB.CurrentSeason(nextWeek);
+        var baseRecs = _seasonDB.BuildRecs(season);
         Recommendations = favours == null || _config.FavourMode == FavourMode.None
             ? baseRecs
-            : FavourIntegration.Apply(baseRecs, _config.FavourMode, favours.Value, _craftSheet, seasonDB.RestCycles(season));
+            : FavourIntegration.Apply(baseRecs, _config.FavourMode, favours.Value, _craftSheet, _seasonDB.RestCycles(season));
         _loadedSeason = season;
         _loadedNextWeek = nextWeek;
         Service.Log.Info($"Loaded workshop season {season} (favour mode {_config.FavourMode})");

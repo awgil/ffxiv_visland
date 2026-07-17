@@ -47,20 +47,15 @@ unsafe class WorkshopWindow : UIAttachedWindow {
         }
         if (_config.FavourMode == FavourMode.MinMaxFreeRestDay)
             WorkshopUtils.VoidSecondRestThisWeek();
-        if (_config.AutoImport && GlobalClientFeatures.IsGlobalClient) {
+        if (_config.AutoImport)
             _oc.LoadSeasonRecs(false, silent: true);
-        }
     }
 
     private void DrawSettings() {
         if (ImGui.Checkbox("Automatically select next cycle on open", ref _config.AutoOpenNextDay))
             _config.NotifyModified();
-        using (ImRaii.Disabled(!GlobalClientFeatures.IsGlobalClient)) {
-            if (ImGui.Checkbox("Automatically load archive recs on open", ref _config.AutoImport))
-                _config.NotifyModified();
-            if (!GlobalClientFeatures.IsGlobalClient)
-                ImGui.TextWrapped(GlobalClientFeatures.UnavailableReason);
-        }
+        if (ImGui.Checkbox("Automatically load archive recs on open", ref _config.AutoImport))
+            _config.NotifyModified();
 
         ImGui.Separator();
         ImGui.TextUnformatted("Favour integration");
