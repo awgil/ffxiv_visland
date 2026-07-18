@@ -249,7 +249,7 @@ public class GatherRouteDB : Configuration.Node {
 
             // Unknown / obsolete waypoint keys are ignored by Newtonsoft (MissingMemberHandling.Ignore).
             if (import.Waypoints.Any(x => (x.Pathfind || x.Interaction == InteractionType.NodeScan) && !Service.Navmesh.IsEnabled))
-                Service.ChatGui.Print($"[{Svc.PluginInterface.InternalName}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Service.Interface.InternalName} ({Plugin.Repo}).");
+                Service.ChatGui.Print($"[{Service.PluginInterface.InternalName}] Imported route uses pathfinding, but vnavmesh is not installed. It's located on the same repo as {Service.Interface.InternalName} ({Plugin.Repo}).");
 
             routeDB.Routes.Add(import);
             routeDB.NotifyModified();
