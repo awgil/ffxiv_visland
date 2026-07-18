@@ -2,7 +2,6 @@
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using Dalamud.Bindings.ImGui;
-using Lumina.Data;
 using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Linq;
