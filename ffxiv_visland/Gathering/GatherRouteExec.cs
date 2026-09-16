@@ -107,7 +107,8 @@ public class GatherRouteExec : IDisposable {
 
     public unsafe void Update(IFramework _) {
         _camera.SpeedH = _camera.SpeedV = default;
-        _movement.DesiredPosition = Player.Object?.Position ?? new();
+        var mountWhileMoving = CurrentRoute != null && CurrentWaypoint < CurrentRoute.Waypoints.Count ? CurrentRoute.Waypoints[CurrentWaypoint] : null;
+        _movement.DesiredPosition = CurrentState == State.Mounting && mountWhileMoving?.Movement == GatherRouteDB.Movement.MountNoFly ? mountWhileMoving.Position : Player.Object?.Position ?? new();
 
         if (Paused && Service.Navmesh.IsRunning())
             Service.Navmesh.Stop();
@@ -193,14 +194,25 @@ public class GatherRouteExec : IDisposable {
                 goto next;
             }
 
-            if (Service.Navmesh.IsRunning()) { SetState(State.WaitingForDestination); return; }
-            if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted) {
+            if (Service.Navmesh.IsRunning()) {
+                if (wp.Movement == GatherRouteDB.Movement.MountNoFly && !Player.Mounted) {
+                    SetState(State.Mounting);
+                    Player.Mount();
+                    return;
+                }
+
+                SetState(State.WaitingForDestination);
+                return;
+            }
+
+            if (wp.Movement != GatherRouteDB.Movement.Normal && !Player.Mounted && wp.Movement != GatherRouteDB.Movement.MountNoFly) {
                 SetState(State.Mounting);
                 Player.Mount();
                 return;
             }
 
-            Player.Sprint();
+            if (wp.Movement != GatherRouteDB.Movement.MountNoFly)
+                Player.Sprint();
 
             if (wp.Movement == GatherRouteDB.Movement.MountFly && Player.Mounted && !Player.InclusiveFlying) {
                 // TODO: improve, jump is not the best really...
@@ -219,6 +231,11 @@ public class GatherRouteExec : IDisposable {
                 _movement.DesiredPosition = wp.Position;
                 _camera.SpeedH = _camera.SpeedV = 360.Degrees();
                 _camera.DesiredAzimuth = Angle.FromDirection(toWaypoint.X, toWaypoint.Z) + 180.Degrees();
+            }
+
+            if (wp.Movement == GatherRouteDB.Movement.MountNoFly && !Player.Mounted) {
+                SetState(State.Mounting);
+                Player.Mount();
             }
 
             return;
