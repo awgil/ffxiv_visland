@@ -1,8 +1,25 @@
-using AutoRetainerAPI.Configuration;
 using Dalamud.Plugin.Ipc;
 using System.Collections.Generic;
 
 namespace visland.IPC;
+
+public class OfflineCharacterData {
+    public bool Enabled;
+    public bool Preferred;
+    public List<OfflineRetainerData> RetainerData = [];
+    public List<OfflineVesselData> OfflineSubmarineData = [];
+    public HashSet<string> EnabledSubs = [];
+}
+
+public class OfflineRetainerData {
+    public long VentureEndsAt;
+    public bool HasVenture;
+}
+
+public class OfflineVesselData {
+    public string Name = "";
+    public uint ReturnTime;
+}
 
 public class AutoRetainerIPC {
     private readonly ICallGateSubscriber<bool> _isBusy;
