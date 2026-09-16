@@ -168,6 +168,10 @@ public class GatherRouteDB : Configuration.Node {
                 { "Interaction", wp.Interaction.ToString() },
                 { "showWaits", wp.showWaits },
                 { "WaitTimeMs", wp.WaitTimeMs },
+                { "WaitTimeET", new JObject {
+                    { "X", wp.WaitTimeET.X },
+                    { "Y", wp.WaitTimeET.Y },
+                }},
                 { "WaitForCondition", wp.WaitForCondition.ToString() },
                 { "Pathfind", wp.Pathfind },
                 { "RouteName", wp.RouteName },
@@ -209,6 +213,10 @@ public class GatherRouteDB : Configuration.Node {
                     Interaction = interaction,
                     showWaits = o["showWaits"]?.Value<bool>() ?? false,
                     WaitTimeMs = o["WaitTimeMs"]?.Value<int>() ?? 0,
+                    WaitTimeET = new Vector2(
+                        o["WaitTimeET"]?["X"]?.Value<float>() ?? 0,
+                        o["WaitTimeET"]?["Y"]?.Value<float>() ?? 0
+                    ),
                     WaitForCondition = Enum.TryParse<ConditionFlag>(o["WaitForCondition"]?.Value<string>(), out var condition) ? condition : ConditionFlag.None,
                     Pathfind = o["Pathfind"]?.Value<bool>() ?? false,
                     RouteName = o["RouteName"]?.Value<string>() ?? "",
