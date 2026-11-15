@@ -17,7 +17,7 @@ public unsafe class FarmDebug {
 
             foreach (var n2 in _tree.Node("Slots")) {
                 for (var i = 0; i < 20; ++i) {
-                    var name = MJICropSeed.GetRow(mgr->FarmState->SeedType[i]) is { } crop ? crop.Name.Value.Singular : $"Unknown#{mgr->FarmState->SeedType[i]}";
+                    var name = MJICropSeed.GetRow(mgr->FarmState->SeedType[i])?.Name.ValueNullable?.Singular.ToString() ?? $"Unknown#{mgr->FarmState->SeedType[i]}";
                     _tree.LeafNode($"{i}: seed={mgr->FarmState->SeedType[i]} '{name}', growth={mgr->FarmState->GrowthLevel[i]}, water={mgr->FarmState->WaterLevel[i]}, yield={mgr->FarmState->GardenerYield[i]}, flags={mgr->FarmState->FarmSlotFlags[i]}, pi={mgr->FarmState->PlotObjectIndex[i]}, lay={mgr->FarmState->LayoutId[i]:X}");
                 }
             }
